@@ -29,8 +29,6 @@ ifeq ($(GNUSTEP_MAKEFILES),)
   endif
 endif
 
-GNUSTEP_MAKEFILES=/usr/share/GNUstep/Makefiles
-
 include $(GNUSTEP_MAKEFILES)/common.make
 
 PACKAGE_NAME = QuartzCore
