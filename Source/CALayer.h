@@ -22,3 +22,19 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <AppKit/AppKit.h>
+
+@interface CALayer : NSObject
+{
+}
+
+@property(assign) id delegate;
+@property NSLayoutManager* layoutManager;
+@property(copy) NSArray* sublayers;
+@property CGRect frame;
+@property CGRect bounds;
+
+- (CGPoint)convertPoint:(CGPoint)p toLayer:(CALayer *)l;
+
+@end
