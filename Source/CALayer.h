@@ -27,32 +27,32 @@
 
 #import <AppKit/AppKit.h>
 
-extern NSString* const kCAGravityResize;
-extern NSString* const kCAGravityResizeAspect;
-extern NSString* const kCAGravityResizeAspectFill;
-extern NSString* const kCAGravityCenter;
-extern NSString* const kCAGravityTop;
-extern NSString* const kCAGravityBottom;
-extern NSString* const kCAGravityLeft;
-extern NSString* const kCAGravityRight;
-extern NSString* const kCAGravityTopLeft;
-extern NSString* const kCAGravityTopRight;
-extern NSString* const kCAGravityBottomLeft;
-extern NSString* const kCAGravityBottomRight;
+extern NSString *const kCAGravityResize;
+extern NSString *const kCAGravityResizeAspect;
+extern NSString *const kCAGravityResizeAspectFill;
+extern NSString *const kCAGravityCenter;
+extern NSString *const kCAGravityTop;
+extern NSString *const kCAGravityBottom;
+extern NSString *const kCAGravityLeft;
+extern NSString *const kCAGravityRight;
+extern NSString *const kCAGravityTopLeft;
+extern NSString *const kCAGravityTopRight;
+extern NSString *const kCAGravityBottomLeft;
+extern NSString *const kCAGravityBottomRight;
 
 @interface CALayer : NSObject
 {
 }
 
 @property (assign) id delegate;
-@property NSLayoutManager* layoutManager;
+@property (retain) NSLayoutManager* layoutManager;
 @property (copy) NSArray* sublayers;
 @property CGRect frame;
 @property CGRect bounds;
 @property CGPoint position;
 @property float opacity;
 @property (getter=isOpaque) BOOL opaque;
-@property CGColorRef backgroundColor;
+@property (assign) CGColorRef backgroundColor;
 @property BOOL masksToBounds;
 @property CGRect contentsRect;
 @property (getter=isHidden) BOOL hidden;
@@ -64,5 +64,13 @@ extern NSString* const kCAGravityBottomRight;
 - (void)setAffineTransform:(CGAffineTransform)m;
 - (void)addSublayer:(CALayer *)layer;
 - (CGPoint)convertPoint:(CGPoint)p toLayer:(CALayer *)l;
+- (void)removeFromSuperlayer;
+- (void)insertSublayer:(CALayer *)layer atIndex:(unsigned)index;
+- (void)insertSublayer:(CALayer *)layer below:(CALayer *)sibling;
+- (void)insertSublayer:(CALayer *)layer above:(CALayer *)sibling;
+- (void)setNeedsDisplay;
+- (void)setNeedsDisplayInRect:(CGRect)r;
+- (void)setNeedsLayout;
+- (void)layoutIfNeeded;
 
 @end
