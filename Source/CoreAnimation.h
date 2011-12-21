@@ -1,4 +1,5 @@
-/* CoreAnimation.h
+/* 
+   CoreAnimation.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
@@ -22,3 +23,6 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <QuartzCore/CALayer.h>
+
