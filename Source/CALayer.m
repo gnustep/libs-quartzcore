@@ -3,6 +3,7 @@
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Amr Aboelela <amraboelela@gmail.com>
+   Date: December, 2011
 
    This file is part of QuartzCore.
 
