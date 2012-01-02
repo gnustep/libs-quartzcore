@@ -46,6 +46,7 @@ extern NSString *const kCAGravityBottomRight;
 }
 
 @property (assign) id delegate;
+@property (retain) id contents;
 @property (retain) NSLayoutManager* layoutManager;
 @property (copy) NSArray* sublayers;
 @property CGRect frame;

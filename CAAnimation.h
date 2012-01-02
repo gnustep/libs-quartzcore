@@ -5,7 +5,7 @@
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Amr Aboelela <amraboelela@gmail.com>
-   Date: December 2011
+   Date: January 2011
 
    This file is part of QuartzCore.
 
@@ -25,3 +25,27 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <QuartzCore/CAMediaTiming.h>
+
+@interface CAAnimation : NSObject <CAMediaTiming>
+{
+}
+
+@end
+
+@interface CAPropertyAnimation : CAAnimation
+
+@end
+
+@interface CAKeyframeAnimation : CAPropertyAnimation
+
+@property(copy) NSString* calculationMode;
+@property(copy) NSArray* values;
+
+@end
+
+/* calculationMode constants */
+
+extern NSString *const kCAAnimationDiscrete;
+
