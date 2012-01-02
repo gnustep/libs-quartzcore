@@ -53,6 +53,7 @@ extern NSString *const kCAGravityBottomRight;
 @property CGPoint position;
 @property float opacity;
 @property (getter=isOpaque) BOOL opaque;
+@property (getter=isGeometryFlipped) BOOL geometryFlipped;
 @property (assign) CGColorRef backgroundColor;
 @property BOOL masksToBounds;
 @property CGRect contentsRect;

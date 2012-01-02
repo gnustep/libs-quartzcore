@@ -1,9 +1,10 @@
 
-# makefile for QuartzCore
+#  Makefile for QuartzCore
 #
-#  Copyright (C) 2012 Free Software Foundation, Inc.
+#  Copyright (C) 2011 Free Software Foundation, Inc.
 #
-#  Author: Amr Aboelela
+#  Written by: Amr Aboelela
+#  Date: December, 2011
 #
 #  This file is part of QuartzCore.
 #
@@ -32,10 +33,29 @@ endif
 
 include $(GNUSTEP_MAKEFILES)/common.make
 
-PACKAGE_NAME = QuartzCore
-SUBPROJECTS = Source
+LIBRARY_NAME = libQuartzCore
+libQuartzCore_HEADER_FILES = \
+        CAAnimation.h \
+        CAGradientLayer.h \
+        CAReplicatorLayer.h \
+        CATiledLayer.h \
+        CAValueFunction.h \
+        CABase.h \
+        CALayer.h \
+        CAScrollLayer.h \
+        CATransaction.h \
+        CoreAnimation.h \
+        CADisplayLink.h \
+        CAMediaTiming.h \
+        CAShapeLayer.h \
+        CATransform3D.h \
+        QuartzCore.h \
+        CAEAGLLayer.h \
+        CAMediaTimingFunction.h \
+        CATextLayer.h \
+        CATransformLayer.h
 
--include GNUmakefile.preamble
-include $(GNUSTEP_MAKEFILES)/aggregate.make
--include GNUmakefile.postamble
+libQuartzCore_HEADER_FILES_INSTALL_DIR = QuartzCore
+libQuartzCore_OBJC_FILES = $(wildcard *.m) 
 
+include $(GNUSTEP_MAKEFILES)/library.make
