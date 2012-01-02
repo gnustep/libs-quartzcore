@@ -27,6 +27,7 @@
 */
 
 #import <AppKit/AppKit.h>
+#import "CAAnimation.h"
 
 extern NSString *const kCAGravityResize;
 extern NSString *const kCAGravityResizeAspect;
@@ -44,6 +45,8 @@ extern NSString *const kCAGravityBottomRight;
 @interface CALayer : NSObject
 {
 }
+
++ (id)layer;
 
 @property (assign) id delegate;
 @property (retain) id contents;
@@ -63,6 +66,9 @@ extern NSString *const kCAGravityBottomRight;
 @property BOOL needsDisplayOnBoundsChange;
 @property CGFloat zPosition;
 
+- (void)addAnimation:(CAAnimation *)anim forKey:(NSString *)key;
+- (void)removeAnimationForKey:(NSString *)key;
+- (CAAnimation *)animationForKey:(NSString *)key;
 - (CGAffineTransform)affineTransform;
 - (void)setAffineTransform:(CGAffineTransform)m;
 - (void)addSublayer:(CALayer *)layer;

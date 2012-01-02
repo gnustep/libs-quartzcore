@@ -36,6 +36,8 @@
 
 @interface CAPropertyAnimation : CAAnimation
 
++ (id)animationWithKeyPath:(NSString *)path;
+
 @end
 
 @interface CAKeyframeAnimation : CAPropertyAnimation
