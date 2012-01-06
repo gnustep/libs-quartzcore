@@ -27,7 +27,7 @@
 */
 
 #import <AppKit/AppKit.h>
-#import "CAAnimation.h"
+#import <QuartzCore/CABase.h>
 
 extern NSString *const kCAGravityResize;
 extern NSString *const kCAGravityResizeAspect;

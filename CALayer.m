@@ -24,6 +24,8 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import "CALayer.h"
+
 NSString *const kCAGravityResize = @"CAGravityResize";
 NSString *const kCAGravityResizeAspect = @"CAGravityResizeAspect";
 NSString *const kCAGravityResizeAspectFill = @"CAGravityResizeAspectFill";
