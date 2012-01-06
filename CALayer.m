@@ -23,3 +23,18 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+NSString *const kCAGravityResize = @"CAGravityResize";
+NSString *const kCAGravityResizeAspect = @"CAGravityResizeAspect";
+NSString *const kCAGravityResizeAspectFill = @"CAGravityResizeAspectFill";
+NSString *const kCAGravityCenter = @"CAGravityCenter";
+NSString *const kCAGravityTop = @"CAGravityTop";
+NSString *const kCAGravityBottom = @"CAGravityBottom";
+NSString *const kCAGravityLeft = @"CAGravityLeft";
+NSString *const kCAGravityRight = @"CAGravityRight";
+NSString *const kCAGravityTopLeft = @"CAGravityTopLeft";
+NSString *const kCAGravityTopRight = @"CAGravityTopRight";
+NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
+NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
+
+
