@@ -23,5 +23,6 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 

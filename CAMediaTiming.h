@@ -25,6 +25,8 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import "CABase.h"
+
 @protocol CAMediaTiming
 
 @property CFTimeInterval duration;

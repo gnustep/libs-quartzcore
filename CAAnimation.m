@@ -1,8 +1,10 @@
+
 /* CAAnimation.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Amr Aboelela <amraboelela@gmail.com>
+   Date: January 2012
 
    This file is part of QuartzCore.
 
@@ -22,3 +24,8 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import "CAAnimation.h"
+
+NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
+

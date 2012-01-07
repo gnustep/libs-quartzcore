@@ -26,7 +26,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <QuartzCore/CAMediaTiming.h>
+#import "CAMediaTiming.h"
 
 @interface CAAnimation : NSObject <CAMediaTiming>
 {
@@ -49,5 +49,5 @@
 
 /* calculationMode constants */
 
-extern NSString *const kCAAnimationDiscrete;
+NSString *const kCAAnimationDiscrete;
 
