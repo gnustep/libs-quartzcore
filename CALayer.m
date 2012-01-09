@@ -39,4 +39,7 @@ NSString *const kCAGravityTopRight = @"CAGravityTopRight";
 NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
 NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
+@implementation CALayer
+
+@end
 
