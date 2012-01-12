@@ -1,4 +1,3 @@
-
 #  Makefile for QuartzCore
 #
 #  Copyright (C) 2011 Free Software Foundation, Inc.
