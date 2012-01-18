@@ -40,6 +40,7 @@ NSString *const kCAGravityTopLeft;
 NSString *const kCAGravityTopRight;
 NSString *const kCAGravityBottomLeft;
 NSString *const kCAGravityBottomRight;
+NSString *const kCATransition;
 
 @class CAAnimation;
 
@@ -48,6 +49,7 @@ NSString *const kCAGravityBottomRight;
 }
 
 + (id)layer;
+- (id)presentationLayer;
 
 @property (assign) id delegate;
 @property (retain) id contents;

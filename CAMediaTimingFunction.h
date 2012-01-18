@@ -3,6 +3,7 @@
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Amr Aboelela <amraboelela@gmail.com>
+   Date: January 2012
 
    This file is part of QuartzCore.
 
@@ -22,3 +23,19 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/NSObject.h> 
+
+NSString *const kCAMediaTimingFunctionEaseInEaseOut;
+NSString *const kCAMediaTimingFunctionEaseIn;
+NSString *const kCAMediaTimingFunctionEaseOut;
+NSString *const kCAMediaTimingFunctionLinear;
+
+@interface CAMediaTimingFunction : NSObject
+{
+}
+
++(id) functionWithName:(NSString *)name;
+
+@end
+

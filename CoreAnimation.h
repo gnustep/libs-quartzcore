@@ -29,4 +29,5 @@
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CAAnimation.h>
 #import <QuartzCore/CAMediaTiming.h>
+#import <QuartzCore/CAMediaTimingFunction.h>
 

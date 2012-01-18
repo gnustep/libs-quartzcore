@@ -29,7 +29,14 @@
 
 @protocol CAMediaTiming
 
+@property CFTimeInterval beginTime;
 @property CFTimeInterval duration;
 @property float repeatCount;
+@property BOOL autoreverses;
+@property(copy) NSString* fillMode;
 
 @end 
+
+NSString *const kCAFillModeBackwards;
+
+

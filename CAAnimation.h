@@ -28,15 +28,29 @@
 
 #import "CAMediaTiming.h"
 
+@class CAMediaTimingFunction;
+
 @interface CAAnimation : NSObject <CAMediaTiming>
 {
 }
+
++ (id)animation;
+
+@property (retain) id delegate;
+@property (retain) CAMediaTimingFunction *timingFunction;
+@property BOOL removedOnCompletion;
 
 @end
 
 @interface CAPropertyAnimation : CAAnimation
 
 + (id)animationWithKeyPath:(NSString *)path;
+
+@end
+
+@interface CABasicAnimation : CAPropertyAnimation
+
+@property(retain) id fromValue, toValue, byValue;
 
 @end
 
@@ -50,4 +64,20 @@
 /* calculationMode constants */
 
 NSString *const kCAAnimationDiscrete;
+
+@interface CATransition : CAAnimation
+
+@property(copy) NSString* type;
+@property(copy) NSString* subtype;
+
+@end
+
+/* transition types */
+NSString *const kCATransitionMoveIn;
+
+/* transition subtypes */
+NSString *const kCATransitionFromTop;
+NSString *const kCATransitionFromBottom;
+NSString *const kCATransitionFromLeft;
+NSString *const kCATransitionFromRight;
 
