@@ -24,7 +24,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "CALayer.h"
+#import "QuartzCore/CALayer.h"
 
 NSString *const kCAGravityResize = @"CAGravityResize";
 NSString *const kCAGravityResizeAspect = @"CAGravityResizeAspect";
@@ -40,6 +40,24 @@ NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
 NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
 @implementation CALayer
+
+@synthesize delegate=_delegate;
+@synthesize contents=_contents;
+@synthesize layoutManager=_layoutManager;
+@synthesize sublayers=_sublayers;
+@synthesize frame=_frame;
+@synthesize bounds=_bounds;
+@synthesize position=_position;
+@synthesize opacity=_opacity;
+@synthesize opaque=_opaque;
+@synthesize geometryFlipped=_geometryFlipped;
+@synthesize backgroundColor=_backgroundColor;
+@synthesize masksToBounds=_masksToBounds;
+@synthesize contentsRect=_contentsRect;
+@synthesize hidden=_hidden;
+@synthesize contentsGravity=_contentsGravity;
+@synthesize needsDisplayOnBoundsChange=_needsDisplayOnBoundsChange;
+@synthesize zPosition=_zPosition;
 
 @end
 

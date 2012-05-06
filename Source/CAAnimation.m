@@ -25,7 +25,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "CAAnimation.h"
+#import "QuartzCore/CAAnimation.h"
 
 NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 

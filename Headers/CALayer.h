@@ -46,6 +46,23 @@ NSString *const kCATransition;
 
 @interface CALayer : NSObject
 {
+  id _delegate;
+  id _contents;
+  NSLayoutManager * _layoutManager;
+  NSArray * _sublayers;
+  CGRect _frame;
+  CGRect _bounds;
+  CGPoint _position;
+  float _opacity;
+  BOOL _opaque;
+  BOOL _geometryFlipped;
+  CGColorRef _backgroundColor;
+  BOOL _masksToBounds;
+  CGRect _contentsRect;
+  BOOL _hidden;
+  NSString * _contentsGravity;
+  BOOL _needsDisplayOnBoundsChange;
+  CGFloat _zPosition;
 }
 
 + (id)layer;

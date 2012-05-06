@@ -25,7 +25,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "CARenderer.h"
+#import "QuartzCore/CARenderer.h"
 
 @implementation CARenderer
 
