@@ -2,9 +2,9 @@ include $(GNUSTEP_MAKEFILES)/common.make
 
 TOOL_NAME = hello
 
-main_file = main.m
+main_files = main.m QCTestOpenGLView.m
 
-hello_OBJC_FILES = $(main_file) hello.m
+hello_OBJC_FILES = $(main_files) hello.m
 
 
 # Some examples from opal:
@@ -32,7 +32,7 @@ hello_OBJC_FILES = $(main_file) hello.m
 ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_LDFLAGS += -L../Source/obj 
-ADDITIONAL_TOOL_LIBS = -lgnustep-base -lgnustep-gui
+ADDITIONAL_TOOL_LIBS = -lgnustep-base -lgnustep-gui -lGL -lGLU
 #-lquartzcore
 ADDITIONAL_INCLUDE_DIRS = -I../Headers
 

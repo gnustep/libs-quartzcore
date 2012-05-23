@@ -1,4 +1,4 @@
-/* Tests/hello.m
+/* Tests/QCTestOpenGLView.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
@@ -24,59 +24,19 @@
    Boston, MA 02110-1301, USA.
 */
 
-#if !(__APPLE__)
-#import <GL/gl.h>
-#else
-#import <OpenGL/OpenGL.h>
-#endif
-
-#import "QCTestOpenGLView.h"
-
-@interface HelloOpenGLView : QCTestOpenGLView
+#import <AppKit/AppKit.h>
+@interface QCTestOpenGLView : NSOpenGLView
 {
-
+  NSTimer * _timer;
+  BOOL _isAnimating;
 }
 
+- (void) startAnimation;
+- (void) stopAnimation;
 - (void) timerAnimation: (NSTimer *)aTimer;
 
 @end
 
-Class classOfTestOpenGLView()
-{
-  return [HelloOpenGLView class];
-}
-
-@implementation HelloOpenGLView
-
-- (void) timerAnimation: (NSTimer *)aTimer
-{
-  [[self openGLContext] makeCurrentContext];
-
-  glViewport(0, 0, [self frame].size.width, [self frame].size.height);
- 
-  glClear(GL_COLOR_BUFFER_BIT);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  /*
-  glOrtho(0, 0, [self frame].size.width, [self frame].size.height, -1, 1);
-   */
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  
-  // Using glBegin() in a small test like this one shouldn't be a problem.
-  glBegin(GL_TRIANGLES);
-  glColor3f(1.0, 0.0, 0.0);
-  glVertex2f(0.0, 0.0);
-  glColor3f(0.0, 1.0, 0.0);
-  glVertex2f(1.0, 0.0);
-  glColor3f(0.0, 0.0, 1.0);
-  glVertex2f(1.0, 1.0);
-  glEnd();
-
-  [[self openGLContext] flushBuffer];
-}
-
-@end
+Class classOfTestOpenGLView();
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

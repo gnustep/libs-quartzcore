@@ -16,7 +16,7 @@ FRAMEWORK_NAME = QuartzCore
 
 -include ../config.make
 
-QuartzCore_HEADER_FILES_DIR = ../Headers
+QuartzCore_HEADER_FILES_DIR = ../Headers/QuartzCore
 QuartzCore_HEADER_FILES = \
 	CAAnimation.h \
 	CABase.h \
