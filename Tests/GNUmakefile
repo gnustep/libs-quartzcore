@@ -1,13 +1,12 @@
 include $(GNUSTEP_MAKEFILES)/common.make
 
-TOOL_NAME = hello hello_opal
+TOOL_NAME = hello hello_opal hello_carenderer
 
 main_files = main.m QCTestOpenGLView.m
 
 hello_OBJC_FILES = $(main_files) hello.m
-
 hello_opal_OBJC_FILES = $(main_files) hello_opal.m
-hello_opal_LIBS = -lopal
+hello_carenderer_OBJC_FILES = $(main_files) hello_carenderer.m
 
 # Some examples from opal:
 #TOOL_NAME = test1 test2 test3
@@ -33,9 +32,9 @@ hello_opal_LIBS = -lopal
 
 ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
-ADDITIONAL_LDFLAGS += -L../Source/obj 
-ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lcairo -lopal
-#-lquartzcore
+ADDITIONAL_LDFLAGS += -L../Source/obj -L../Source/QuartzCore.framework
+ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lcairo -lopal -lQuartzCore
+
 ADDITIONAL_INCLUDE_DIRS = -I../Headers
 
 -include GNUmakefile.preamble

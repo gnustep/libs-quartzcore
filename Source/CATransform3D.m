@@ -2,8 +2,9 @@
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
-   Author: Amr Aboelela <amraboelela@gmail.com>
-
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: June 2012
+   
    This file is part of QuartzCore.
 
    This library is free software; you can redistribute it and/or
@@ -22,3 +23,13 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import "QuartzCore/CATransform3D.h"
+
+const CATransform3D CATransform3DIdentity = {
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+};
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

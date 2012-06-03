@@ -49,6 +49,8 @@
   [openGLView startAnimation];
   [openGLView release];
 
+  [window setTitle: [[openGLView class] description]];
+
   [window makeKeyAndOrderFront:nil];
 }
 -(BOOL)applicationShouldTerminateAfterLastWindowClosed:(id)sender 

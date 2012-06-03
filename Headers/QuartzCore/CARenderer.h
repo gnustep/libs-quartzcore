@@ -30,47 +30,41 @@
 @class CAAnimation;
 @class CALayer;
 
-#ifndef CVTimeStamp
-#warning CVTimeStamp temporarily defined to int
-#define CVTimeStamp int
-#endif
+typedef struct _CVTimeStamp
+{
+  uint32_t version; /* zero */
+  uint32_t videoTimeScale; /* content framerate */
+  int64_t videoTime; /* content-specific time at which render is performed */
+  uint64_t hostTime; /* host-specific time at which render is performed */
+  double rateScalar; /* unused */
+  int64_t videoRefreshPeriod; /* optimal framerate, e.g. vsync */
+  /* smpte time not supported */
+  char smpteTime[160]; /* ordinarily, a struct: CVSMPTETime */
+  uint64_t flags;
+  uint64_t reserved;
+} CVTimeStamp;
+
 
 @interface CARenderer : NSObject
 {
-	NSOpenGLContext * _glContext;
-	CALayer * _layer;
-	CGRect _bounds;
+  NSOpenGLContext * _GLContext;
+  CALayer * _layer;
+  CGRect _bounds;
 }
 
-// MARK: - Class methods
-// Creates a renderer which renders into an OpenGL context.
-+ (CARenderer*)rendererWithNSOpenGLContext:(NSOpenGLContext*)ctx options:(NSDictionary*)options;
++ (CARenderer*)rendererWithNSOpenGLContext: (NSOpenGLContext *)context
+                                   options: (NSDictionary *)options;
 
-// MARK: - Properties
-// Root layer.
-// @property (nonatomic, retain) CALayer * layer;
-- (CALayer*)layer;
-- (void)setLayer:(CALayer*)layer;
+@property (retain) CALayer *layer; /* root layer */
+@property (assign) CGRect bounds;
 
-// Bounds.
-// @property (nonatomic, assign) CGRect bounds;
-- (CGRect)bounds;
-- (void)setBounds:(CGRect)bounds;
-
-// MARK: - Methods
-
-// Adds a rectangle to the update region.
-- (void)addUpdateRect:(CGRect)updateRect;
-// Begins rendering a frame at the specified time.
-- (void)beginFrameAtTime:(CFTimeInterval)timeInterval timeStamp:(CVTimeStamp *)timeStamp;
-// Ends rendering the frame, releasing any temporary data.
-- (void)endFrame;
-// Returns time when next update should be performed.
-- (CFTimeInterval)nextFrameTime;
-// Renders a frame to the target context. It should be rendering the
-// update region only.
-- (void)render;
-// Returns rectangle containing all pixels that should be updated.
-- (CGRect)updateBounds;
+- (void) addUpdateRect: (CGRect)updateRect;
+- (void) beginFrameAtTime: (CFTimeInterval)timeInterval
+                timeStamp: (CVTimeStamp *)timeStamp;
+- (void) endFrame;
+- (CFTimeInterval) nextFrameTime;
+- (void) render;
+- (CGRect) updateBounds;
 
 @end
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

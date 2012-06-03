@@ -2,7 +2,8 @@
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: June 2012
 
    This file is part of QuartzCore.
 
@@ -22,3 +23,17 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <CoreGraphics/CGBase.h>
+typedef struct CATransform3D
+{
+  CGFloat m11, m12, m13, m14;
+  CGFloat m21, m22, m23, m24;
+  CGFloat m31, m32, m33, m34;
+  CGFloat m41, m42, m43, m44;
+} CATransform3D;
+
+extern const CATransform3D CATransform3DIdentity;
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
+

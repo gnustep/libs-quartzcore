@@ -26,77 +26,242 @@
 */
 
 #import "QuartzCore/CARenderer.h"
+#import "QuartzCore/CATransform3D.h"
+#import "QuartzCore/CALayer.h"
+#if !(__APPLE__)
+#import <GL/gl.h>
+#import <GL/glu.h>
+#else
+#import <OpenGL/OpenGL.h>
+#endif
+#import <CoreGraphics/CoreGraphics.h>
+#import <cairo/cairo.h>
+
+#define USE_RECT 0
+#if USE_RECT
+/* FIXME: Use of rectangle textures is broken */
+#define TEXTURE_TARGET GL_TEXTURE_RECTANGLE_ARB
+#define qcLoadTexImage(channels, width, height, format, type, data) \
+        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, channels, \
+                     width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE\
+                     data)
+
+#else
+#define TEXTURE_TARGET GL_TEXTURE_2D
+#define qcLoadTexImage(channels, width, height, format, type, data) \
+        gluBuild2DMipmaps(GL_TEXTURE_2D, channels, width, height, format, type, data)
+#endif
+
+@interface CARenderer()
+@property (assign) NSOpenGLContext *GLContext;
+@end
+
+/* FIXME:
+   CGContext @interface has been COPIED from opal.
+   This is wrong.
+   The only reason why we need this is to get the cairo context
+   from a CGContextRef.
+   */
+/* ********************************** */
+typedef struct ct_additions ct_additions;
+@interface CGContext : NSObject
+{
+@public
+  cairo_t *ct;  /* A Cairo context -- destination of this CGContext */
+  ct_additions *add;  /* Additional things not in Cairo's gstate */
+  CGAffineTransform txtmatrix;
+  CGFloat scale_factor;
+  CGSize device_size;
+}
+- (id) initWithSurface: (cairo_surface_t *)target size: (CGSize)size;
+@end
+/* ************************************ */
+/* END FIXME */
 
 @implementation CARenderer
+@synthesize layer=_layer;
+@synthesize bounds=_bounds;
 
-// MARK: - Class methods
-// Creates a renderer which renders into an OpenGL context.
-+ (CARenderer*)rendererWithNSOpenGLContext:(NSOpenGLContext*)ctx options:(NSDictionary*)options;
+@synthesize GLContext=_GLContext;
+
+/* *** class methods *** */
+/* Creates a renderer which renders into an OpenGL context. */
++ (CARenderer*) rendererWithNSOpenGLContext: (NSOpenGLContext*)ctx
+                                    options: (NSDictionary*)options;
 {
-  return nil;
+  return [[[self alloc] initWithNSOpenGLContext: ctx 
+	                                options: options] autorelease];
 }
 
-// MARK: - Properties
-// Root layer.
-// @property (nonatomic, retain) CALayer * layer;
-- (CALayer*)layer;
+/* *** methods *** */
+
+- (id) initWithNSOpenGLContext: (NSOpenGLContext*)ctx
+                       options: options
 {
-  return nil;
+  if((self = [super init]) != nil)
+    {
+      [self setGLContext: ctx];
+    }
+  return self;
 }
-- (void)setLayer:(CALayer*)layer;
+
+- (void) dealloc
+{
+  [super dealloc];
+}
+
+/* Adds a rectangle to the update region. */
+- (void) addUpdateRect: (CGRect)updateRect
 {
 }
 
-// Bounds.
-// @property (nonatomic, assign) CGRect bounds;
-- (CGRect)bounds;
+/* Begins rendering a frame at the specified time.
+   Timestamp is currently ignored. */
+- (void) beginFrameAtTime: (CFTimeInterval)timeInterval
+                timeStamp: (CVTimeStamp *)timeStamp
 {
-  return _bounds;
-}
-- (void)setBounds:(CGRect)bounds;
-{
-  _bounds = bounds;
+
 }
 
-
-// MARK: - Methods
-
-// Adds a rectangle to the update region.
-- (void)addUpdateRect:(CGRect)updateRect;
+/* Ends rendering the frame, releasing any temporary data. */
+- (void) endFrame
 {
-  // TODO
+}
+/* Returns time at which next update should be performed.
+   Current time denotes continuous animation and next update
+   should be scheduled as soon as appropriate. Infinity denotes
+   that no update should be scheduled. */
+- (CFTimeInterval) nextFrameTime
+{
+  return CACurrentMediaTime();
 }
 
-// Begins rendering a frame at the specified time.
-- (void)beginFrameAtTime:(CFTimeInterval)timeInterval timeStamp:(CVTimeStamp *)timeStamp;
+/* Renders a frame to the target context. Best case scenario, it 
+   should be rendering the update region only. */
+- (void) render
 {
-  // TODO
+  // FIXME: [glcontext setcurrent]
+
+  glMatrixMode(GL_MODELVIEW);
+
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_COLOR_ARRAY);
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+  [self _renderLayer: [self layer]
+       withTransform: CATransform3DIdentity];
 }
 
-// Ends rendering the frame, releasing any temporary data.
-- (void)endFrame;
+/* Internal method that renders only a single layer. */
+- (void) _renderLayer: (CALayer *)layer
+        withTransform: (CATransform3D)transform
 {
-  // currently no need to end rendering
-}
-// Returns time when next update should be performed.
-- (CFTimeInterval)nextFrameTime;
-{
-  // TODO
-  return 1./60.;
+  [layer displayIfNeeded];
+
+  // TODO multiply transform by [layer transform]
+  //glLoadMatrixf((GLfloat*)&transform);
+  GLfloat vertices[] = {
+    0.0, 0.0,
+    [layer bounds].size.width, 0.0,
+    [layer bounds].size.width, [layer bounds].size.height,
+    
+    [layer bounds].size.width, [layer bounds].size.height,
+    0.0, [layer bounds].size.height,
+    0.0, 0.0,
+  };
+  GLfloat texCoords[] = {
+    0.0, 1.0,
+    1.0, 1.0,
+    1.0, 0.0,
+    
+    1.0, 0.0,
+    0.0, 0.0,
+    0.0, 1.0
+  };
+  GLfloat whiteColor[] = {
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+  };
+  GLfloat backgroundColor[] = {
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+    1.0, 1.0, 1.0, 1.0,
+  };
+  glVertexPointer(2, GL_FLOAT, 0, vertices);
+  glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+  
+  if([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
+    {
+      CGFloat * components = CGColorGetComponents([layer backgroundColor]);
+      // FIXME: here we presume that color contains RGBA channels.
+      // However this may depend on colorspace, number of components et al
+      memcpy(backgroundColor + 0*4, components, sizeof(CGFloat)*4);
+      memcpy(backgroundColor + 1*4, components, sizeof(CGFloat)*4);
+      memcpy(backgroundColor + 2*4, components, sizeof(CGFloat)*4);
+      memcpy(backgroundColor + 3*4, components, sizeof(CGFloat)*4);
+      memcpy(backgroundColor + 4*4, components, sizeof(CGFloat)*4);
+      memcpy(backgroundColor + 5*4, components, sizeof(CGFloat)*4);
+      glColorPointer(4, GL_FLOAT, 0, backgroundColor);
+      
+      glDisable(TEXTURE_TARGET);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+  if([layer contents])
+    {
+      /* FIXME: should cache textures of layers, and update them
+         only if needed */
+      GLuint texture;
+      glGenTextures(1, &texture);
+      glBindTexture(TEXTURE_TARGET, texture);
+      if([[layer contents] isKindOfClass: [CGContext class]])
+        {
+          CGContext * layerContents = [layer contents];
+
+          glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+          cairo_surface_t * cairoSurface = cairo_get_target(layerContents->ct);
+          qcLoadTexImage(GL_RGBA,
+                         cairo_image_surface_get_width(cairoSurface),
+                         cairo_image_surface_get_height(cairoSurface),
+                         GL_RGBA,
+                         GL_UNSIGNED_BYTE,
+                         cairo_image_surface_get_data(cairoSurface));
+ 
+	}
+      else if ([[layer contents] isKindOfClass: [CGImage class]])
+	{
+	  // TODO
+	}
+
+      /* FIXME: at the very least, replace glBegin()/glEnd() 
+         with vertex arrays */
+      
+      glEnable(TEXTURE_TARGET);
+      glColorPointer(4, GL_FLOAT, 0, whiteColor);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+
+      glDeleteTextures(1, &texture);
+    }
+
+  // TODO render sublayers
 }
 
-// Renders a frame to the target context. It should be rendering the
-// update region only.
-- (void)render;
-{
-  // TODO
-}
-
-// Returns rectangle containing all pixels that should be updated.
-- (CGRect)updateBounds;
+/* Returns rectangle containing all pixels that should be updated. */
+- (CGRect) updateBounds
 {
   // TODO update bounds are currently unused
   return CGRectZero;
 }
 
 @end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

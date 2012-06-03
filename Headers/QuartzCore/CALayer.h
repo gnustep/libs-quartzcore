@@ -1,8 +1,9 @@
-
-/* 
-   CALayer.h
+/* CALayer.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
+
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: June 2012
 
    Author: Amr Aboelela <amraboelela@gmail.com>
    Date: December, 2011
@@ -27,6 +28,7 @@
 */
 
 #import "CABase.h"
+#import "CAMediaTiming.h"
 
 NSString *const kCAGravityResize;
 NSString *const kCAGravityResizeAspect;
@@ -43,16 +45,28 @@ NSString *const kCAGravityBottomRight;
 NSString *const kCATransition;
 
 @class CAAnimation;
+typedef struct _cairo_surface cairo_surface_t;
 
-@interface CALayer : NSObject
+@protocol CAAction
+@required
+- (void)runActionForKey:(NSString *)key object:(id)anObject arguments:(NSDictionary *)dict;
+@end
+
+/* This needs to become a public interface of Opal! */
+CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
+
+@interface CALayer : NSObject<CAMediaTiming>
 {
+  /* property-backing i-vars */
   id _delegate;
   id _contents;
   NSLayoutManager * _layoutManager;
+  CALayer * _superlayer;
   NSArray * _sublayers;
   CGRect _frame;
   CGRect _bounds;
   CGPoint _position;
+  CGAffineTransform _affineTransform;
   float _opacity;
   BOOL _opaque;
   BOOL _geometryFlipped;
@@ -63,43 +77,77 @@ NSString *const kCATransition;
   NSString * _contentsGravity;
   BOOL _needsDisplayOnBoundsChange;
   CGFloat _zPosition;
+
+  /* media timing i-vars */
+  CFTimeInterval _beginTime;
+  CFTimeInterval _duration;
+  float _repeatCount;
+  BOOL _autoreverses;
+  NSString* _fillMode;
+
+  /* i-vars */
+  CGContextRef _opalContext;
+  cairo_surface_t * _cairoSurface;
+  BOOL _needsDisplay;
+  BOOL _needsLayout;
 }
 
 + (id)layer;
-- (id)presentationLayer;
 
-@property (assign) id delegate;
-@property (retain) id contents;
-@property (retain) NSLayoutManager* layoutManager;
-@property (copy) NSArray* sublayers;
-@property CGRect frame;
-@property CGRect bounds;
-@property CGPoint position;
-@property float opacity;
-@property (getter=isOpaque) BOOL opaque;
+@property (assign)                   id delegate;
+@property (retain)                   id contents;
+@property (retain)                   NSLayoutManager *layoutManager;
+@property (readonly)                 CALayer *superlayer;
+@property (copy)                     NSArray *sublayers;
+@property (assign)                   CGRect frame;
+@property (nonatomic,assign)         CGRect bounds;
+@property (assign)                   CGPoint position;
+@property (assign)                   CGAffineTransform affineTransform;
+@property (assign)                   float opacity;
+@property (getter=isOpaque)          BOOL opaque;
 @property (getter=isGeometryFlipped) BOOL geometryFlipped;
-@property (assign) CGColorRef backgroundColor;
-@property BOOL masksToBounds;
-@property CGRect contentsRect;
-@property (getter=isHidden) BOOL hidden;
-@property (copy) NSString* contentsGravity;
-@property BOOL needsDisplayOnBoundsChange;
-@property CGFloat zPosition;
+@property (assign)                   CGColorRef backgroundColor;
+@property (assign)                   BOOL masksToBounds;
+@property (assign)                   CGRect contentsRect;
+@property (getter=isHidden)          BOOL hidden;
+@property (copy)                     NSString *contentsGravity;
+@property (assign)                   BOOL needsDisplayOnBoundsChange;
+@property (assign)                   CGFloat zPosition;
 
-- (void)addAnimation:(CAAnimation *)anim forKey:(NSString *)key;
-- (void)removeAnimationForKey:(NSString *)key;
-- (CAAnimation *)animationForKey:(NSString *)key;
-- (CGAffineTransform)affineTransform;
-- (void)setAffineTransform:(CGAffineTransform)m;
-- (void)addSublayer:(CALayer *)layer;
-- (CGPoint)convertPoint:(CGPoint)p toLayer:(CALayer *)l;
-- (void)removeFromSuperlayer;
-- (void)insertSublayer:(CALayer *)layer atIndex:(unsigned)index;
-- (void)insertSublayer:(CALayer *)layer below:(CALayer *)sibling;
-- (void)insertSublayer:(CALayer *)layer above:(CALayer *)sibling;
-- (void)setNeedsDisplay;
-- (void)setNeedsDisplayInRect:(CGRect)r;
-- (void)setNeedsLayout;
-- (void)layoutIfNeeded;
+- (id) init;
+- (id) initWithLayer: (CALayer *)layer;
+
+- (void) addAnimation: (CAAnimation *)anim forKey: (NSString *)key;
+- (void) removeAnimationForKey: (NSString *)key;
+- (CAAnimation *) animationForKey:( NSString *)key;
+
+- (void) addSublayer: (CALayer *)layer;
+- (CGPoint) convertPoint: (CGPoint)p toLayer: (CALayer *)l;
+- (void) removeFromSuperlayer;
+- (void) insertSublayer: (CALayer *)layer atIndex: (unsigned)index;
+- (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
+- (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
+
+- (void) display;
+- (void) displayIfNeeded;
+- (BOOL) needsDisplay;
+- (void) setNeedsDisplay;
+- (void) setNeedsDisplayInRect: (CGRect)r;
+- (BOOL) needsLayout;
+- (void) setNeedsLayout;
+- (void) layoutIfNeeded;
+
+- (id) presentationLayer;
+- (id) modelLayer;
 
 @end
+
+@interface NSObject (CALayer)
+
+- (void) displayLayer: (CALayer*)layer;
+- (void) drawLayer: (CALayer*) inContext: (CGContextRef)context;
+- (void) layoutSublayersOfLayer: (CALayer*)layer;
+- (id<CAAction>) actionForLayer: (CALayer*)layer forKey: (NSString*)eventKey;
+@end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
