@@ -62,10 +62,16 @@
 }
 @end
 
-int main(int argc, const char ** argv) {
+int main(int argc, const char ** argv, char ** environ) {
+  NSAutoreleasePool * pool = [NSAutoreleasePool new];
   AppController * controller = [AppController new];
   [[NSApplication sharedApplication] setDelegate:controller];
-  return NSApplicationMain(argc, argv);
+  [NSProcessInfo initializeWithArguments: (char**)argv
+                                   count: argc
+                             environment: environ];
+  [NSApp run];
+  [pool drain];
+  return 0;
 }
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

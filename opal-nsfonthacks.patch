@@ -1,0 +1,885 @@
+Index: Source/OpalText/FreeType/OPFreeTypeFont.m
+===================================================================
+--- Source/OpalText/FreeType/OPFreeTypeFont.m	(revision 35173)
++++ Source/OpalText/FreeType/OPFreeTypeFont.m	(working copy)
+@@ -32,6 +32,10 @@
+ #include FT_TYPE1_TABLES_H
+ #include FT_GLYPH_H
+ 
++// Hacks
++#define _descriptor [self fontDescriptor]
++#define _matrix [self matrixWithCGTransform]
++// End hacks
+ 
+ #define REAL_SIZE(x) CGFloatFromFontUnits(x, [_descriptor pointSize], fontFace->units_per_EM)
+ 
+@@ -57,8 +61,22 @@
+ - (NSInteger)_fontfaceIndex;
+ @end
+ 
++// Hacks
++typedef struct OPMatrixWithCGTransform
++{
++  CGAffineTransform CGTransform;
++} OPMatrixWithCGTransform;
++// End hacks
++
+ @implementation OPFreeTypeFont
+ 
++// Hacks
++- (OPMatrixWithCGTransform)matrixWithCGTransform
++{
++  return *(OPMatrixWithCGTransform*)matrix;
++}
++// End hacks
++
+ - (FT_Library)currentThreadFreeTypeLibrary
+ {
+   NSMutableDictionary *threadDict = [[NSThread currentThread] threadDictionary];
+Index: Source/OpalText/NSFontDescriptor.h
+===================================================================
+--- Source/OpalText/NSFontDescriptor.h	(revision 35173)
++++ Source/OpalText/NSFontDescriptor.h	(working copy)
+@@ -1,8 +1,6 @@
+ /* 
+    NSFontDescriptor.h
+ 
+-   Holds an image to use as a cursor
+-
+    Copyright (C) 2007 Free Software Foundation, Inc.
+ 
+    Author:  Dr. H. Nikolaus Schaller <hns@computer.org>
+@@ -27,131 +25,5 @@
+    Boston, MA 02110-1301, USA.
+ */ 
+ 
++#import <AppKit/NSFontDescriptor.h>
+ 
+-#ifndef _GNUstep_H_NSFontDescriptor
+-#define _GNUstep_H_NSFontDescriptor
+-
+-#import <Foundation/NSObject.h>
+-
+-@class NSArray;
+-@class NSCoder;
+-@class NSDictionary;
+-@class NSSet;
+-@class NSString;
+-@class NSAffineTransform;
+-
+-
+-typedef uint32_t NSFontSymbolicTraits;
+-
+-typedef enum _NSFontFamilyClass
+-{
+-  NSFontUnknownClass = 0 << 28,
+-  NSFontOldStyleSerifsClass = 1U << 28,
+-  NSFontTransitionalSerifsClass = 2U << 28,
+-  NSFontModernSerifsClass = 3U << 28,
+-  NSFontClarendonSerifsClass = 4U << 28,
+-  NSFontSlabSerifsClass = 5U << 28,
+-  NSFontFreeformSerifsClass = 7U << 28,
+-  NSFontSansSerifClass = 8U << 28,
+-  NSFontOrnamentalsClass = 9U << 28,
+-  NSFontScriptsClass = 10U << 28,
+-  NSFontSymbolicClass = 12U << 28
+-} NSFontFamilyClass;
+-
+-enum _NSFontFamilyClassMask {
+-    NSFontFamilyClassMask = 0xF0000000
+-};
+-
+-enum _NSFontTrait
+-{
+-  NSFontItalicTrait = 0x0001,
+-  NSFontBoldTrait = 0x0002,
+-  NSFontExpandedTrait = 0x0020,
+-  NSFontCondensedTrait = 0x0040,
+-  NSFontMonoSpaceTrait = 0x0400,
+-  NSFontVerticalTrait = 0x0800,
+-  NSFontUIOptimizedTrait = 0x1000
+-};
+-
+-// FIXME: Document these with the value type
+-
+-NSString *NSFontFamilyAttribute;
+-NSString *NSFontNameAttribute;
+-NSString *NSFontFaceAttribute;
+-NSString *NSFontSizeAttribute; 
+-NSString *NSFontVisibleNameAttribute; 
+-NSString *NSFontColorAttribute;
+-/**
+- * NOTE: NSFontMatrixAttribute is a NSAffineTransform, unlike kCTFontMatrixAttribute which 
+- * is an NSData containing a CGAffineTransform struct.
+- */
+-NSString *NSFontMatrixAttribute;
+-NSString *NSFontVariationAttribute;
+-NSString *NSFontCharacterSetAttribute;
+-NSString *NSFontCascadeListAttribute;
+-NSString *NSFontTraitsAttribute;
+-NSString *NSFontFixedAdvanceAttribute;
+-
+-NSString *NSFontSymbolicTrait;
+-NSString *NSFontWeightTrait;
+-NSString *NSFontWidthTrait;
+-NSString *NSFontSlantTrait;
+-
+-NSString *NSFontVariationAxisIdentifierKey;
+-NSString *NSFontVariationAxisMinimumValueKey;
+-NSString *NSFontVariationAxisMaximumValueKey;
+-NSString *NSFontVariationAxisDefaultValueKey;
+-NSString *NSFontVariationAxisNameKey;
+-
+-@interface NSFontDescriptor : NSObject <NSCopying>
+-{
+-  NSDictionary *_attributes;
+-}
+-
+-+ (id) fontDescriptorWithFontAttributes: (NSDictionary *)attributes;
+-+ (id) fontDescriptorWithName: (NSString *)name
+-                         size: (CGFloat)size;
+-+ (id) fontDescriptorWithName: (NSString *)name
+-                       matrix: (NSAffineTransform *)matrix;
+-/**
+- * Returns the attribute dictionary for this descriptor.
+- * NOTE: This dictionary won't necessairly contain everything -objectForKey:
+- * returns a value for (i.e. -objectForKey: may access a system font pattern)
+- */
+-- (NSDictionary *) fontAttributes;
+-- (id) initWithFontAttributes: (NSDictionary *)attributes;
+-
+-- (NSFontDescriptor *) fontDescriptorByAddingAttributes:
+-  (NSDictionary *)attributes;
+-- (NSFontDescriptor *) fontDescriptorWithFace: (NSString *)face;
+-- (NSFontDescriptor *) fontDescriptorWithFamily: (NSString *)family;
+-- (NSFontDescriptor *) fontDescriptorWithMatrix: (NSAffineTransform *)matrix;
+-- (NSFontDescriptor *) fontDescriptorWithSize: (CGFloat)size;
+-- (NSFontDescriptor *) fontDescriptorWithSymbolicTraits:
+-  (NSFontSymbolicTraits)traits;
+-- (NSArray *) matchingFontDescriptorsWithMandatoryKeys: (NSSet *)keys;
+-
+-- (id) objectForKey: (NSString *)attribute;
+-- (NSAffineTransform *) matrix;
+-- (CGFloat) pointSize;
+-- (NSString *) postscriptName;
+-- (NSFontSymbolicTraits) symbolicTraits;
+-- (NSFontDescriptor *) matchingFontDescriptorWithMandatoryKeys: (NSSet *)keys;
+-
+-//
+-// CTFontDescriptor private
+-//
+-
+-- (id) localizedObjectForKey: (NSString*)key language: (NSString*)language;
+-
+-//
+-// CTFontDescriptor private; to be overridden in subclasses
+-//
+-
+-- (NSArray *) matchingFontDescriptorsWithMandatoryKeys: (NSSet *)keys;
+-- (id) objectFromPlatformFontPatternForKey: (NSString *)attribute;
+-- (id) localizedObjectFromPlatformFontPatternForKey: (NSString*)key language: (NSString*)language;
+-
+-@end
+-
+-#endif /* _GNUstep_H_NSFontDescriptor */
+Index: Source/OpalText/NSFont.h
+===================================================================
+--- Source/OpalText/NSFont.h	(revision 35173)
++++ Source/OpalText/NSFont.h	(working copy)
+@@ -28,130 +28,16 @@
+    Boston, MA 02110-1301, USA.
+ */
+ 
+-#ifndef _GNUstep_H_NSFont
+-#define _GNUstep_H_NSFont
++#ifndef _GNUstep_H_Opal_NSFont
++#define _GNUstep_H_Opal_NSFont
+ 
++#import <AppKit/NSFont.h>
+ #include <CoreText/CTFont.h>
+-#import <Foundation/NSObject.h>
+-#import <Foundation/NSGeometry.h>
++#import <AppKit/NSFontDescriptor.h>
++@interface NSFont(OpalText)
+ 
+-#import "NSFontDescriptor.h"
+-
+-@class NSAffineTransform;
+-@class NSCharacterSet;
+-@class NSDictionary;
+-@class NSFontDescriptor;
+-@class NSGraphicsContext;
+-
+-typedef unsigned int NSGlyph;
+-
+-enum {
+-  NSControlGlyph = 0x00ffffff,
+-  GSAttachmentGlyph = 0x00fffffe,
+-  NSNullGlyph = 0x0
+-};
+-
+-typedef enum _NSGlyphRelation {
+-  NSGlyphBelow,
+-  NSGlyphAbove,
+-} NSGlyphRelation;
+-
+-typedef enum _NSMultibyteGlyphPacking {
+-  NSOneByteGlyphPacking,
+-  NSJapaneseEUCGlyphPacking,
+-  NSAsciiWithDoubleByteEUCGlyphPacking,
+-  NSTwoByteGlyphPacking,
+-  NSFourByteGlyphPacking
+-} NSMultibyteGlyphPacking;
+-
+-typedef enum _NSFontRenderingMode
+-{
+-  NSFontDefaultRenderingMode = 0,
+-  NSFontAntialiasedRenderingMode,
+-  NSFontIntegerAdvancementsRenderingMode,
+-  NSFontAntialiasedIntegerAdvancementsRenderingMode
+-} NSFontRenderingMode;
+-
+-const CGFloat *NSFontIdentityMatrix;
+-
+-
+-/**
+- * The OPAffineTransform union encapsulates three equivalent representations of
+- * transformation matrices so we can avoid translating between them later on.
+- */
+-typedef union _OPAffineTransform
+-{
+-  NSAffineTransformStruct NSTransform;
+-  CGAffineTransform CGTransform;
+-  CGFloat PSMatrix[6];
+-} OPAffineTransform;
+-
+-/**
+- * The font class.
+- *
+- * Note all font/glyph metrics are in user space; that means font design units
+- * (often 2048 units per EM square) are divided by unitsPerEM, then transformed by
+- * the PostScript matrix (textTransform scaled by pointSize).
+- */
+-@interface NSFont : NSObject
+-{
+-  NSFontDescriptor *_descriptor;
+-  OPAffineTransform _matrix;
+-}
+-
+-//
+-// Querying the Font
+-//
+-- (NSRect) boundingRectForFont;
+-- (NSString*) displayName;
+-- (NSString*) familyName;
+-- (NSString*) fontName;
+-- (BOOL) isFixedPitch;
+-/**
+- * Returns the PostScript matrix; that is -textTransform scaled by -pointSize
+- */
+-- (const CGFloat*) matrix;
+-/**
+- * Returns the font matrix, normally the identity matrix. This is the same as the font
+- * descriptor's font matrix.
+- */
+-- (NSAffineTransform*) textTransform;
+-- (CGFloat) pointSize;
+-- (NSFont*) printerFont;
+-- (NSFont*) screenFont;
+-- (CGFloat) ascender;
+-- (CGFloat) descender;
+-- (CGFloat) capHeight;
+-- (CGFloat) italicAngle;
+ - (CGFloat) leading;
+-- (NSSize) maximumAdvancement;
+-- (CGFloat) underlinePosition;
+-- (CGFloat) underlineThickness;
+-- (CGFloat) xHeight;
+-- (NSUInteger) numberOfGlyphs;
+-- (NSCharacterSet*) coveredCharacterSet;
+-- (NSFontDescriptor*) fontDescriptor;
+-- (NSFontRenderingMode) renderingMode;
+-- (NSFont*) screenFontWithRenderingMode: (NSFontRenderingMode)mode;
+-
+ //
+-// Manipulating Glyphs
+-//
+-- (NSSize) advancementForGlyph: (NSGlyph)aGlyph;
+-- (NSRect) boundingRectForGlyph: (NSGlyph)aGlyph;
+-- (void) getAdvancements: (NSSizeArray)advancements
+-               forGlyphs: (const NSGlyph*)glyphs
+-                   count: (NSUInteger)count;
+-- (void) getAdvancements: (NSSizeArray)advancements
+-         forPackedGlyphs: (const void*)packedGlyphs
+-                  length: (NSUInteger)count;
+-- (void) getBoundingRects: (NSRectArray)advancements
+-                forGlyphs: (const NSGlyph*)glyphs
+-                    count: (NSUInteger)count;
+-- (NSGlyph) glyphWithName: (NSString*)glyphName;
+-- (NSStringEncoding) mostCompatibleStringEncoding;
+-
+-//
+ // CTFont private
+ //
+ + (NSFont*) fontWithDescriptor: (NSFontDescriptor*)descriptor
+@@ -199,104 +85,6 @@
+ - (id)_initWithDescriptor: (NSFontDescriptor*)descriptor
+                   options: (CTFontOptions)options;
+ 
+-// Put in -gui:
+-#if 0
+-//
+-// Creating a Font Object
+-//
+-
+-+ (NSFont*) fontWithName: (NSString*)aFontName
+-                  matrix: (const CGFloat*)fontMatrix;
+-+ (NSFont*) fontWithName: (NSString*)aFontName
+-                    size: (CGFloat)fontSize;
+-+ (NSFont*) fontWithDescriptor: (NSFontDescriptor*)descriptor size: (CGFloat)size;
+-+ (NSFont*) fontWithDescriptor: (NSFontDescriptor*)descriptor
+-                 textTransform: (NSAffineTransform*)transform;
+-// This method was a mistake in the 10.4 documentation
+-+ (NSFont*) fontWithDescriptor: (NSFontDescriptor*)descriptor
+-                          size: (CGFloat)size
+-                 textTransform: (NSAffineTransform*)transform;
+-
+-//
+-// UI fonts
+-//
+-
+-+ (NSFont*) boldSystemFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) systemFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) titleBarFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) menuFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) messageFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) paletteFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) toolTipsFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) controlContentFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) labelFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) menuBarFontOfSize: (CGFloat)fontSize;
+-
+-//
+-// User fonts
+-//
+-
+-+ (NSFont*) userFixedPitchFontOfSize: (CGFloat)fontSize;
+-+ (NSFont*) userFontOfSize: (CGFloat)fontSize;
+-+ (void) setUserFixedPitchFont: (NSFont*)userFont;
+-+ (void) setUserFont: (NSFont*)userFont;
+-
+-
+-//
+-// Font Sizes
+-//
+-+ (CGFloat) labelFontSize;
+-+ (CGFloat) smallSystemFontSize;
+-+ (CGFloat) systemFontSize;
+-+ (CGFloat) systemFontSizeForControlSize: (NSControlSize)controlSize;
+-
+-//
+-// Setting the Font (put in -gui)
+-//
+-- (void) set;
+-- (void) setInContext: (NSGraphicsContext*)context;
+-
+-//
+-// CoreText private
+-//
+-+ (NSFont*) UIFontWithType: (CTFontUIFontType)type
+-                      size: (CGFloat)size
+-               forLanguage: (NSString*)languageCode;
+-
+-//
+-// Deprecated (Put in -gui)
+-//
+-
+-+ (NSArray*) preferredFontNames;
+-+ (void) setPreferredFontNames: (NSArray*)fontNames;
+-- (NSString*) encodingScheme;
+-- (BOOL) isBaseFont;
+-- (CGFloat) defaultLineHeightForFont;
+-- (BOOL) glyphIsEncoded: (NSGlyph)aGlyph;
+-- (NSMultibyteGlyphPacking) glyphPacking;
+-- (NSPoint) positionOfGlyph: (NSGlyph)curGlyph
+-	    precededByGlyph: (NSGlyph)prevGlyph
+-		  isNominal: (BOOL*)nominal;
+-- (NSPoint) positionOfGlyph: (NSGlyph)aGlyph
+-	       forCharacter: (unichar)aChar
+-	     struckOverRect: (NSRect)aRect;
+-- (NSPoint) positionOfGlyph: (NSGlyph)aGlyph
+-	    struckOverGlyph: (NSGlyph)baseGlyph
+-	metricsExist: (BOOL*)flag;
+-- (NSPoint) positionOfGlyph: (NSGlyph)aGlyph
+-             struckOverRect: (NSRect)aRect
+-               metricsExist: (BOOL*)flag;
+-- (NSPoint) positionOfGlyph: (NSGlyph)aGlyph
+-               withRelation: (NSGlyphRelation)relation
+-                toBaseGlyph: (NSGlyph)baseGlyph
+-           totalAdvancement: (NSSize*)offset
+-               metricsExist: (BOOL*)flag;
+-- (int) positionsForCompositeSequence: (NSGlyph*)glyphs
+-                       numberOfGlyphs: (int)numGlyphs
+-                           pointArray: (NSPoint*)points;
+-#endif
+-
+-
+ @end
+ 
+-#endif // _GNUstep_H_NSFont
++#endif
+Index: Source/OpalText/NSFontDescriptor.m
+===================================================================
+--- Source/OpalText/NSFontDescriptor.m	(revision 35173)
++++ Source/OpalText/NSFontDescriptor.m	(working copy)
+@@ -28,259 +28,5 @@
+    Boston, MA 02110-1301, USA.
+ */ 
+ 
+-#import <Foundation/NSArray.h>
+-#import <Foundation/NSCoder.h>
+-#import <Foundation/NSDictionary.h>
+-#import <Foundation/NSEnumerator.h>
+-#import <Foundation/NSSet.h>
+-#import <Foundation/NSString.h>
+-#import <Foundation/NSValue.h>
++// stub
+ 
+-#include <CoreText/CTFontDescriptor.h>
+-#import "NSFontDescriptor.h"
+-
+-
+-@implementation NSFontDescriptor
+-
+-+ (Class) fontDescriptorClass
+-{
+-  return NSClassFromString(@"NSFontconfigFontDescriptor");
+-}
+-
+-+ (id) fontDescriptorWithFontAttributes: (NSDictionary *)attributes
+-{
+-  return AUTORELEASE([[[self fontDescriptorClass] alloc] initWithFontAttributes: attributes]);
+-}
+-
+-+ (id) fontDescriptorWithName: (NSString *)name
+-		       matrix: (NSAffineTransform *)matrix
+-{
+-  return [self fontDescriptorWithFontAttributes:
+-    [NSDictionary dictionaryWithObjectsAndKeys:
+-      name, NSFontNameAttribute,
+-      matrix, NSFontMatrixAttribute,
+-      nil]];
+-}
+-
+-+ (id) fontDescriptorWithName: (NSString *)name size: (CGFloat)size
+-{
+-  return [self fontDescriptorWithFontAttributes:
+-    [NSDictionary dictionaryWithObjectsAndKeys:
+-      name, NSFontNameAttribute,
+-      [NSString stringWithFormat: @"%f", size], NSFontSizeAttribute,
+-      nil]];
+-}
+-
+-- (NSDictionary *) fontAttributes
+-{
+-  return _attributes;
+-}
+-
+-- (NSFontDescriptor *) fontDescriptorByAddingAttributes:
+-  (NSDictionary *)attributes
+-{
+-  NSMutableDictionary *m = [_attributes mutableCopy];
+-  NSFontDescriptor *new;
+-
+-  [m addEntriesFromDictionary: attributes];
+-
+-  new = [isa fontDescriptorWithFontAttributes: m];
+-  RELEASE(m);
+-
+-  return new;
+-}
+-
+-- (NSFontDescriptor *) fontDescriptorWithFace: (NSString *)face
+-{
+-  return [self fontDescriptorByAddingAttributes:
+-    [NSDictionary dictionaryWithObject: face forKey: NSFontFaceAttribute]];
+-}
+-
+-- (NSFontDescriptor *) fontDescriptorWithFamily: (NSString *)family
+-{
+-  return [self fontDescriptorByAddingAttributes:
+-    [NSDictionary dictionaryWithObject: family forKey: NSFontFamilyAttribute]];
+-}
+-
+-- (NSFontDescriptor *) fontDescriptorWithMatrix: (NSAffineTransform *)matrix
+-{
+-  return [self fontDescriptorByAddingAttributes:
+-    [NSDictionary dictionaryWithObject: matrix forKey: NSFontMatrixAttribute]];
+-}
+-
+-- (NSFontDescriptor *) fontDescriptorWithSize: (CGFloat)size
+-{
+-  return [self fontDescriptorByAddingAttributes:
+-    [NSDictionary dictionaryWithObject: [NSString stringWithFormat:@"%f", size]
+-				forKey: NSFontSizeAttribute]];
+-}
+-
+-- (NSFontDescriptor *) fontDescriptorWithSymbolicTraits:
+-  (NSFontSymbolicTraits)symbolicTraits
+-{
+-  NSDictionary *traits;
+-
+-  traits = [_attributes objectForKey: NSFontTraitsAttribute];
+-  if (traits == nil)
+-    {
+-      traits = [NSDictionary dictionaryWithObject: 
+-			       [NSNumber numberWithUnsignedInt: symbolicTraits]
+-			     forKey: NSFontSymbolicTrait];
+-    }
+-  else
+-    {
+-      traits = AUTORELEASE([traits mutableCopy]);
+-      [(NSMutableDictionary*)traits setObject: 
+-			       [NSNumber numberWithUnsignedInt: symbolicTraits]
+-			     forKey: NSFontSymbolicTrait];
+-    }
+-
+-  return [self fontDescriptorByAddingAttributes:
+-		 [NSDictionary dictionaryWithObject: traits
+-			       forKey: NSFontTraitsAttribute]];
+-}
+-
+-- (id) initWithFontAttributes: (NSDictionary *)attributes
+-{
+-  if ((self = [super init]) != nil)
+-  {
+-    if (attributes)
+-      _attributes = [attributes copy];
+-    else
+-      _attributes = [NSDictionary new];
+-  }
+-  return self;
+-}
+-
+-- (void) encodeWithCoder: (NSCoder *)aCoder
+-{
+-	if ([aCoder allowsKeyedCoding])
+-  {
+-    [aCoder encodeObject: _attributes forKey: @"NSAttributes"];
+-  }
+-  else
+-  {
+-    [aCoder encodeObject: _attributes];
+-  }
+-}
+-
+-- (id) initWithCoder: (NSCoder *)aDecoder
+-{
+-  if ([aDecoder allowsKeyedCoding])
+-  {
+-    _attributes = RETAIN([aDecoder decodeObjectForKey: @"NSAttributes"]);
+-  }
+-  else
+-  {
+-    [aDecoder decodeValueOfObjCType: @encode(id) at: &_attributes];
+-  }
+-  return self;
+-}
+-	
+-- (void) dealloc;
+-{
+-  RELEASE(_attributes);
+-  [super dealloc];
+-}
+-
+-- (id) copyWithZone: (NSZone *)z
+-{
+-  NSFontDescriptor *f = [isa allocWithZone: z];
+-
+-  if (f != nil)
+-  {
+-    f->_attributes = [_attributes copyWithZone: z];
+-  }
+-  return f;
+-}
+-
+-/**
+- * Override in subclass
+- */
+-- (NSArray *) matchingFontDescriptorsWithMandatoryKeys: (NSSet *)keys
+-{
+-  return nil;
+-}
+-
+-- (NSFontDescriptor *) matchingFontDescriptorWithMandatoryKeys: (NSSet *)keys
+-{
+-  NSArray *found = [self matchingFontDescriptorsWithMandatoryKeys: keys];
+-
+-  if (found && ([found count] > 0))
+-  {
+-    return [found objectAtIndex: 0];
+-  }
+-  else
+-  {
+-    return nil;
+-  }
+-}
+-
+-- (NSAffineTransform *) matrix
+-{
+-  return [self objectForKey: NSFontMatrixAttribute];
+-}
+-
+-/**
+- * Override in subclass
+- */
+-- (id) objectFromPlatformFontPatternForKey: (NSString *)attribute
+-{
+-  return nil;
+-}
+-
+-/**
+- * Override in subclass
+- */
+-- (id) localizedObjectFromPlatformFontPatternForKey: (NSString*)key language: (NSString*)language
+-{
+-  return nil;
+-}
+-
+-- (id) objectForKey: (NSString *)attribute
+-{
+-  id object = [_attributes objectForKey: attribute];
+-
+-  if (nil == object)
+-  {
+-    return [self objectFromPlatformFontPatternForKey: attribute];
+-  }
+-  return object;
+-}
+-
+-- (id) localizedObjectForKey: (NSString*)attribute language: (NSString*)language
+-{
+-  id object = [self localizedObjectFromPlatformFontPatternForKey: attribute language: language];
+-
+-  if (nil == object)
+-  {
+-    return [self objectForKey: attribute];
+-  }
+-  return object;
+-}
+-
+-- (CGFloat) pointSize
+-{
+-  // NOTE: 0 is returned if point size is not defined
+-  return [[self objectForKey: NSFontSizeAttribute] doubleValue];
+-}
+-
+-- (NSString *) postscriptName
+-{
+-  return [self objectForKey: NSFontNameAttribute];
+-}
+-
+-- (NSFontSymbolicTraits) symbolicTraits
+-{
+-  NSDictionary *traits = [self objectForKey: NSFontTraitsAttribute];
+-  if (traits == nil)
+-  {
+-    return 0;
+-  }
+-  else
+-  {
+-    return [[traits objectForKey: NSFontSymbolicTrait] unsignedIntValue];
+-  }
+-}
+-
+-@end
+Index: Source/OpalText/NSFont.m
+===================================================================
+--- Source/OpalText/NSFont.m	(revision 35173)
++++ Source/OpalText/NSFont.m	(working copy)
+@@ -40,132 +40,19 @@
+ 
+ #import "NSFont.h"
+ 
+-const CGFloat *NSFontIdentityMatrix;
++@implementation NSFont(OpalText)
+ 
+-
+-@implementation NSFont
+-
+-+ (void)load
+-{
+-  static CGFloat identity[6] = {1.0, 0.0, 1.0, 0.0, 0.0, 0.0};
+-  NSFontIdentityMatrix = identity;
+-}
+-
+ //
+ // Querying the Font
+ //
+-- (NSRect) boundingRectForFont
+-{
+-  return NSMakeRect(0,0,0,0);
+-}
+-- (NSString*) displayName
+-{
+-  return [self nameForKey: kCTFontFullNameKey];
+-}
+-- (NSString*) familyName
+-{
+-  return [self nameForKey: kCTFontFamilyNameKey];
+-}
+-- (NSString*) fontName
+-{
+-  return [self nameForKey: kCTFontPostScriptNameKey];
+-}
+-- (BOOL) isFixedPitch
+-{
+-  return NO;
+-}
+-- (const CGFloat*) matrix
+-{
+-  return _matrix.PSMatrix;
+-}
+-- (NSAffineTransform*) textTransform
+-{
+-  // FIXME: Need to implement bridging between NSFontMatrixAttribute and kCTFontMatrixAttribute somewhere
+-  NSAffineTransform *transform = [NSAffineTransform transform];
+-  [transform setTransformStruct: _matrix.NSTransform];
+-  return transform;
+-}
+-
+-- (CGFloat) pointSize
+-{
+-  return [[[self fontDescriptor] objectForKey: NSFontSizeAttribute] doubleValue];
+-}
+-- (NSFont*) printerFont
+-{
+-  return nil;
+-}
+-- (NSFont*) screenFont
+-{
+-  return nil;
+-}
+-- (CGFloat) ascender
+-{
+-  return 0;
+-}
+-- (CGFloat) descender
+-{
+-  return 0;
+-}
+-- (CGFloat) capHeight
+-{
+-  return 0;
+-}
+-- (CGFloat) italicAngle
+-{
+-  return 0;
+-}
+ - (CGFloat) leading
+ {
+   return 0;
+ }
+-- (NSSize) maximumAdvancement
+-{
+-  return NSMakeSize(0,0);
+-}
+-- (CGFloat) underlinePosition
+-{
+-  return 0;
+-}
+-- (CGFloat) underlineThickness
+-{
+-  return 0;
+-}
+-- (CGFloat) xHeight
+-{
+-  return 0;
+-}
+-- (NSUInteger) numberOfGlyphs
+-{
+-  return 0;
+-}
+-- (NSCharacterSet*) coveredCharacterSet
+-{
+-  return [[self fontDescriptor] objectForKey: kCTFontCharacterSetAttribute];
+-}
+-- (NSFontDescriptor*) fontDescriptor
+-{
+-  return _descriptor;
+-}
+-- (NSFontRenderingMode) renderingMode
+-{
+-  return 0;
+-}
+-- (NSFont*) screenFontWithRenderingMode: (NSFontRenderingMode)mode
+-{
+-  return nil;
+-}
+ 
+ //
+ // Manipulating Glyphs
+ //
+-- (NSSize) advancementForGlyph: (NSGlyph)aGlyph
+-{
+-  return NSMakeSize(0,0);
+-}
+-- (NSRect) boundingRectForGlyph: (NSGlyph)aGlyph
+-{
+-  return NSMakeRect(0,0,0,0);
+-}
+ - (void) getAdvancements: (NSSizeArray)advancements
+                forGlyphs: (const NSGlyph*)glyphs
+                    count: (NSUInteger)count
+@@ -181,14 +68,6 @@
+                     count: (NSUInteger)count
+ {
+ }
+-- (NSGlyph) glyphWithName: (NSString*)glyphName
+-{
+-  return 0;
+-}
+-- (NSStringEncoding) mostCompatibleStringEncoding
+-{
+-  return 0;
+-}
+ 
+ //
+ // CTFont private
+@@ -214,15 +93,17 @@
+   {
+     return nil;
+   }
+-  ASSIGN(_descriptor, aDescriptor);
+-  NSAffineTransform *transform = [_descriptor objectForKey: NSFontMatrixAttribute];
++  NSAffineTransform *transform = [[self fontDescriptor] objectForKey: NSFontMatrixAttribute];
+   if (transform == nil)
++  // FIXME: in one case we assign to CGTransform, in other to NSTransform?
++  // FIXME: since those are supposed to be in sync, that's probably wrong
+   {
+-    _matrix.CGTransform = CGAffineTransformIdentity;
++    memcpy(matrix, &CGAffineTransformIdentity, sizeof(matrix)); //_matrix.CGTransform = CGAffineTransformIdentity;
+   }
+   else
+   {
+-    _matrix.NSTransform = [transform transformStruct];
++    NSAffineTransformStruct transformStruct = [transform transformStruct];
++    memcpy(matrix, &transformStruct, sizeof(matrix)); //_matrix.NSTransform = [transform transformStruct];
+   }
+   return self;
+ }
+Index: Tests/GNUmakefile
+===================================================================
+--- Tests/GNUmakefile	(revision 35173)
++++ Tests/GNUmakefile	(working copy)
+@@ -28,6 +28,10 @@
+ ADDITIONAL_LDFLAGS += -lgdi32
+ endif
+ 
++# Hacks
++ADDITIONAL_LDFLAGS += -lgnustep-gui
++# End hacks
++
+ ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
+ ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
+ ADDITIONAL_LDFLAGS += -L../Source/obj 
