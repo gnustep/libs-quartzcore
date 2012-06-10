@@ -125,6 +125,13 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   _opalContext = opal_new_CGContext(_cairoSurface, bounds.size);
 }
 
+- (void) setDelegate: (id)delegate
+{
+  _delegate = delegate;
+
+  [self setNeedsDisplay];
+}
+
 /* *** display methods *** */
 
 - (void) display

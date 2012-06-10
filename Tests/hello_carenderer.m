@@ -39,14 +39,18 @@
 #import "QCTestOpenGLView.h"
 
 @interface HelloCARendererLayerDelegate : NSObject
+{
+  CGSize _size;
+}
 - (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;
+@property (assign) CGSize size;
 @end
 @implementation HelloCARendererLayerDelegate
+@synthesize size=_size;
 - (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context
 {
-  // FIXME these should be a CGSize @property of this class
-  const float width = 640;
-  const float height = 480;
+  float width = [self size].width;
+  float height = [self size].height;
 
   /* Draw some content into the context */
   CGRect rect = CGRectMake(50, 50, width/2.0, height/2.0);
@@ -82,24 +86,18 @@ Class classOfTestOpenGLView()
   [super prepareOpenGL];
 
   _layerDelegate = [HelloCARendererLayerDelegate new];
+  [_layerDelegate setSize: CGSizeMake([self frame].size.width, [self frame].size.height)];
 
   CALayer * layer = [CALayer layer];
   [layer setBounds: CGRectMake(0, 0, [self frame].size.width*0.7, [self frame].size.height*0.7)];
   [layer setBackgroundColor: CGColorCreateGenericRGB(1, 1, 0, 1)];
   [layer setDelegate: _layerDelegate];
-  [layer setNeedsDisplay]; /* TODO should be automatically set upon setDelegate:. */
   
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                               options: nil];
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
-
-  /* FIXME alpha blending should be set up by the renderer */
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_ALPHA_TEST);
-  glAlphaFunc(GL_GREATER, 0.5);
 }
 
 - (void) dealloc
