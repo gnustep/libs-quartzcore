@@ -163,8 +163,12 @@ typedef struct ct_additions ct_additions;
 {
   [layer displayIfNeeded];
 
-  // TODO multiply transform by [layer transform]
-  //glLoadMatrixf((GLfloat*)&transform);
+  // apply transform and translate to position
+  transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
+  transform = CATransform3DConcat(transform, [layer transform]);
+  glLoadMatrixf((GLfloat*)&transform);
+ 
+  // fill vertex arrays 
   GLfloat vertices[] = {
     0.0, 0.0,
     [layer bounds].size.width, 0.0,
@@ -204,9 +208,17 @@ typedef struct ct_additions ct_additions;
   glVertexPointer(2, GL_FLOAT, 0, vertices);
   glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
   
+  // apply anchor point
+  for(int i = 0; i < 6; i++)
+    {
+      vertices[i*2 + 0] -= [layer anchorPoint].x * [layer bounds].size.width;
+      vertices[i*2 + 1] -= [layer anchorPoint].y * [layer bounds].size.height;
+    }
+
+  // apply background color
   if([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
     {
-      CGFloat * components = CGColorGetComponents([layer backgroundColor]);
+      const CGFloat * components = CGColorGetComponents([layer backgroundColor]);
       // FIXME: here we presume that color contains RGBA channels.
       // However this may depend on colorspace, number of components et al
       memcpy(backgroundColor + 0*4, components, sizeof(CGFloat)*4);
@@ -221,6 +233,7 @@ typedef struct ct_additions ct_additions;
       glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
+  // if there are some contents, draw them
   if([layer contents])
     {
       /* FIXME: should cache textures of layers, and update them

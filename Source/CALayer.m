@@ -57,9 +57,10 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize sublayers=_sublayers;
 @synthesize frame=_frame;
 @synthesize bounds=_bounds;
+@synthesize anchorPoint=_anchorPoint;
 @synthesize position=_position;
 @synthesize opacity=_opacity;
-@synthesize affineTransform=_affineTransform;
+@synthesize transform=_transform;
 @synthesize opaque=_opaque;
 @synthesize geometryFlipped=_geometryFlipped;
 @synthesize backgroundColor=_backgroundColor;
@@ -69,7 +70,8 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize contentsGravity=_contentsGravity;
 @synthesize needsDisplayOnBoundsChange=_needsDisplayOnBoundsChange;
 @synthesize zPosition=_zPosition;
-  
+
+/* properties in protocol CAMediaTiming */
 @synthesize beginTime=_beginTime;
 @synthesize duration=_duration;
 @synthesize repeatCount=_repeatCount;
@@ -88,6 +90,8 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 {
   if((self = [super init]) != nil)
     {
+      [self setAnchorPoint: CGPointMake(0.5, 0.5)];
+      [self setTransform: CATransform3DIdentity];
     }
   return self;
 }
@@ -125,13 +129,6 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   _opalContext = opal_new_CGContext(_cairoSurface, bounds.size);
 }
 
-- (void) setDelegate: (id)delegate
-{
-  _delegate = delegate;
-
-  [self setNeedsDisplay];
-}
-
 /* *** display methods *** */
 
 - (void) display
@@ -143,10 +140,16 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   else
     {
       /* By default, uses -drawInContext: to update the 'contents' property. */
+
+      CGContextSaveGState(_opalContext);
+      CGContextClipToRect(_opalContext, [self bounds]);
       [self drawInContext:_opalContext];
+      CGContextRestoreGState(_opalContext);
+
       self.contents = _opalContext;
     }
 }
+
 - (void) displayIfNeeded
 {
   if(_needsDisplay)
@@ -156,25 +159,29 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
   _needsDisplay = NO;
 }
+
 - (BOOL) needsDisplay
 {
   return _needsDisplay;
 }
+
 - (void) setNeedsDisplay
 {
   // TODO: schedule redisplay of self
   // TODO: or, mark parents dirty recursively, with root scheduling redisplay
   _needsDisplay = YES;
 }
+
 - (void) setNeedsDisplayInRect:(CGRect)r
 {
   [self setNeedsDisplay];
 }
+
 - (void) drawInContext: (CGContextRef)context
 {
   if([_delegate respondsToSelector: @selector(drawLayer:inContext:)])
     {
-      [_delegate drawLayer:self inContext:context];
+      [_delegate drawLayer: self inContext: context];
     }
 }
 
@@ -182,9 +189,11 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 - (void) layoutIfNeeded
 { 
 }
+
 - (void) layoutSublayers
 {
 }
+
 - (void) setNeedsLayout
 {
   _needsLayout = YES;

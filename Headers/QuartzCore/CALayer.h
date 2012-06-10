@@ -29,6 +29,7 @@
 
 #import "CABase.h"
 #import "CAMediaTiming.h"
+#import "CATransform3D.h"
 
 NSString *const kCAGravityResize;
 NSString *const kCAGravityResizeAspect;
@@ -65,8 +66,9 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
   NSArray * _sublayers;
   CGRect _frame;
   CGRect _bounds;
+  CGPoint _anchorPoint;
   CGPoint _position;
-  CGAffineTransform _affineTransform;
+  CATransform3D _transform;
   float _opacity;
   BOOL _opaque;
   BOOL _geometryFlipped;
@@ -101,8 +103,9 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 @property (copy)                     NSArray *sublayers;
 @property (assign)                   CGRect frame;
 @property (nonatomic,assign)         CGRect bounds;
+@property (assign)                   CGPoint anchorPoint;
 @property (assign)                   CGPoint position;
-@property (assign)                   CGAffineTransform affineTransform;
+@property (assign)                   CATransform3D transform;
 @property (assign)                   float opacity;
 @property (getter=isOpaque)          BOOL opaque;
 @property (getter=isGeometryFlipped) BOOL geometryFlipped;
@@ -140,12 +143,13 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 - (id) presentationLayer;
 - (id) modelLayer;
 
+- (CGAffineTransform) affineTransform;
+- (void)setAffineTransform: (CGAffineTransform)affineTransform;
 @end
 
 @interface NSObject (CALayer)
-
 - (void) displayLayer: (CALayer*)layer;
-- (void) drawLayer: (CALayer*) inContext: (CGContextRef)context;
+- (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;
 - (void) layoutSublayersOfLayer: (CALayer*)layer;
 - (id<CAAction>) actionForLayer: (CALayer*)layer forKey: (NSString*)eventKey;
 @end

@@ -90,8 +90,11 @@ Class classOfTestOpenGLView()
 
   CALayer * layer = [CALayer layer];
   [layer setBounds: CGRectMake(0, 0, [self frame].size.width*0.7, [self frame].size.height*0.7)];
+  [layer setPosition: CGPointMake([self frame].size.width/2, [self frame].size.height/2)];
+  [layer setTransform: CATransform3DMakeRotation(M_PI_4, 0, 0, 1)];
   [layer setBackgroundColor: CGColorCreateGenericRGB(1, 1, 0, 1)];
   [layer setDelegate: _layerDelegate];
+  [layer setNeedsDisplay];
   
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                               options: nil];

@@ -35,5 +35,23 @@ typedef struct CATransform3D
 
 extern const CATransform3D CATransform3DIdentity;
 
+BOOL CATransform3DIsIdentity(CATransform3D t);
+
+BOOL CATransform3DEqualToTransform(CATransform3D a, CATransform3D b);
+
+CATransform3D CATransform3DMakeTranslation(CGFloat tx, CGFloat ty, CGFloat tz);
+
+CATransform3D CATransform3DMakeScale(CGFloat sx, CGFloat sy, CGFloat sz);
+
+CATransform3D CATransform3DMakeRotation(CGFloat radians, CGFloat x, CGFloat y, CGFloat z);
+
+CATransform3D CATransform3DTranslate(CATransform3D t, CGFloat tx, CGFloat ty, CGFloat tz);
+
+CATransform3D CATransform3DScale(CATransform3D t, CGFloat sx, CGFloat sy, CGFloat sz);
+
+CATransform3D CATransform3DRotate(CATransform3D t, CGFloat radians, CGFloat x, CGFloat y, CGFloat z);
+
+CATransform3D CATransform3DConcat(CATransform3D a, CATransform3D b);
+
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
 
