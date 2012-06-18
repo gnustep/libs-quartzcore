@@ -40,18 +40,19 @@
 {
   window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,640,480)
                                        styleMask: NSTitledWindowMask | NSClosableWindowMask
-                                         backing: 0
+                                         backing: NSBackingStoreBuffered
                                            defer: NO];
+    
   QCTestOpenGLView * openGLView;
   openGLView = [[classOfTestOpenGLView() alloc] initWithFrame: [[window contentView] frame]
-	                                          pixelFormat: [classOfTestOpenGLView() defaultPixelFormat]];
+                                                  pixelFormat: [classOfTestOpenGLView() defaultPixelFormat]];
   [window setContentView: openGLView];
   [openGLView startAnimation];
   [openGLView release];
 
   [window setTitle: [[openGLView class] description]];
-
-  [window makeKeyAndOrderFront:nil];
+  
+  [window makeKeyAndOrderFront: nil];
 }
 -(BOOL)applicationShouldTerminateAfterLastWindowClosed:(id)sender 
 {
@@ -65,6 +66,7 @@
 @end
 
 int main(int argc, const char ** argv, char ** environ) {
+#if GNUSTEP
   NSAutoreleasePool * pool = [NSAutoreleasePool new];
   AppController * controller = [AppController new];
   [[NSApplication sharedApplication] setDelegate:controller];
@@ -74,6 +76,10 @@ int main(int argc, const char ** argv, char ** environ) {
   [NSApp run];
   [pool drain];
   return 0;
+
+#else
+  return NSApplicationMain(argc, argv);
+#endif
 }
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

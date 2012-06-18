@@ -41,14 +41,33 @@
   [super dealloc];
 }
 
+#if 0
+/* Not needed for now */
++ (NSOpenGLPixelFormat*) defaultPixelFormat
+{
+  NSOpenGLPixelFormatAttribute attributes[] = { 
+    NSOpenGLPFAAccelerated,
+    NSOpenGLPFADepthSize, 16,
+    NSOpenGLPFAMinimumPolicy,
+    NSOpenGLPFAClosestPolicy,
+    0 
+  };  
+  NSOpenGLPixelFormat *format;
+    
+  format = [[[NSOpenGLPixelFormat alloc] initWithAttributes:attributes] autorelease];
+
+  return format;
+}
+#endif
+
 - (void) startAnimation
 {
   if(!_timer)
     _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60. 
-                                             target: self 
-                                           selector: @selector(timerAnimation:) 
-                                           userInfo: nil 
-                                            repeats: YES];
+                                              target: self 
+                                            selector: @selector(timerAnimation:) 
+                                            userInfo: nil 
+                                             repeats: YES];
   _isAnimating = YES;
 
 }

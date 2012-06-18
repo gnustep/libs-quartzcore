@@ -1,0 +1,15 @@
+2012-06-13  Ivan Vučica  <ivan@vucica.net>
+
+	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:
+	* Tests/data/MainMenu.xib:
+	* Tests/data/hello_carenderer-Info.plist:
+	* Tests/hello-Info.plist:
+	Xcode project for building Cocoa versions of the demos.
+
+	* Tests/QCTestOpenGLView.m:
+	* Tests/hello.m:
+	* Tests/hello_carenderer.m:
+	Patches for the demos to get them as close to running as
+	possible. They're still not rendering anything into the OpenGL
+	context, though.
+

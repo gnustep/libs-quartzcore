@@ -28,10 +28,11 @@
 #import <GL/gl.h>
 #import <GL/glu.h>
 #else
-#import <OpenGL/OpenGL.h>
+#import <OpenGL/gl.h>
 #endif
+#if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
-#import <cairo/cairo.h>
+#endif
 #import <QuartzCore/CARenderer.h>
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CABase.h>
@@ -96,8 +97,13 @@ Class classOfTestOpenGLView()
   [layer setDelegate: _layerDelegate];
   [layer setNeedsDisplay];
   
+#if GNUSTEP
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                               options: nil];
+#else
+  _renderer = [CARenderer rendererWithCGLContext: [self openGLContext].CGLContextObj
+                                         options: nil];
+#endif
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
@@ -115,7 +121,7 @@ Class classOfTestOpenGLView()
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
- 
+
   glClear(GL_COLOR_BUFFER_BIT);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -131,7 +137,7 @@ Class classOfTestOpenGLView()
   [_renderer render];
   [_renderer endFrame];
   /* */
-
+  
   [[self openGLContext] flushBuffer];
 }
 

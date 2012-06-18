@@ -28,6 +28,7 @@
 #import <GL/gl.h>
 #else
 #import <OpenGL/OpenGL.h>
+#import <OpenGL/gl.h>
 #endif
 
 #import "QCTestOpenGLView.h"
@@ -48,8 +49,19 @@ Class classOfTestOpenGLView()
 
 @implementation HelloOpenGLView
 
+#if 0
+// Long-term, we will want to paint in -drawRect: by setting the need for display.
 - (void) timerAnimation: (NSTimer *)aTimer
 {
+  [self setNeedsDisplay:YES];
+}
+
+- (void) drawRect: (NSRect)rect
+{
+#else
+- (void) timerAnimation: (NSTimer *)aTimer
+{
+#endif
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
