@@ -2,7 +2,8 @@
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Author: Ivan Vucica <ivan@vucica.net>
+   Date: June 2012
 
    This file is part of QuartzCore.
 
@@ -22,3 +23,34 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/Foundation.h>
+#import "CoreFoundation/CFDate.h" /* CFTimeInterval */
+
+@class CAMediaTimingFunction;
+
+@interface CATransaction : NSObject
+{
+  CFTimeInterval _animationDuration;
+  CAMediaTimingFunction *_animationTimingFunction;
+}
+
++ (void) begin;
++ (void) commit;
++ (void) flush;
+
++ (void) lock;
++ (void) unlock;
+
++ (id) valueForKey: (NSString *)key;
++ (void) setValue: (id)anObject forKey: (NSString *)key;
+
++ (CFTimeInterval) animationDuration;
++ (void) setAnimationDuration: (CFTimeInterval)animationDuration;
+
++ (CAMediaTimingFunction *) animationTimingFunction;
++ (void) setAnimationTimingFunction: (CAMediaTimingFunction *)function;
+
+@end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
