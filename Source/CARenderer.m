@@ -165,7 +165,7 @@ typedef struct ct_additions ct_additions;
 
   // apply transform and translate to position
   transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
-  transform = CATransform3DConcat(transform, [layer transform]);
+  transform = CATransform3DConcat([layer transform], transform);
   glLoadMatrixf((GLfloat*)&transform);
  
   // fill vertex arrays 

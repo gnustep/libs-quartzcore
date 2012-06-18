@@ -4,6 +4,7 @@
 	Fix of bugs detected by tests: identity matrix was not correctly
 	identified, matrix multiplication arguments were not given in correct
 	order, rotation matrix was not correctly constructed.
+	Fixed order of transform operations when rendering.
 
 	* Tests/CATransform3D/Makefile.mac:
 	Renamed previous file which is used for testing on OS X.
