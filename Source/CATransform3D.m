@@ -35,10 +35,10 @@ const CATransform3D CATransform3DIdentity = {
 
 BOOL CATransform3DIsIdentity(CATransform3D t)
 {
-  return ( t.m11 && !t.m12 && !t.m13 && !t.m14 &&
-          !t.m21 &&  t.m22 && !t.m23 && !t.m24 &&
-          !t.m31 && !t.m32 &&  t.m33 && !t.m34 &&
-          !t.m21 && !t.m22 && !t.m23 &&  t.m44);
+  return (t.m11==1.0 && t.m12==0.0 && t.m13==0.0 && t.m14==0.0 &&
+          t.m21==0.0 && t.m22==1.0 && t.m23==0.0 && t.m24==0.0 &&
+          t.m31==0.0 && t.m32==0.0 && t.m33==1.0 && t.m34==0.0 &&
+          t.m41==0.0 && t.m42==0.0 && t.m43==0.0 && t.m44==1.0);
 }
 BOOL CATransform3DEqualToTransform(CATransform3D a, CATransform3D b)
 {
@@ -85,7 +85,7 @@ CATransform3D CATransform3DMakeRotation(CGFloat radians, CGFloat x, CGFloat y, C
   /* Fill the return value */
   CATransform3D returnValue;
 
-  returnValue.m11 = c + (1-c) * x;
+  returnValue.m11 = c + (1-c) * x*x;
   returnValue.m12 = (1-c) * x*y + s*z;
   returnValue.m13 = (1-c) * x*z - s*y;
   returnValue.m14 = 0;
@@ -96,7 +96,7 @@ CATransform3D CATransform3DMakeRotation(CGFloat radians, CGFloat x, CGFloat y, C
   returnValue.m24 = 0;
 
   returnValue.m31 = (1-c) * z*x + s*y;
-  returnValue.m32 = (1-c) * z*z - s*x;
+  returnValue.m32 = (1-c) * y*z - s*x;
   returnValue.m33 = c + (1-c) * z*z;
   returnValue.m34 = 0;
 
@@ -117,20 +117,20 @@ CATransform3D CATransform3DMakeRotation(CGFloat radians, CGFloat x, CGFloat y, C
 
 CATransform3D CATransform3DTranslate(CATransform3D t, CGFloat tx, CGFloat ty, CGFloat tz)
 {
-  return CATransform3DConcat (t, CATransform3DMakeTranslation(tx, ty, tz));
+  return CATransform3DConcat (CATransform3DMakeTranslation(tx, ty, tz), t);
 }
 
 CATransform3D CATransform3DScale(CATransform3D t, CGFloat sx, CGFloat sy, CGFloat sz)
 {
-  return CATransform3DConcat (t, CATransform3DMakeScale(sx, sy, sz));
+  return CATransform3DConcat (CATransform3DMakeScale(sx, sy, sz), t);
 }
 
 CATransform3D CATransform3DRotate(CATransform3D t, CGFloat radians, CGFloat x, CGFloat y, CGFloat z)
 {
-  return CATransform3DConcat (t, CATransform3DMakeRotation(radians, x, y, z));
+  return CATransform3DConcat (CATransform3DMakeRotation(radians, x, y, z), t);
 }
 
-CATransform3D CATransform3DConcat(CATransform3D a, CATransform3D b)
+CATransform3D CATransform3DConcat(CATransform3D b, CATransform3D a)
 {
   /* multiplication */
   CATransform3D result;

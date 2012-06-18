@@ -1,6 +1,7 @@
 #ifndef QUARTZCORE_TESTING_H
 #define QUARTZCORE_TESTING_H
 
+#include <unistd.h> // usleep()
 #define PASS(x, y) \
 { \
   printf("%s ", y); \

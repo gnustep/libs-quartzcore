@@ -1,10 +1,16 @@
+include $(GNUSTEP_MAKEFILES)/common.make
 
-all: catransform3d
+TOOL_NAME = catransform3d
 
-catransform3d.o: ../Testing.h
+catransform3d_OBJC_FILES = catransform3d.m
 
-catransform3d: catransform3d.o ../Testing.h
-	$(CC) catransform3d.o -o catransform3d -framework QuartzCore && ./catransform3d
+ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
+ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
+ADDITIONAL_LDFLAGS += -L../../Source/obj -L../../Source/QuartzCore.framework
+ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lcairo -lopal -lQuartzCore
 
-clean:
-	-rm catransform3d.o catransform3d
+ADDITIONAL_INCLUDE_DIRS = -I../../Headers
+
+-include GNUmakefile.preamble
+include $(GNUSTEP_MAKEFILES)/tool.make
+-include GNUmakefile.postamble

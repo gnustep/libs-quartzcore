@@ -1,3 +1,21 @@
+2012-06-18  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CATransform3D.m:
+	Fix of bugs detected by tests: identity matrix was not correctly
+	identified, matrix multiplication arguments were not given in correct
+	order, rotation matrix was not correctly constructed.
+
+	* Tests/CATransform3D/Makefile.mac:
+	Renamed previous file which is used for testing on OS X.
+
+	* Tests/Testing.h:
+	* Tests/CATransform3D/GNUmakefile:
+	* Tests/CATransform3D/run_tests.sh:
+	Added support for running the tests under GNUstep.
+	
+	* .hgignore:
+	Added to facilitate easier use with HgSubversion.
+
 2012-06-16  Ivan Vučica  <ivan@vucica.net>
 
 	* Tests/CATransform3D/GNUmakefile:
