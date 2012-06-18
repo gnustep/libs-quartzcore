@@ -86,6 +86,8 @@ Class classOfTestOpenGLView()
   glVertex2f(1.0, 1.0);
   glEnd();
 
+  glFlush();
+
   [[self openGLContext] flushBuffer];
 }
 

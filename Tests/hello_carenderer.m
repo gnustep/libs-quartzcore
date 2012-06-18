@@ -138,6 +138,8 @@ Class classOfTestOpenGLView()
   [_renderer endFrame];
   /* */
   
+  glFlush();
+
   [[self openGLContext] flushBuffer];
 }
 

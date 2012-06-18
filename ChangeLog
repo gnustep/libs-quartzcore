@@ -1,3 +1,10 @@
+2012-06-15  Ivan Vučica  <ivan@vucica.net>
+
+	* Tests/hello.m:
+	* Tests/hello_carenderer.m:
+	Added glFlush() before swapping buffers via 
+	-[NSOpenGLContext flushBuffer], fixing OS X.
+
 2012-06-13  Ivan Vučica  <ivan@vucica.net>
 
 	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:
