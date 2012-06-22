@@ -1,6 +1,23 @@
 2012-06-22  Ivan Vučica  <ivan@vucica.net>
 
 	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Source/CABackingStore.h:
+	* Source/CABackingStore.m:
+	* Headers/QuartzCore/AppleSupport.h:
+	* Headers/QuartzCore/AppleSupportRevert.h:
+	* Source/CALayer.m:
+	* Source/GNUmakefile:
+	Added CABackingStore as a wrapper around CGContextRef. Although
+	apparently toll-free bridged under Cocoa just as under Opal, this
+	eliminates a compiler warning when setting a context as contents
+	of a layer.
+
+	* Source/CARenderer.m:
+	GSQuartzCore under Cocoa can now display contents of a layer.
+
+2012-06-22  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
 	* Headers/QuartzCore/AppleSupport.h:
 	* Headers/QuartzCore/AppleSupportRevert.h:
 	* Mac/GSQuartzCore-Info.plist:

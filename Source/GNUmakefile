@@ -18,6 +18,8 @@ FRAMEWORK_NAME = QuartzCore
 
 QuartzCore_HEADER_FILES_DIR = ../Headers/QuartzCore
 QuartzCore_HEADER_FILES = \
+	AppleSupport.h \
+	AppleSupportRevert.h \
 	CAAnimation.h \
 	CABase.h \
 	CADisplayLink.h \

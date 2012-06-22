@@ -40,6 +40,9 @@
 #undef kCATransitionFromLeft
 #undef kCATransitionFromRight
 
+/* CABackingStore.h */
+#undef CABackingStore
+
 /* CABase.h */
 #undef CACurrentMediaTime
 

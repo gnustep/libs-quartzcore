@@ -45,6 +45,9 @@
 #define kCATransitionFromLeft kGSCATransitionFromLeft
 #define kCATransitionFromRight kGSCATransitionFromRight
 
+/* CABackingStore.h */
+#define CABackingStore GSCABackingStore
+
 /* CABase.h */
 #define CACurrentMediaTime GSCACurrentMediaTime
 

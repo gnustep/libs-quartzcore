@@ -28,6 +28,7 @@
 #import "QuartzCore/CARenderer.h"
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CALayer.h"
+#import "CABackingStore.h"
 #if !(__APPLE__)
 #import <GL/gl.h>
 #import <GL/glu.h>
@@ -260,35 +261,46 @@ typedef struct ct_additions ct_additions;
     {
       /* FIXME: should cache textures of layers, and update them
          only if needed */
-#if !(GSIMPL_UNDER_COCOA)
       GLuint texture;
       glGenTextures(1, &texture);
       glBindTexture(TEXTURE_TARGET, texture);
-      if([[layer contents] isKindOfClass: [CGContext class]])
+      if([[layer contents] isKindOfClass: [CABackingStore class]])
         {
-          CGContext * layerContents = [layer contents];
+          CABackingStore * layerContents = ((CABackingStore *)[layer contents]);
+          CGContextRef layerContext = [layerContents context];
 
           glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-          cairo_surface_t * cairoSurface = cairo_get_target(layerContents->ct);
+#if !(GSIMPL_UNDER_COCOA)
+          cairo_surface_t * cairoSurface = cairo_get_target(layerContext->ct);
           qcLoadTexImage(GL_RGBA,
                          cairo_image_surface_get_width(cairoSurface),
                          cairo_image_surface_get_height(cairoSurface),
                          GL_RGBA,
                          GL_UNSIGNED_BYTE,
                          cairo_image_surface_get_data(cairoSurface));
+#else
+          qcLoadTexImage(GL_RGBA,
+                         CGBitmapContextGetWidth(layerContext),
+                         CGBitmapContextGetHeight(layerContext),
+                         GL_RGBA,
+                         GL_UNSIGNED_BYTE,
+                         CGBitmapContextGetData(layerContext));
+#endif
  
         }
+#if !(GSIMPL_UNDER_COCOA)
       else if ([[layer contents] isKindOfClass: [CGImage class]])
         {
           // TODO
         }
+#endif
       
       glEnable(TEXTURE_TARGET);
       glColorPointer(4, GL_FLOAT, 0, whiteColor);
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
       glDeleteTextures(1, &texture);
-#endif
+
     }
 
   // TODO render sublayers

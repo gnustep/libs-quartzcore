@@ -28,6 +28,7 @@
 */
 
 #import "QuartzCore/CALayer.h"
+#import "CABackingStore.h"
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
 #endif
@@ -199,7 +200,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       [self drawInContext:_opalContext];
       CGContextRestoreGState(_opalContext);
 
-      self.contents = _opalContext;
+      self.contents = [CABackingStore backingStoreWithContext: _opalContext];
     }
 }
 
