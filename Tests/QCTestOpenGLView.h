@@ -25,6 +25,7 @@
 */
 
 #import <AppKit/NSOpenGLView.h>
+#import <Foundation/Foundation.h>
 @interface QCTestOpenGLView : NSOpenGLView
 {
   NSTimer * _timer;

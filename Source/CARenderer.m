@@ -39,7 +39,6 @@
 #endif
 
 #if GNUSTEP
-#import <AppKit.h> // TODO: check if this is necessary
 #import <CoreGraphics/CoreGraphics.h>
 #endif
 

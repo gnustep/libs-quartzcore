@@ -30,6 +30,9 @@
 #import "QuartzCore/CABase.h"
 #import "QuartzCore/CAMediaTiming.h"
 #import "QuartzCore/CATransform3D.h"
+#if GNUSTEP
+#import <CoreGraphics/CoreGraphics.h>
+#endif
 
 NSString *const kCAGravityResize;
 NSString *const kCAGravityResizeAspect;

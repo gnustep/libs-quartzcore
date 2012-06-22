@@ -27,6 +27,7 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSOpenGL.h>
+#import <AppKit/NSApplication.h>
 #if !(GSIMPL_UNDER_COCOA)
 #import <QuartzCore/QuartzCore.h>
 #else
