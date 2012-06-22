@@ -30,6 +30,7 @@
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
 #endif
+#import <AppKit/NSOpenGL.h>
 
 #import "QCTestOpenGLView.h"
 

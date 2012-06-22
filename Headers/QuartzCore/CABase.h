@@ -23,7 +23,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <AppKit/AppKit.h>
-#import <CoreGraphics/CoreGraphics.h>
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
 
 CFTimeInterval CACurrentMediaTime(void);

@@ -1,3 +1,40 @@
+2012-06-22  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Headers/QuartzCore/AppleSupport.h:
+	* Headers/QuartzCore/AppleSupportRevert.h:
+	* Mac/GSQuartzCore-Info.plist:
+	* Mac/GSQuartzCore-Prefix.pch:
+	* Mac/en.lproj/InfoPlist.strings:
+	Added a hack for getting GNUstep's QuartzCore to run under Cocoa
+	without conflicting with Cocoa's implementation. Important for
+	quickly comparing differences between implementations.
+
+	* Headers/QuartzCore/CAAnimation.h:
+	* Headers/QuartzCore/CABase.h:
+	* Headers/QuartzCore/CALayer.h:
+	* Headers/QuartzCore/CAMediaTiming.h:
+	* Headers/QuartzCore/CARenderer.h:
+	* Headers/QuartzCore/CATransform3D.h:
+	* Headers/QuartzCore/CoreAnimation.h:
+	* Headers/QuartzCore/QuartzCore.h:
+	* Source/CAAnimation.m:
+	* Source/CALayer.m:
+	* Source/CATransaction.m:
+	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:
+	* Tests/QCTestOpenGLView.h:
+	* Tests/hello.m:
+	* Tests/hello_carenderer.m:
+	* Tests/main.m:
+	Reworked a lot of dependencies to support the GSQuartzCore hack.
+	Tests can now run using GSQuartzCore under Cocoa, too. GSQuartzCore
+	running under Cocoa currently doesn't read the bitmap data from
+	CGContextRef, so layers are empty.
+
+	* Source/CARenderer.m:
+	Fixed an incorrect presumption that CGFloat is the same as
+	GLfloat.
+
 2012-06-18  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CATransaction.h:

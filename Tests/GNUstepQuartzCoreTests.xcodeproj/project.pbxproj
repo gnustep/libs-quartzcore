@@ -24,6 +24,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7F7422B71594C7BA00AEB117 /* GSQuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GSQuartzCore.framework; path = /Library/Frameworks/GSQuartzCore.framework; sourceTree = "<absolute>"; };
 		7FA8CCDB15891CE7009C3B19 /* hello_carenderer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hello_carenderer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA8CCDF15891CE7009C3B19 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		7FA8CCE215891CE7009C3B19 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -69,6 +70,7 @@
 		7FA8CCCB15891CAE009C3B19 = {
 			isa = PBXGroup;
 			children = (
+				7F7422B71594C7BA00AEB117 /* GSQuartzCore.framework */,
 				7FA8CD0515891DCC009C3B19 /* OpenGL.framework */,
 				7FA8CD0315891DC3009C3B19 /* QuartzCore.framework */,
 				7FA8CD0215891D52009C3B19 /* Shared */,
@@ -243,6 +245,80 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		7F77513C1594ACA500F56E92 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_PREPROCESSOR_DEFINITIONS = "GSIMPL_UNDER_COCOA=1";
+				OTHER_LDFLAGS = (
+					"-framework",
+					GSQuartzCore,
+				);
+			};
+			name = UsingGNUstepImpl;
+		};
+		7F77513D1594ACA500F56E92 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "hello-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = hello;
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = UsingGNUstepImpl;
+		};
+		7F77513E1594ACA500F56E92 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../Headers";
+				INFOPLIST_FILE = "data/hello_carenderer-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../Headers";
+				WRAPPER_EXTENSION = app;
+			};
+			name = UsingGNUstepImpl;
+		};
 		7FA8CCD215891CAF009C3B19 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -368,6 +444,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7FA8CCD215891CAF009C3B19 /* Debug */,
+				7F77513C1594ACA500F56E92 /* UsingGNUstepImpl */,
 				7FA8CCD315891CAF009C3B19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -377,17 +454,21 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7FA8CCF715891CE8009C3B19 /* Debug */,
+				7F77513E1594ACA500F56E92 /* UsingGNUstepImpl */,
 				7FA8CCF815891CE8009C3B19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		7FA8CD1515892303009C3B19 /* Build configuration list for PBXNativeTarget "hello" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7FA8CD1615892303009C3B19 /* Debug */,
+				7F77513D1594ACA500F56E92 /* UsingGNUstepImpl */,
 				7FA8CD1715892303009C3B19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

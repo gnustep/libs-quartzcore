@@ -2,4 +2,7 @@ syntax: glob
 */obj/*
 */QuartzCore.framework/*
 */derived_src/*
+*.xcuserdata/*
+*.xcuserdatad/*
+*/*.xcworkspace/*
 

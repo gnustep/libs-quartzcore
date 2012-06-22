@@ -25,8 +25,14 @@
 */
 
 #import <Foundation/Foundation.h>
-#import <AppKit/AppKit.h>
+#import <AppKit/NSWindow.h>
+#import <AppKit/NSOpenGL.h>
+#if !(GSIMPL_UNDER_COCOA)
 #import <QuartzCore/QuartzCore.h>
+#else
+#import <GSQuartzCore/AppleSupport.h>
+#import <GSQuartzCore/QuartzCore.h>
+#endif
 #import "QCTestOpenGLView.h"
 
 @interface AppController : NSObject

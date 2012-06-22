@@ -26,7 +26,7 @@
 
 #import "QuartzCore/CATransaction.h"
 #import "QuartzCore/CAMediaTimingFunction.h"
-
+#import <Foundation/Foundation.h>
 static NSMutableArray *transactionStack = nil;
 
 @interface CATransaction ()

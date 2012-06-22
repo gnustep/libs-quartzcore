@@ -26,7 +26,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "CAMediaTiming.h"
+#import "QuartzCore/CAMediaTiming.h"
 
 @class CAMediaTimingFunction;
 

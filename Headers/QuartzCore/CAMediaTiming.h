@@ -26,7 +26,6 @@
 */
 
 #import "CABase.h"
-
 @protocol CAMediaTiming
 
 @property CFTimeInterval beginTime;
@@ -38,5 +37,4 @@
 @end 
 
 NSString *const kCAFillModeBackwards;
-
 

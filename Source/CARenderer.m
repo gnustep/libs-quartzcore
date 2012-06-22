@@ -33,9 +33,18 @@
 #import <GL/glu.h>
 #else
 #import <OpenGL/OpenGL.h>
+#import <OpenGL/gl.h>
+#import <OpenGL/glu.h>
 #endif
+
+#if GNUSTEP
+#import <AppKit.h> // TODO: check if this is necessary
 #import <CoreGraphics/CoreGraphics.h>
+#endif
+
+#if !(GSIMPL_UNDER_COCOA)
 #import <cairo/cairo.h>
+#endif
 
 #define USE_RECT 0
 #if USE_RECT
@@ -56,6 +65,7 @@
 @property (assign) NSOpenGLContext *GLContext;
 @end
 
+#if !(GSIMPL_UNDER_COCOA)
 /* FIXME:
    CGContext @interface has been COPIED from opal.
    This is wrong.
@@ -77,6 +87,7 @@ typedef struct ct_additions ct_additions;
 @end
 /* ************************************ */
 /* END FIXME */
+#endif
 
 @implementation CARenderer
 @synthesize layer=_layer;
@@ -166,7 +177,10 @@ typedef struct ct_additions ct_additions;
   // apply transform and translate to position
   transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
   transform = CATransform3DConcat([layer transform], transform);
-  glLoadMatrixf((GLfloat*)&transform);
+  if(sizeof(transform.m11) == sizeof(GLdouble))
+    glLoadMatrixd((GLdouble*)&transform);
+  else
+    glLoadMatrixf((GLfloat*)&transform);
  
   // fill vertex arrays 
   GLfloat vertices[] = {
@@ -218,15 +232,23 @@ typedef struct ct_additions ct_additions;
   // apply background color
   if([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
     {
-      const CGFloat * components = CGColorGetComponents([layer backgroundColor]);
+      const CGFloat * componentsCG = CGColorGetComponents([layer backgroundColor]);
+      GLfloat components[4];
+      
+      // convert
+      components[0] = componentsCG[0];
+      components[1] = componentsCG[1];
+      components[2] = componentsCG[2];
+      components[3] = componentsCG[3];
+      
       // FIXME: here we presume that color contains RGBA channels.
       // However this may depend on colorspace, number of components et al
-      memcpy(backgroundColor + 0*4, components, sizeof(CGFloat)*4);
-      memcpy(backgroundColor + 1*4, components, sizeof(CGFloat)*4);
-      memcpy(backgroundColor + 2*4, components, sizeof(CGFloat)*4);
-      memcpy(backgroundColor + 3*4, components, sizeof(CGFloat)*4);
-      memcpy(backgroundColor + 4*4, components, sizeof(CGFloat)*4);
-      memcpy(backgroundColor + 5*4, components, sizeof(CGFloat)*4);
+      memcpy(backgroundColor + 0*4, components, sizeof(GLfloat)*4);
+      memcpy(backgroundColor + 1*4, components, sizeof(GLfloat)*4);
+      memcpy(backgroundColor + 2*4, components, sizeof(GLfloat)*4);
+      memcpy(backgroundColor + 3*4, components, sizeof(GLfloat)*4);
+      memcpy(backgroundColor + 4*4, components, sizeof(GLfloat)*4);
+      memcpy(backgroundColor + 5*4, components, sizeof(GLfloat)*4);
       glColorPointer(4, GL_FLOAT, 0, backgroundColor);
       
       glDisable(TEXTURE_TARGET);
@@ -238,6 +260,7 @@ typedef struct ct_additions ct_additions;
     {
       /* FIXME: should cache textures of layers, and update them
          only if needed */
+#if !(GSIMPL_UNDER_COCOA)
       GLuint texture;
       glGenTextures(1, &texture);
       glBindTexture(TEXTURE_TARGET, texture);
@@ -254,20 +277,18 @@ typedef struct ct_additions ct_additions;
                          GL_UNSIGNED_BYTE,
                          cairo_image_surface_get_data(cairoSurface));
  
-	}
+        }
       else if ([[layer contents] isKindOfClass: [CGImage class]])
-	{
-	  // TODO
-	}
-
-      /* FIXME: at the very least, replace glBegin()/glEnd() 
-         with vertex arrays */
+        {
+          // TODO
+        }
       
       glEnable(TEXTURE_TARGET);
       glColorPointer(4, GL_FLOAT, 0, whiteColor);
       glDrawArrays(GL_TRIANGLES, 0, 6);
 
       glDeleteTextures(1, &texture);
+#endif
     }
 
   // TODO render sublayers

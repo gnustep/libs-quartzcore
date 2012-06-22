@@ -29,6 +29,7 @@
 
 @class CAAnimation;
 @class CALayer;
+@class NSOpenGLContext;
 
 typedef struct _CVTimeStamp
 {

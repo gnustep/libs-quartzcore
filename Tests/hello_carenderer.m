@@ -33,9 +33,22 @@
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
 #endif
+
+#if GSIMPL_UNDER_COCOA
+#import <GSQuartzCore/AppleSupportRevert.h>
+#endif
+#import <AppKit/NSOpenGL.h>
+
+#if !(GSIMPL_UNDER_COCOA)
 #import <QuartzCore/CARenderer.h>
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CABase.h>
+#else
+#import <GSQuartzCore/AppleSupport.h>
+#import <GSQuartzCore/CARenderer.h>
+#import <GSQuartzCore/CALayer.h>
+#import <GSQuartzCore/CABase.h>
+#endif
 
 #import "QCTestOpenGLView.h"
 
@@ -97,7 +110,7 @@ Class classOfTestOpenGLView()
   [layer setDelegate: _layerDelegate];
   [layer setNeedsDisplay];
   
-#if GNUSTEP
+#if GNUSTEP || GSIMPL_UNDER_COCOA
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                               options: nil];
 #else
@@ -126,7 +139,7 @@ Class classOfTestOpenGLView()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -1, 1);
-
+    
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
@@ -138,6 +151,26 @@ Class classOfTestOpenGLView()
   [_renderer endFrame];
   /* */
   
+  {
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+    // FIXME: this is unneeded under cocoa and should be unnecessary with GS
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glLoadIdentity();
+#endif
+    glDisable(GL_TEXTURE_2D);
+    // Using glBegin() in a small test like this one shouldn't be a problem.
+    glBegin(GL_TRIANGLES);
+    glColor3f(1.0, 0.0, 0.0);
+    glVertex2f(0.0, 0.0);
+    glColor3f(0.0, 1.0, 0.0);
+    glVertex2f(100.0, 0.0);
+    glColor3f(0.0, 0.0, 1.0);
+    glVertex2f(100.0, 100.0);
+    glEnd();
+    
+  }
+    
   glFlush();
 
   [[self openGLContext] flushBuffer];

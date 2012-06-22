@@ -24,7 +24,9 @@
    Boston, MA 02110-1301, USA.
 */
 
+#if GNUSTEP
 #import <CoreGraphics/CGBase.h>
+#endif
 typedef struct CATransform3D
 {
   CGFloat m11, m12, m13, m14;

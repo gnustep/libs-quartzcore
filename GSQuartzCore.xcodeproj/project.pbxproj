@@ -1,0 +1,522 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7F5CF3DE1594B35B00A5D114 /* AppleSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5CF3DD1594B35B00A5D114 /* AppleSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F74229E1594C2A400AEB117 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F74229D1594C2A400AEB117 /* OpenGL.framework */; };
+		7F7422B61594C75E00AEB117 /* AppleSupportRevert.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5909751594B7ED00AF49AF /* AppleSupportRevert.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751631594AE2A00F56E92 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F7751621594AE2A00F56E92 /* Cocoa.framework */; };
+		7F77516D1594AE2A00F56E92 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7F77516B1594AE2A00F56E92 /* InfoPlist.strings */; };
+		7F77518F1594AF2900F56E92 /* CAAnimation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F77517C1594AF2900F56E92 /* CAAnimation.m */; };
+		7F7751901594AF2900F56E92 /* CABase.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F77517D1594AF2900F56E92 /* CABase.m */; };
+		7F7751911594AF2900F56E92 /* CADisplayLink.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F77517E1594AF2900F56E92 /* CADisplayLink.m */; };
+		7F7751921594AF2900F56E92 /* CAEAGLLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F77517F1594AF2900F56E92 /* CAEAGLLayer.m */; };
+		7F7751931594AF2900F56E92 /* CAGradientLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751801594AF2900F56E92 /* CAGradientLayer.m */; };
+		7F7751941594AF2900F56E92 /* CALayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751811594AF2900F56E92 /* CALayer.m */; };
+		7F7751951594AF2900F56E92 /* CAMediaTimingFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751821594AF2900F56E92 /* CAMediaTimingFunction.m */; };
+		7F7751961594AF2900F56E92 /* CARenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751831594AF2900F56E92 /* CARenderer.m */; };
+		7F7751971594AF2900F56E92 /* CAReplicatorLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751841594AF2900F56E92 /* CAReplicatorLayer.m */; };
+		7F7751981594AF2900F56E92 /* CAScrollLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751851594AF2900F56E92 /* CAScrollLayer.m */; };
+		7F7751991594AF2900F56E92 /* CAShapeLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751861594AF2900F56E92 /* CAShapeLayer.m */; };
+		7F77519A1594AF2900F56E92 /* CATextLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751871594AF2900F56E92 /* CATextLayer.m */; };
+		7F77519B1594AF2900F56E92 /* CATiledLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751881594AF2900F56E92 /* CATiledLayer.m */; };
+		7F77519C1594AF2900F56E92 /* CATransaction.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F7751891594AF2900F56E92 /* CATransaction.m */; };
+		7F77519D1594AF2900F56E92 /* CATransform3D.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F77518A1594AF2900F56E92 /* CATransform3D.m */; };
+		7F77519E1594AF2900F56E92 /* CATransformLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F77518B1594AF2900F56E92 /* CATransformLayer.m */; };
+		7F77519F1594AF2900F56E92 /* CAValueFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F77518C1594AF2900F56E92 /* CAValueFunction.m */; };
+		7F7751B81594AF3A00F56E92 /* CAAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751A41594AF3A00F56E92 /* CAAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751B91594AF3A00F56E92 /* CABase.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751A51594AF3A00F56E92 /* CABase.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751BA1594AF3A00F56E92 /* CADisplayLink.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751A61594AF3A00F56E92 /* CADisplayLink.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751BB1594AF3A00F56E92 /* CAEAGLLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751A71594AF3A00F56E92 /* CAEAGLLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751BC1594AF3A00F56E92 /* CAGradientLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751A81594AF3A00F56E92 /* CAGradientLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751BD1594AF3A00F56E92 /* CALayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751A91594AF3A00F56E92 /* CALayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751BE1594AF3A00F56E92 /* CAMediaTiming.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751AA1594AF3A00F56E92 /* CAMediaTiming.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751BF1594AF3A00F56E92 /* CAMediaTimingFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751AB1594AF3A00F56E92 /* CAMediaTimingFunction.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C01594AF3A00F56E92 /* CARenderer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751AC1594AF3A00F56E92 /* CARenderer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C11594AF3A00F56E92 /* CAReplicatorLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751AD1594AF3A00F56E92 /* CAReplicatorLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C21594AF3A00F56E92 /* CAScrollLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751AE1594AF3A00F56E92 /* CAScrollLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C31594AF3A00F56E92 /* CAShapeLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751AF1594AF3A00F56E92 /* CAShapeLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C41594AF3A00F56E92 /* CATextLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B01594AF3A00F56E92 /* CATextLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C51594AF3A00F56E92 /* CATiledLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B11594AF3A00F56E92 /* CATiledLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C61594AF3A00F56E92 /* CATransaction.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B21594AF3A00F56E92 /* CATransaction.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C71594AF3A00F56E92 /* CATransform3D.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B31594AF3A00F56E92 /* CATransform3D.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C81594AF3A00F56E92 /* CATransformLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B41594AF3A00F56E92 /* CATransformLayer.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751C91594AF3A00F56E92 /* CAValueFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B51594AF3A00F56E92 /* CAValueFunction.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751CA1594AF3A00F56E92 /* CoreAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B61594AF3A00F56E92 /* CoreAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F7751CB1594AF3A00F56E92 /* QuartzCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B71594AF3A00F56E92 /* QuartzCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7F7422AC1594C32000AEB117 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7FA8CD1815892303009C3B19;
+			remoteInfo = hello;
+		};
+		7F7422AE1594C32000AEB117 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7FA8CCDB15891CE7009C3B19;
+			remoteInfo = hello_carenderer;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		7F5909751594B7ED00AF49AF /* AppleSupportRevert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppleSupportRevert.h; sourceTree = "<group>"; };
+		7F5CF3DD1594B35B00A5D114 /* AppleSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppleSupport.h; sourceTree = "<group>"; };
+		7F74229D1594C2A400AEB117 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GNUstepQuartzCoreTests.xcodeproj; path = Tests/GNUstepQuartzCoreTests.xcodeproj; sourceTree = "<group>"; };
+		7F77515F1594AE2A00F56E92 /* GSQuartzCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GSQuartzCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F7751621594AE2A00F56E92 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		7F7751651594AE2A00F56E92 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		7F7751661594AE2A00F56E92 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		7F7751671594AE2A00F56E92 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		7F77516A1594AE2A00F56E92 /* GSQuartzCore-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GSQuartzCore-Info.plist"; sourceTree = "<group>"; };
+		7F77516C1594AE2A00F56E92 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7F77516E1594AE2A00F56E92 /* GSQuartzCore-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GSQuartzCore-Prefix.pch"; sourceTree = "<group>"; };
+		7F77517C1594AF2900F56E92 /* CAAnimation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAAnimation.m; sourceTree = "<group>"; };
+		7F77517D1594AF2900F56E92 /* CABase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CABase.m; sourceTree = "<group>"; };
+		7F77517E1594AF2900F56E92 /* CADisplayLink.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CADisplayLink.m; sourceTree = "<group>"; };
+		7F77517F1594AF2900F56E92 /* CAEAGLLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAEAGLLayer.m; sourceTree = "<group>"; };
+		7F7751801594AF2900F56E92 /* CAGradientLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAGradientLayer.m; sourceTree = "<group>"; };
+		7F7751811594AF2900F56E92 /* CALayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CALayer.m; sourceTree = "<group>"; };
+		7F7751821594AF2900F56E92 /* CAMediaTimingFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAMediaTimingFunction.m; sourceTree = "<group>"; };
+		7F7751831594AF2900F56E92 /* CARenderer.m */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 4; lastKnownFileType = sourcecode.c.objc; path = CARenderer.m; sourceTree = "<group>"; tabWidth = 4; };
+		7F7751841594AF2900F56E92 /* CAReplicatorLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAReplicatorLayer.m; sourceTree = "<group>"; };
+		7F7751851594AF2900F56E92 /* CAScrollLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAScrollLayer.m; sourceTree = "<group>"; };
+		7F7751861594AF2900F56E92 /* CAShapeLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAShapeLayer.m; sourceTree = "<group>"; };
+		7F7751871594AF2900F56E92 /* CATextLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CATextLayer.m; sourceTree = "<group>"; };
+		7F7751881594AF2900F56E92 /* CATiledLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CATiledLayer.m; sourceTree = "<group>"; };
+		7F7751891594AF2900F56E92 /* CATransaction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CATransaction.m; sourceTree = "<group>"; };
+		7F77518A1594AF2900F56E92 /* CATransform3D.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CATransform3D.m; sourceTree = "<group>"; };
+		7F77518B1594AF2900F56E92 /* CATransformLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CATransformLayer.m; sourceTree = "<group>"; };
+		7F77518C1594AF2900F56E92 /* CAValueFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAValueFunction.m; sourceTree = "<group>"; };
+		7F7751A41594AF3A00F56E92 /* CAAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAAnimation.h; sourceTree = "<group>"; };
+		7F7751A51594AF3A00F56E92 /* CABase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CABase.h; sourceTree = "<group>"; };
+		7F7751A61594AF3A00F56E92 /* CADisplayLink.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CADisplayLink.h; sourceTree = "<group>"; };
+		7F7751A71594AF3A00F56E92 /* CAEAGLLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAEAGLLayer.h; sourceTree = "<group>"; };
+		7F7751A81594AF3A00F56E92 /* CAGradientLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGradientLayer.h; sourceTree = "<group>"; };
+		7F7751A91594AF3A00F56E92 /* CALayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CALayer.h; sourceTree = "<group>"; };
+		7F7751AA1594AF3A00F56E92 /* CAMediaTiming.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAMediaTiming.h; sourceTree = "<group>"; };
+		7F7751AB1594AF3A00F56E92 /* CAMediaTimingFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAMediaTimingFunction.h; sourceTree = "<group>"; };
+		7F7751AC1594AF3A00F56E92 /* CARenderer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CARenderer.h; sourceTree = "<group>"; };
+		7F7751AD1594AF3A00F56E92 /* CAReplicatorLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAReplicatorLayer.h; sourceTree = "<group>"; };
+		7F7751AE1594AF3A00F56E92 /* CAScrollLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAScrollLayer.h; sourceTree = "<group>"; };
+		7F7751AF1594AF3A00F56E92 /* CAShapeLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAShapeLayer.h; sourceTree = "<group>"; };
+		7F7751B01594AF3A00F56E92 /* CATextLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CATextLayer.h; sourceTree = "<group>"; };
+		7F7751B11594AF3A00F56E92 /* CATiledLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CATiledLayer.h; sourceTree = "<group>"; };
+		7F7751B21594AF3A00F56E92 /* CATransaction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CATransaction.h; sourceTree = "<group>"; };
+		7F7751B31594AF3A00F56E92 /* CATransform3D.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CATransform3D.h; sourceTree = "<group>"; };
+		7F7751B41594AF3A00F56E92 /* CATransformLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CATransformLayer.h; sourceTree = "<group>"; };
+		7F7751B51594AF3A00F56E92 /* CAValueFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAValueFunction.h; sourceTree = "<group>"; };
+		7F7751B61594AF3A00F56E92 /* CoreAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreAnimation.h; sourceTree = "<group>"; };
+		7F7751B71594AF3A00F56E92 /* QuartzCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuartzCore.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7F77515B1594AE2A00F56E92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F74229E1594C2A400AEB117 /* OpenGL.framework in Frameworks */,
+				7F7751631594AE2A00F56E92 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7F7422A31594C32000AEB117 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7F7422AD1594C32000AEB117 /* hello.app */,
+				7F7422AF1594C32000AEB117 /* hello_carenderer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7F7751531594AE2A00F56E92 = {
+			isa = PBXGroup;
+			children = (
+				7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */,
+				7F74229D1594C2A400AEB117 /* OpenGL.framework */,
+				7F7751681594AE2A00F56E92 /* GSQuartzCore */,
+				7F7751611594AE2A00F56E92 /* Frameworks */,
+				7F7751601594AE2A00F56E92 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7F7751601594AE2A00F56E92 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7F77515F1594AE2A00F56E92 /* GSQuartzCore.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7F7751611594AE2A00F56E92 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F7751621594AE2A00F56E92 /* Cocoa.framework */,
+				7F7751641594AE2A00F56E92 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7F7751641594AE2A00F56E92 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F7751651594AE2A00F56E92 /* AppKit.framework */,
+				7F7751661594AE2A00F56E92 /* CoreData.framework */,
+				7F7751671594AE2A00F56E92 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		7F7751681594AE2A00F56E92 /* GSQuartzCore */ = {
+			isa = PBXGroup;
+			children = (
+				7F7751A21594AF3A00F56E92 /* Headers */,
+				7F77517B1594AF2900F56E92 /* Source */,
+				7F7751691594AE2A00F56E92 /* Supporting Files */,
+			);
+			name = GSQuartzCore;
+			sourceTree = "<group>";
+		};
+		7F7751691594AE2A00F56E92 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				7F77516A1594AE2A00F56E92 /* GSQuartzCore-Info.plist */,
+				7F77516B1594AE2A00F56E92 /* InfoPlist.strings */,
+				7F77516E1594AE2A00F56E92 /* GSQuartzCore-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			path = Mac;
+			sourceTree = "<group>";
+		};
+		7F77517B1594AF2900F56E92 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				7F77517C1594AF2900F56E92 /* CAAnimation.m */,
+				7F77517D1594AF2900F56E92 /* CABase.m */,
+				7F77517E1594AF2900F56E92 /* CADisplayLink.m */,
+				7F77517F1594AF2900F56E92 /* CAEAGLLayer.m */,
+				7F7751801594AF2900F56E92 /* CAGradientLayer.m */,
+				7F7751811594AF2900F56E92 /* CALayer.m */,
+				7F7751821594AF2900F56E92 /* CAMediaTimingFunction.m */,
+				7F7751831594AF2900F56E92 /* CARenderer.m */,
+				7F7751841594AF2900F56E92 /* CAReplicatorLayer.m */,
+				7F7751851594AF2900F56E92 /* CAScrollLayer.m */,
+				7F7751861594AF2900F56E92 /* CAShapeLayer.m */,
+				7F7751871594AF2900F56E92 /* CATextLayer.m */,
+				7F7751881594AF2900F56E92 /* CATiledLayer.m */,
+				7F7751891594AF2900F56E92 /* CATransaction.m */,
+				7F77518A1594AF2900F56E92 /* CATransform3D.m */,
+				7F77518B1594AF2900F56E92 /* CATransformLayer.m */,
+				7F77518C1594AF2900F56E92 /* CAValueFunction.m */,
+			);
+			path = Source;
+			sourceTree = SOURCE_ROOT;
+		};
+		7F7751A21594AF3A00F56E92 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				7F7751A31594AF3A00F56E92 /* QuartzCore */,
+			);
+			path = Headers;
+			sourceTree = "<group>";
+		};
+		7F7751A31594AF3A00F56E92 /* QuartzCore */ = {
+			isa = PBXGroup;
+			children = (
+				7F7751A41594AF3A00F56E92 /* CAAnimation.h */,
+				7F7751A51594AF3A00F56E92 /* CABase.h */,
+				7F7751A61594AF3A00F56E92 /* CADisplayLink.h */,
+				7F7751A71594AF3A00F56E92 /* CAEAGLLayer.h */,
+				7F7751A81594AF3A00F56E92 /* CAGradientLayer.h */,
+				7F7751A91594AF3A00F56E92 /* CALayer.h */,
+				7F7751AA1594AF3A00F56E92 /* CAMediaTiming.h */,
+				7F7751AB1594AF3A00F56E92 /* CAMediaTimingFunction.h */,
+				7F7751AC1594AF3A00F56E92 /* CARenderer.h */,
+				7F7751AD1594AF3A00F56E92 /* CAReplicatorLayer.h */,
+				7F7751AE1594AF3A00F56E92 /* CAScrollLayer.h */,
+				7F7751AF1594AF3A00F56E92 /* CAShapeLayer.h */,
+				7F7751B01594AF3A00F56E92 /* CATextLayer.h */,
+				7F7751B11594AF3A00F56E92 /* CATiledLayer.h */,
+				7F7751B21594AF3A00F56E92 /* CATransaction.h */,
+				7F7751B31594AF3A00F56E92 /* CATransform3D.h */,
+				7F7751B41594AF3A00F56E92 /* CATransformLayer.h */,
+				7F7751B51594AF3A00F56E92 /* CAValueFunction.h */,
+				7F7751B61594AF3A00F56E92 /* CoreAnimation.h */,
+				7F7751B71594AF3A00F56E92 /* QuartzCore.h */,
+				7F5CF3DD1594B35B00A5D114 /* AppleSupport.h */,
+				7F5909751594B7ED00AF49AF /* AppleSupportRevert.h */,
+			);
+			path = QuartzCore;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		7F77515C1594AE2A00F56E92 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F7751B81594AF3A00F56E92 /* CAAnimation.h in Headers */,
+				7F7751B91594AF3A00F56E92 /* CABase.h in Headers */,
+				7F7751BA1594AF3A00F56E92 /* CADisplayLink.h in Headers */,
+				7F7751BB1594AF3A00F56E92 /* CAEAGLLayer.h in Headers */,
+				7F7751BC1594AF3A00F56E92 /* CAGradientLayer.h in Headers */,
+				7F7751BD1594AF3A00F56E92 /* CALayer.h in Headers */,
+				7F7751BE1594AF3A00F56E92 /* CAMediaTiming.h in Headers */,
+				7F7751BF1594AF3A00F56E92 /* CAMediaTimingFunction.h in Headers */,
+				7F7751C01594AF3A00F56E92 /* CARenderer.h in Headers */,
+				7F7751C11594AF3A00F56E92 /* CAReplicatorLayer.h in Headers */,
+				7F7751C21594AF3A00F56E92 /* CAScrollLayer.h in Headers */,
+				7F7751C31594AF3A00F56E92 /* CAShapeLayer.h in Headers */,
+				7F7751C41594AF3A00F56E92 /* CATextLayer.h in Headers */,
+				7F7751C51594AF3A00F56E92 /* CATiledLayer.h in Headers */,
+				7F7751C61594AF3A00F56E92 /* CATransaction.h in Headers */,
+				7F7751C71594AF3A00F56E92 /* CATransform3D.h in Headers */,
+				7F7751C81594AF3A00F56E92 /* CATransformLayer.h in Headers */,
+				7F7751C91594AF3A00F56E92 /* CAValueFunction.h in Headers */,
+				7F7751CA1594AF3A00F56E92 /* CoreAnimation.h in Headers */,
+				7F7751CB1594AF3A00F56E92 /* QuartzCore.h in Headers */,
+				7F5CF3DE1594B35B00A5D114 /* AppleSupport.h in Headers */,
+				7F7422B61594C75E00AEB117 /* AppleSupportRevert.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		7F77515E1594AE2A00F56E92 /* GSQuartzCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7F7751741594AE2A00F56E92 /* Build configuration list for PBXNativeTarget "GSQuartzCore" */;
+			buildPhases = (
+				7F77515A1594AE2A00F56E92 /* Sources */,
+				7F77515B1594AE2A00F56E92 /* Frameworks */,
+				7F77515C1594AE2A00F56E92 /* Headers */,
+				7F77515D1594AE2A00F56E92 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GSQuartzCore;
+			productName = GSQuartzCore;
+			productReference = 7F77515F1594AE2A00F56E92 /* GSQuartzCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7F7751551594AE2A00F56E92 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0450;
+				ORGANIZATIONNAME = "Ivan Vučica";
+			};
+			buildConfigurationList = 7F7751581594AE2A00F56E92 /* Build configuration list for PBXProject "GSQuartzCore" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7F7751531594AE2A00F56E92;
+			productRefGroup = 7F7751601594AE2A00F56E92 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 7F7422A31594C32000AEB117 /* Products */;
+					ProjectRef = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				7F77515E1594AE2A00F56E92 /* GSQuartzCore */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		7F7422AD1594C32000AEB117 /* hello.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = hello.app;
+			remoteRef = 7F7422AC1594C32000AEB117 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		7F7422AF1594C32000AEB117 /* hello_carenderer.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = hello_carenderer.app;
+			remoteRef = 7F7422AE1594C32000AEB117 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7F77515D1594AE2A00F56E92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F77516D1594AE2A00F56E92 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7F77515A1594AE2A00F56E92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F77518F1594AF2900F56E92 /* CAAnimation.m in Sources */,
+				7F7751901594AF2900F56E92 /* CABase.m in Sources */,
+				7F7751911594AF2900F56E92 /* CADisplayLink.m in Sources */,
+				7F7751921594AF2900F56E92 /* CAEAGLLayer.m in Sources */,
+				7F7751931594AF2900F56E92 /* CAGradientLayer.m in Sources */,
+				7F7751941594AF2900F56E92 /* CALayer.m in Sources */,
+				7F7751951594AF2900F56E92 /* CAMediaTimingFunction.m in Sources */,
+				7F7751961594AF2900F56E92 /* CARenderer.m in Sources */,
+				7F7751971594AF2900F56E92 /* CAReplicatorLayer.m in Sources */,
+				7F7751981594AF2900F56E92 /* CAScrollLayer.m in Sources */,
+				7F7751991594AF2900F56E92 /* CAShapeLayer.m in Sources */,
+				7F77519A1594AF2900F56E92 /* CATextLayer.m in Sources */,
+				7F77519B1594AF2900F56E92 /* CATiledLayer.m in Sources */,
+				7F77519C1594AF2900F56E92 /* CATransaction.m in Sources */,
+				7F77519D1594AF2900F56E92 /* CATransform3D.m in Sources */,
+				7F77519E1594AF2900F56E92 /* CATransformLayer.m in Sources */,
+				7F77519F1594AF2900F56E92 /* CAValueFunction.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		7F77516B1594AE2A00F56E92 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				7F77516C1594AE2A00F56E92 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		7F7751721594AE2A00F56E92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Headers";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Headers";
+			};
+			name = Debug;
+		};
+		7F7751731594AE2A00F56E92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Headers";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Headers";
+			};
+			name = Release;
+		};
+		7F7751751594AE2A00F56E92 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = /;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_PREFIX_HEADER = "Mac/GSQuartzCore-Prefix.pch";
+				INFOPLIST_FILE = "Mac/GSQuartzCore-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Debug;
+		};
+		7F7751761594AE2A00F56E92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = /;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_PREFIX_HEADER = "Mac/GSQuartzCore-Prefix.pch";
+				INFOPLIST_FILE = "Mac/GSQuartzCore-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = framework;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7F7751581594AE2A00F56E92 /* Build configuration list for PBXProject "GSQuartzCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F7751721594AE2A00F56E92 /* Debug */,
+				7F7751731594AE2A00F56E92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7F7751741594AE2A00F56E92 /* Build configuration list for PBXNativeTarget "GSQuartzCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F7751751594AE2A00F56E92 /* Debug */,
+				7F7751761594AE2A00F56E92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7F7751551594AE2A00F56E92 /* Project object */;
+}

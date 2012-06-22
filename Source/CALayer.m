@@ -28,8 +28,13 @@
 */
 
 #import "QuartzCore/CALayer.h"
+#if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
+#endif
+#if !(GSIMPL_UNDER_COCOA)
 #import <cairo/cairo.h>
+#endif
+#import <stdlib.h>
 
 NSString *const kCAGravityResize = @"CAGravityResize";
 NSString *const kCAGravityResizeAspect = @"CAGravityResizeAspect";
@@ -43,6 +48,46 @@ NSString *const kCAGravityTopLeft = @"CAGravityTopLeft";
 NSString *const kCAGravityTopRight = @"CAGravityTopRight";
 NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
 NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
+
+#if GSIMPL_UNDER_COCOA
+static CGContextRef createCGBitmapContext (int pixelsWide,
+                                    int pixelsHigh)
+{
+  CGContextRef    context = NULL;
+  CGColorSpaceRef colorSpace;
+  void *          bitmapData;
+  int             bitmapByteCount;
+  int             bitmapBytesPerRow;
+  
+  bitmapBytesPerRow   = (pixelsWide * 4);
+  bitmapByteCount     = (bitmapBytesPerRow * pixelsHigh);
+  
+  colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
+  bitmapData = malloc(bitmapByteCount);
+  if (bitmapData == NULL)
+    {
+      fprintf (stderr, "Memory not allocated!");
+      return NULL;
+    }
+  context = CGBitmapContextCreate (bitmapData,
+                                   pixelsWide,
+                                   pixelsHigh,
+                                   8,      // bits per component
+                                   bitmapBytesPerRow,
+                                   colorSpace,
+                                   kCGImageAlphaPremultipliedLast);
+  if (context== NULL)
+    {
+      free (bitmapData);// 5
+      fprintf (stderr, "Context not created!");
+      return NULL;
+    }
+  CGColorSpaceRelease(colorSpace);
+  
+  return context;
+}
+#endif
+
 
 @interface CALayer()
 @property (assign) CALayer *superlayer;
@@ -111,9 +156,11 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
 - (void) dealloc
 {
+#if !(GSIMPL_UNDER_COCOA)
   cairo_surface_finish(_cairoSurface);
+#endif
   CGContextRelease(_opalContext);
-
+    
   [super dealloc];
 }
 
@@ -122,11 +169,17 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 {
   _bounds = bounds;
 
+#if !(GSIMPL_UNDER_COCOA)
   cairo_surface_finish(_cairoSurface);
+#endif
   CGContextRelease(_opalContext);
 
+#if !(GSIMPL_UNDER_COCOA)
   _cairoSurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bounds.size.width, bounds.size.height);
   _opalContext = opal_new_CGContext(_cairoSurface, bounds.size);
+#else
+  _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
+#endif
 }
 
 /* *** display methods *** */

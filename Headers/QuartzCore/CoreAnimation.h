@@ -5,6 +5,9 @@
 
    Author: Amr Aboelela <amraboelela@gmail.com>
    Date: January 2012
+   
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: June 2012
 
    This file is part of QuartzCore.
 
@@ -25,9 +28,9 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <QuartzCore/CABase.h>
-#import <QuartzCore/CALayer.h>
-#import <QuartzCore/CAAnimation.h>
-#import <QuartzCore/CAMediaTiming.h>
-#import <QuartzCore/CAMediaTimingFunction.h>
-
+#import "QuartzCore/CABase.h"
+#import "QuartzCore/CALayer.h"
+#import "QuartzCore/CAAnimation.h"
+#import "QuartzCore/CAMediaTiming.h"
+#import "QuartzCore/CAMediaTimingFunction.h"
+#import "QuartzCore/CARenderer.h"
