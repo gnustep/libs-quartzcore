@@ -85,6 +85,8 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
   NSString * _contentsGravity;
   BOOL _needsDisplayOnBoundsChange;
   CGFloat _zPosition;
+  id _presentationLayer;
+  id _modelLayer;
 
   /* media timing i-vars */
   CFTimeInterval _beginTime;
@@ -102,7 +104,9 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
   BOOL _needsLayout;
 }
 
-+ (id)layer;
++ (id) layer;
++ (id) defaultValueForKey: (NSString *)key;
++ (id<CAAction>) defaultActionForKey: (NSString *)key;
 
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
@@ -127,6 +131,8 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 
 - (id) init;
 - (id) initWithLayer: (CALayer *)layer;
+
+- (id<CAAction>) actionForKey: (NSString*)key;
 
 - (void) addAnimation: (CAAnimation *)anim forKey: (NSString *)key;
 - (void) removeAnimationForKey: (NSString *)key;
@@ -153,6 +159,8 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 
 - (CGAffineTransform) affineTransform;
 - (void)setAffineTransform: (CGAffineTransform)affineTransform;
+
+- (NSArray *) animationKeys;
 @end
 
 @interface NSObject (CALayer)

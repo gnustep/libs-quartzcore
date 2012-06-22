@@ -92,6 +92,8 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 @interface CALayer()
 @property (assign) CALayer *superlayer;
+
+- (void)setModelLayer: (id)modelLayer;
 @end
 
 @implementation CALayer
@@ -253,11 +255,49 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   _needsLayout = YES;
 }
 
+
+- (id) presentationLayer
+{
+  if(!_modelLayer && !_presentationLayer)
+    {
+      _presentationLayer = [[CALayer alloc] initWithLayer: self];
+      [_presentationLayer setModelLayer: self];
+    }
+  return _presentationLayer;
+}
+
+- (id) modelLayer
+{
+  return _modelLayer;
+}
+
+- (void) setModelLayer: (id)modelLayer
+{
+  _modelLayer = modelLayer;
+}
+
+- (void)addAnimation:(CAAnimation *)anim forKey:(NSString *)key
+{
+  // TODO
+}
+- (void)removeAnimationForKey:(NSString *)key
+{
+  // TODO
+}
+- (CAAnimation *)animationForKey:(NSString *)key
+{
+  // TODO
+  return nil;
+}
+
+- (NSArray *) animationKeys
+{
+  // TODO
+  return [NSArray array];
+}
+
 /* Unimplemented functions: */
 #if 0
-- (void)addAnimation:(CAAnimation *)anim forKey:(NSString *)key;
-- (void)removeAnimationForKey:(NSString *)key;
-- (CAAnimation *)animationForKey:(NSString *)key;
 - (void)addSublayer:(CALayer *)layer;
 - (CGPoint)convertPoint:(CGPoint)p toLayer:(CALayer *)l;
 - (void)removeFromSuperlayer;
@@ -266,9 +306,6 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 - (void)insertSublayer:(CALayer *)layer above:(CALayer *)sibling;
 - (void)setNeedsLayout;
 - (void)layoutIfNeeded;
-
-- (id)presentationLayer;
-- (id)modelLayer;
 
 #endif
 

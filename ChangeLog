@@ -1,5 +1,19 @@
 2012-06-22  Ivan Vučica  <ivan@vucica.net>
 
+	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:
+	* Tests/hello_animation-Info.plist:
+	* Tests/hello_animation.m:
+	* Tests/GNUmakefile:
+	Added a new test, hello_animation, demonstrating and testing 
+	use of animations.
+	
+	* Headers/QuartzCore/CALayer.h:
+	* Source/CALayer.m:
+	Added support for presentation and model layers. Began adding
+	animation functions.
+
+2012-06-22  Ivan Vučica  <ivan@vucica.net>
+
 	* GSQuartzCore.xcodeproj/project.pbxproj:
 	* Source/CABackingStore.h:
 	* Source/CABackingStore.m:
