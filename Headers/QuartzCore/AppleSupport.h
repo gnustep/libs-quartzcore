@@ -78,7 +78,11 @@
 
 /* CAMediaTiming.h */
 #define CAMediaTiming GSCAMediaTiming
+#define kCAFillModeRemoved kGSCAFillModeRemoved
+#define kCAFillModeForwards kGSCAFillModeForwards
 #define kCAFillModeBackwards kGSCAFillModeBackwards
+#define kCAFillModeBoth kGSCAFillModeBoth
+#define kCAFillModeFrozen kGSCAFillModeFrozen
 
 /* CAMediaTimingFunction.h */
 #define kCAMediaTimingFunctionEaseInEaseOut kGSCAMediaTimingFunctionEaseInEaseOut
@@ -118,6 +122,11 @@
 #define CATransform3DScale GSCATransform3DScale
 #define CATransform3DRotate GSCATransform3DRotate
 #define CATransform3DConcat GSCATransform3DConcat
+
+/* CATransformLayer.h */
+
+/* CAValueFunction.h */
+#define CAValueFunction GSCAValueFunction
 
 /* CoreAnimation.h */
 

@@ -51,6 +51,7 @@
 		7F7751C91594AF3A00F56E92 /* CAValueFunction.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B51594AF3A00F56E92 /* CAValueFunction.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7F7751CA1594AF3A00F56E92 /* CoreAnimation.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B61594AF3A00F56E92 /* CoreAnimation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7F7751CB1594AF3A00F56E92 /* QuartzCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B71594AF3A00F56E92 /* QuartzCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7FCE5C5415964BC4009557DC /* CAMediaTiming.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FCE5C5315964BC4009557DC /* CAMediaTiming.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,6 +68,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = 7FA8CCDB15891CE7009C3B19;
 			remoteInfo = hello_carenderer;
+		};
+		7FE775CA15953AE800135BCB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7F6586E4159517AF006467A7;
+			remoteInfo = hello_animation;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -122,6 +130,7 @@
 		7F7751B51594AF3A00F56E92 /* CAValueFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAValueFunction.h; sourceTree = "<group>"; };
 		7F7751B61594AF3A00F56E92 /* CoreAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreAnimation.h; sourceTree = "<group>"; };
 		7F7751B71594AF3A00F56E92 /* QuartzCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuartzCore.h; sourceTree = "<group>"; };
+		7FCE5C5315964BC4009557DC /* CAMediaTiming.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAMediaTiming.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,6 +151,7 @@
 			children = (
 				7F7422AD1594C32000AEB117 /* hello.app */,
 				7F7422AF1594C32000AEB117 /* hello_carenderer.app */,
+				7FE775CB15953AE800135BCB /* hello_animation.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -216,6 +226,7 @@
 				7F77517F1594AF2900F56E92 /* CAEAGLLayer.m */,
 				7F7751801594AF2900F56E92 /* CAGradientLayer.m */,
 				7F7751811594AF2900F56E92 /* CALayer.m */,
+				7FCE5C5315964BC4009557DC /* CAMediaTiming.m */,
 				7F7751821594AF2900F56E92 /* CAMediaTimingFunction.m */,
 				7F7751831594AF2900F56E92 /* CARenderer.m */,
 				7F7751841594AF2900F56E92 /* CAReplicatorLayer.m */,
@@ -369,6 +380,13 @@
 			remoteRef = 7F7422AE1594C32000AEB117 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		7FE775CB15953AE800135BCB /* hello_animation.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = hello_animation.app;
+			remoteRef = 7FE775CA15953AE800135BCB /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -405,6 +423,7 @@
 				7F77519E1594AF2900F56E92 /* CATransformLayer.m in Sources */,
 				7F77519F1594AF2900F56E92 /* CAValueFunction.m in Sources */,
 				7F43F22F1594ECD800F1C5EB /* CABackingStore.m in Sources */,
+				7FCE5C5415964BC4009557DC /* CAMediaTiming.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,7 +445,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
@@ -455,7 +474,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
-				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;

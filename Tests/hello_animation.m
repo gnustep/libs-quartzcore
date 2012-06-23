@@ -47,12 +47,14 @@
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CABase.h>
 #import <QuartzCore/CATransaction.h>
+#import <QuartzCore/CAAnimation.h>
 #else
 #import <GSQuartzCore/AppleSupport.h>
 #import <GSQuartzCore/CARenderer.h>
 #import <GSQuartzCore/CALayer.h>
 #import <GSQuartzCore/CABase.h>
 #import <GSQuartzCore/CATransaction.h>
+#import <GSQuartzCore/CAAnimation.h>
 #endif
 
 #import "QCTestOpenGLView.h"
@@ -87,6 +89,7 @@
 {
   CARenderer * _renderer;
   HelloAnimationLayerDelegate * _layerDelegate;
+  CALayer * _theSublayer;
 }
 
 - (void) timerAnimation: (NSTimer *)aTimer;
@@ -98,6 +101,7 @@ Class classOfTestOpenGLView()
   return [HelloAnimationOpenGLView class];
 }
 
+/* *********************** */
 @implementation HelloAnimationOpenGLView
 
 - (BOOL)acceptsFirstResponder
@@ -116,6 +120,8 @@ Class classOfTestOpenGLView()
   {
     [testsMenu addItemWithTitle:@"Animation 1" action:@selector(animation1:) keyEquivalent:@"1"];
     [testsMenu addItemWithTitle:@"Animation 2" action:@selector(animation2:) keyEquivalent:@"2"];
+    [testsMenu addItemWithTitle:@"Animation 3" action:@selector(animation3:) keyEquivalent:@"3"];
+    [testsMenu addItemWithTitle:@"Animation 4" action:@selector(animation4:) keyEquivalent:@"4"];
   }
   
   [testsMenuItem setSubmenu:testsMenu];
@@ -141,8 +147,37 @@ Class classOfTestOpenGLView()
   [CATransaction commit];
 
 }
+
+- (void) animation3:sender
+{
+  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
+  [animation setDuration: 1];
+  [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(100, 100)]];
+  [animation setToValue: [NSValue valueWithPoint: NSMakePoint(100, 200)]];
+  
+  [[_renderer layer] addAnimation: animation forKey:@"thePositionAnimation"];
+  
+  [self printPos: [_renderer layer]];
+  [self performSelector:@selector(printPos:) withObject: [_renderer layer] afterDelay:0.5];
+  
+}
+
+- (void) animation4:sender
+{
+  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
+  [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(0, 0)]];
+  [animation setToValue: [NSValue valueWithPoint: NSMakePoint(50, 50)]];
+  [animation setDuration: 0.5];
+  [animation setAutoreverses: YES];
+  [animation setRepeatCount: 3]; //__builtin_inf()];
+  
+  [_theSublayer addAnimation: animation forKey:@"repeatingAnimation"];
+  
+}
+
 - (void) printPos: (CALayer*)layer
 {
+#if 1
   CALayer * presLayer = [layer presentationLayer];
   NSLog(@"modelpos: %g %g", [layer position].x, [layer position].y);
   NSLog(@"pres pos: %g %g", [presLayer position].x, [presLayer position].y);
@@ -150,28 +185,32 @@ Class classOfTestOpenGLView()
   NSLog(@"modelani: %@", [layer animationKeys]);
   for(NSString * ani in [layer animationKeys])
     {
-      NSLog(@" %@ - %s", [layer animationForKey: ani], [[layer animationForKey: ani] isEnabled] ? "enabled" : "disabled");
+      NSLog(@" %@", [layer animationForKey: ani]);
     }
   NSLog(@"pres ani: %@", [presLayer animationKeys]);
-  for(NSString * ani in [layer animationKeys])
+  for(NSString * ani in [presLayer animationKeys])
     {
-      NSLog(@" %@ - %s", [presLayer animationForKey: ani], [[presLayer animationForKey: ani] isEnabled] ? "enabled" : "disabled");
+      NSLog(@" %@", [presLayer animationForKey: ani]);
     }
   NSLog(@"--------");
+#endif
 }
 
 - (void) prepareOpenGL
 {
   [super prepareOpenGL];
 
+  CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
+  CGColorRef greenColor = CGColorCreateGenericRGB(0, 1, 0, 1);
+
   _layerDelegate = [HelloAnimationLayerDelegate new];
   [_layerDelegate setSize: CGSizeMake([self frame].size.width, [self frame].size.height)];
 
   CALayer * layer = [CALayer layer];
-  [layer setBounds: CGRectMake(0, 0, [self frame].size.width*0.7, [self frame].size.height*0.7)];
+  [layer setBounds: CGRectMake(0, 0, [self frame].size.width*0.6, [self frame].size.height*0.6)];
   [layer setPosition: CGPointMake([self frame].size.width/2, [self frame].size.height/2)];
-  [layer setTransform: CATransform3DMakeRotation(M_PI_4, 0, 0, 1)];
-  [layer setBackgroundColor: CGColorCreateGenericRGB(1, 1, 0, 1)];
+  [layer setTransform: CATransform3DMakeRotation(M_PI_4/2, 0, 0, 1)];
+  [layer setBackgroundColor: yellowColor];
   [layer setDelegate: _layerDelegate];
   [layer setNeedsDisplay];
   
@@ -185,10 +224,25 @@ Class classOfTestOpenGLView()
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
+  
+  CALayer * layer2 = [CALayer layer];
+  [layer2 setDelegate: _layerDelegate];
+  [layer2 setBounds: CGRectMake (0, 0, 100, 100)];
+  [layer2 setBackgroundColor: greenColor];
+  [layer2 setSpeed: 2];
+  /*
+  [layer2 setDuration: __builtin_inf()];
+  [layer2 setBeginTime: CACurrentMediaTime()*[layer speed]+1];
+  */
+  [layer2 setNeedsDisplay];
+  [layer addSublayer: layer2];
+  _theSublayer = [layer2 retain];
 }
 
 - (void) dealloc
 {
+  [_theSublayer removeFromSuperlayer];
+  [_theSublayer release];
   [_renderer release];
   [_layerDelegate release];
   [super dealloc];
@@ -208,6 +262,8 @@ Class classOfTestOpenGLView()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
+  NSLog(@"Time conversion of layer: %g %g", CACurrentMediaTime(), [_renderer.layer convertTime: CACurrentMediaTime() fromLayer: nil]);
+  NSLog(@"Time conversion of sublayer: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: nil]);
   /* */
   [_renderer beginFrameAtTime: CACurrentMediaTime()
                     timeStamp: NULL];
@@ -215,7 +271,9 @@ Class classOfTestOpenGLView()
   [_renderer render];
   [_renderer endFrame];
   /* */
-      
+  NSLog(@"Time conversion of layer - postrender: %g %g", CACurrentMediaTime(), [_renderer.layer convertTime: CACurrentMediaTime() fromLayer: nil]);
+  NSLog(@"Time conversion of sublayer to layer - postrender: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: _renderer.layer]);
+  
   glFlush();
 
   [[self openGLContext] flushBuffer];

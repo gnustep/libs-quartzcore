@@ -26,6 +26,8 @@
 */
 
 #import "QuartzCore/CABase.h"
+
+#if GNUSTEP
 #import <sys/time.h>
 
 CFTimeInterval CACurrentMediaTime(void)
@@ -33,6 +35,15 @@ CFTimeInterval CACurrentMediaTime(void)
   struct timeval systemTime;
   
   gettimeofday(&systemTime, NULL);
-  return (double)systemTime.tv_sec + ((double)systemTime.tv_usec)/1000000.;
+  return (double)systemTime.tv_sec + ((double)systemTime.tv_usec)/(1000 * 1000.);
 }
+#else
+#import <mach/mach_time.h>
+
+CFTimeInterval CACurrentMediaTime(void)
+{
+  return mach_absolute_time() / (1000 * 1000 * 1000.);
+}
+
+#endif
 

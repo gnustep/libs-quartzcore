@@ -1,10 +1,10 @@
-/* CAValueFunction.m
+/* CAMediaTiming.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Ivan Vučica <ivan@vucica.net>
    Date: June 2012
-
+   
    This file is part of QuartzCore.
 
    This library is free software; you can redistribute it and/or
@@ -24,8 +24,12 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "QuartzCore/CAValueFunction.h"
+#import "QuartzCore/CAMediaTiming.h"
 
-@implementation CAValueFunction
+NSString *const kCAFillModeRemoved = @"kCAFillModeRemoved";
+NSString *const kCAFillModeForwards = @"kCAFillModeForwards";
+NSString *const kCAFillModeBackwards = @"kCAFillModeBackwards";
+NSString *const kCAFillModeBoth = @"kCAFillModeBoth";
+NSString *const kCAFillModeFrozen = @"kCAFillModeFrozen";
 
-@end
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

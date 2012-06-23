@@ -1,3 +1,47 @@
+2012-06-23  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Headers/QuartzCore/AppleSupport.h:
+	* Headers/QuartzCore/AppleSupportRevert.h:
+	* Source/CAMediaTiming.m:
+	Added CAMediaTiming.m, containing definitions for fillmode
+	constants. Under Cocoa, turned on building of 32-bit code,
+	in order to approach feature-set of older GNU runtimes and
+	compilers, making writing non-portable code easier to spot.
+
+	* Headers/QuartzCore/CAAnimation.h:
+	* Headers/QuartzCore/CALayer.h:
+	* Headers/QuartzCore/CAMediaTiming.h:
+	* Headers/QuartzCore/CARenderer.h:
+	* Source/CAAnimation.m:
+	* Source/CALayer.m:
+	* Source/CARenderer.m:
+	Added support for presentation layers and animations.
+	Added some missing -dealloc methods. Corrected CAMediaTiming
+	protocol by adding missing properties.
+
+	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:
+	Under Cocoa, turned on building of 32-bit code, in order
+	to approach feature-set of older GNU runtimes and compilers,
+	making writing non-portable code easier to spot.
+
+	* Tests/hello_animation.m:
+	Added testing of sublayers. Some code for figuring out
+	correct behavior of time conversion. Some new animation
+	tests.
+
+	* Source/CABackingStore.m:
+	Added implementation of -dealloc.
+	
+	* Source/CABase.m:
+	Added mach-based implementation of CACurrentMediaTime() in
+	order to get the same results as under Cocoa. Regular UNIX
+	implementation still used under non-Mach platforms.
+	
+	* Source/CAValueFunction.m:
+	* Headers/QuartzCore/CAValueFunction.h:
+	Added stub of CAValueFunction class.
+
 2012-06-22  Ivan Vučica  <ivan@vucica.net>
 
 	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:

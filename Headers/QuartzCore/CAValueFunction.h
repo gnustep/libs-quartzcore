@@ -2,7 +2,8 @@
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: June 2012
 
    This file is part of QuartzCore.
 
@@ -22,3 +23,8 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/Foundation.h>
+@interface CAValueFunction : NSObject
+
+@end

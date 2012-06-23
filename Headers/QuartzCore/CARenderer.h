@@ -54,6 +54,9 @@ typedef struct _CVTimeStamp
   NSOpenGLContext * _GLContext;
   CALayer * _layer;
   CGRect _bounds;
+  
+  CFTimeInterval _firstRender;
+  CFTimeInterval _currentTime;
 }
 
 + (CARenderer*)rendererWithNSOpenGLContext: (NSOpenGLContext *)context

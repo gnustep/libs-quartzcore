@@ -25,16 +25,25 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "CABase.h"
+#import "QuartzCore/CABase.h"
+
 @protocol CAMediaTiming
 
 @property CFTimeInterval beginTime;
-@property CFTimeInterval duration;
+@property CFTimeInterval timeOffset;
 @property float repeatCount;
+@property float repeatDuration;
 @property BOOL autoreverses;
 @property(copy) NSString* fillMode;
+@property CFTimeInterval duration;
+@property float speed;
 
 @end 
 
-NSString *const kCAFillModeBackwards;
+extern NSString *const kCAFillModeRemoved;
+extern NSString *const kCAFillModeForwards;
+extern NSString *const kCAFillModeBackwards;
+extern NSString *const kCAFillModeBoth;
+extern NSString *const kCAFillModeFrozen;
 
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

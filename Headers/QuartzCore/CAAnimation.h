@@ -29,44 +29,104 @@
 #import "QuartzCore/CAMediaTiming.h"
 
 @class CAMediaTimingFunction;
+@class CAValueFunction;
+
+/* *********************************** */
 
 @interface CAAnimation : NSObject <CAMediaTiming>
 {
+  /* property-backing ivars */
+  id _delegate;
+  CAMediaTimingFunction *_timingFunction;
+  BOOL _removedOnCompletion;
+
+  /* CAMediaTiming ivars */
+  CFTimeInterval _beginTime;
+  CFTimeInterval _timeOffset;
+  float _repeatCount;
+  float _repeatDuration;
+  BOOL _autoreverses;
+  NSString* _fillMode;
+  CFTimeInterval _duration;
+  float _speed;
+
 }
 
-+ (id)animation;
++ (id) animation;
++ (id) defaultValueForKey: (NSString*)key;
 
-@property (retain) id delegate;
+@property (retain) id delegate; /* note: it's not a bug that the delegate is retained */
 @property (retain) CAMediaTimingFunction *timingFunction;
 @property BOOL removedOnCompletion;
 
 @end
 
-@interface CAPropertyAnimation : CAAnimation
+@interface CAAnimation (FrameworkPrivate)
+/* Don't use these framework-private methods.
+ * They may get removed at any time.
+ */
+- (CFTimeInterval) activeTimeWhenApplyingToLayer: (CALayer *)layer;
+- (CFTimeInterval) localTimeWhenApplyingToLayer: (CALayer *)layer;
+@end
 
+/* *********************************** */
+
+@interface CAPropertyAnimation : CAAnimation
+{
+  /* property-backing ivars */
+  BOOL _additive;
+  BOOL _cumulative;
+  NSString *_keyPath;
+  CAValueFunction *_valueFunction;
+}
 + (id)animationWithKeyPath:(NSString *)path;
+
+@property (assign,getter=isAdditive) BOOL additive;
+@property (assign,getter=isCumulative) BOOL cumulative;
+@property (retain) NSString *keyPath;
+@property (retain) CAValueFunction *valueFunction;
 
 @end
 
+@interface CAPropertyAnimation (FrameworkPrivate)
+- (void) applyToLayer: (CALayer *)layer;
+@end
+
+/* *********************************** */
+
 @interface CABasicAnimation : CAPropertyAnimation
+{
+  /* property-backing ivars */
+  id _fromValue, _toValue, _byValue;
+}
 
 @property(retain) id fromValue, toValue, byValue;
 
 @end
 
-@interface CAKeyframeAnimation : CAPropertyAnimation
+/* *********************************** */
 
+@interface CAKeyframeAnimation : CAPropertyAnimation
+{
+  /* property-backing ivars */
+  NSString * _calculationMode;
+  NSArray * _values;
+}
 @property(copy) NSString* calculationMode;
 @property(copy) NSArray* values;
 
 @end
 
 /* calculationMode constants */
-
 NSString *const kCAAnimationDiscrete;
 
-@interface CATransition : CAAnimation
+/* *********************************** */
 
+@interface CATransition : CAAnimation
+{
+  NSString * _type;
+  NSString * _subtype;
+}
 @property(copy) NSString* type;
 @property(copy) NSString* subtype;
 
@@ -81,3 +141,14 @@ NSString *const kCATransitionFromBottom;
 NSString *const kCATransitionFromLeft;
 NSString *const kCATransitionFromRight;
 
+/* *********************************** */
+
+/* delegate methods for CAAnimation */
+/* a GNUstep extension */
+@protocol GSCAAnimationDelegate <NSObject>
+- (void) animationDidStart: (CAAnimation *)animation;
+- (void) animationDidStop: (CAAnimation *)animation finished: (BOOL)finished;
+
+@end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

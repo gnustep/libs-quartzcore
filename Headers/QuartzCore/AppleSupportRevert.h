@@ -73,7 +73,11 @@
 
 /* CAMediaTiming.h */
 #undef CAMediaTiming
+#undef kCAFillModeRemoved
+#undef kCAFillModeForwards
 #undef kCAFillModeBackwards
+#undef kCAFillModeBoth
+#undef kCAFillModeFrozen
 
 /* CAMediaTimingFunction.h */
 #undef kCAMediaTimingFunctionEaseInEaseOut

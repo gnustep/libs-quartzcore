@@ -90,11 +90,14 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 
   /* media timing i-vars */
   CFTimeInterval _beginTime;
-  CFTimeInterval _duration;
+  CFTimeInterval _timeOffset;
   float _repeatCount;
+  float _repeatDuration;
   BOOL _autoreverses;
   NSString* _fillMode;
-
+  CFTimeInterval _duration;
+  float _speed;
+  
   /* i-vars */
   CGContextRef _opalContext;
 #if !(GSIMPL_UNDER_COCOA)
@@ -102,6 +105,7 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 #endif
   BOOL _needsDisplay;
   BOOL _needsLayout;
+  NSMutableDictionary *_animations;
 }
 
 + (id) layer;
@@ -111,8 +115,8 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
 @property (retain)                   NSLayoutManager *layoutManager;
-@property (readonly)                 CALayer *superlayer;
-@property (copy)                     NSArray *sublayers;
+@property (nonatomic,readonly)       CALayer *superlayer;
+@property (nonatomic,copy)           NSArray *sublayers;
 @property (assign)                   CGRect frame;
 @property (nonatomic,assign)         CGRect bounds;
 @property (assign)                   CGPoint anchorPoint;
@@ -121,7 +125,7 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 @property (assign)                   float opacity;
 @property (getter=isOpaque)          BOOL opaque;
 @property (getter=isGeometryFlipped) BOOL geometryFlipped;
-@property (assign)                   CGColorRef backgroundColor;
+@property /* retained */ (nonatomic) CGColorRef backgroundColor;
 @property (assign)                   BOOL masksToBounds;
 @property (assign)                   CGRect contentsRect;
 @property (getter=isHidden)          BOOL hidden;
@@ -139,11 +143,18 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 - (CAAnimation *) animationForKey:( NSString *)key;
 
 - (void) addSublayer: (CALayer *)layer;
-- (CGPoint) convertPoint: (CGPoint)p toLayer: (CALayer *)l;
 - (void) removeFromSuperlayer;
 - (void) insertSublayer: (CALayer *)layer atIndex: (unsigned)index;
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
+- (CALayer *) rootLayer;
+
+- (CGPoint) convertPoint: (CGPoint)pt fromLayer: (CALayer *)layer;
+- (CGPoint) convertPoint: (CGPoint)pt toLayer: (CALayer *)layer;
+- (CGRect) convertRect: (CGRect)rect fromLayer: (CALayer *)layer;
+- (CGRect) convertRect: (CGRect)rect toLayer: (CALayer *)layer;
+- (CFTimeInterval) convertTime: (CFTimeInterval)theTime fromLayer: (CALayer *)layer;
+- (CFTimeInterval) convertTime: (CFTimeInterval)theTime toLayer: (CALayer *)layer;
 
 - (void) display;
 - (void) displayIfNeeded;
@@ -158,9 +169,21 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 - (id) modelLayer;
 
 - (CGAffineTransform) affineTransform;
-- (void)setAffineTransform: (CGAffineTransform)affineTransform;
+- (void) setAffineTransform: (CGAffineTransform)affineTransform;
 
 - (NSArray *) animationKeys;
+
+@end
+
+@interface CALayer (FrameworkPrivate)
+/* Don't use these framework-private methods.
+ * They may get removed at any time.
+ */
+- (void) discardPresentationLayer;
+- (void) applyAnimationsAtTime: (CFTimeInterval)time;
+
+- (CFTimeInterval) activeTime;
+- (CFTimeInterval) localTime;
 @end
 
 @interface NSObject (CALayer)

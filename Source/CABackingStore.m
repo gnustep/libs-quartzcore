@@ -46,6 +46,13 @@
   return self;
 }
 
+- (void) dealloc
+{
+  CGContextRelease (_context);
+  
+  [super dealloc];
+}
+
 - (CGContextRef)context
 {
   return _context;

@@ -131,7 +131,12 @@ typedef struct ct_additions ct_additions;
 - (void) beginFrameAtTime: (CFTimeInterval)timeInterval
                 timeStamp: (CVTimeStamp *)timeStamp
 {
-
+  if(!_firstRender)
+    {
+      _firstRender = timeInterval;
+      return;
+    }
+  [self _updateLayer: _layer atTime: timeInterval-_firstRender];
 }
 
 /* Ends rendering the frame, releasing any temporary data. */
@@ -164,14 +169,39 @@ typedef struct ct_additions ct_additions;
   glEnable(GL_ALPHA_TEST);
   glAlphaFunc(GL_GREATER, 0.5);
 
-  [self _renderLayer: [self layer]
+  [self _renderLayer: [[self layer] presentationLayer]
        withTransform: CATransform3DIdentity];
 }
 
-/* Internal method that renders only a single layer. */
+/* Internal method that updates a single presentation layer and then proceeds by recursing, updating its children. */
+- (void) _updateLayer: (CALayer *)layer
+               atTime: (CFTimeInterval)theTime
+{
+  if([layer modelLayer])
+    layer = [layer modelLayer];
+    
+  /* Destroy and then recreate the presentation layer.
+     This is the easiest way to reset it to default values. */
+  [layer discardPresentationLayer];
+  CALayer * presentationLayer = [layer presentationLayer];
+  
+  /* Tell the presentation layer to apply animations. */
+  [presentationLayer applyAnimationsAtTime: theTime];
+  
+  /* Tell all children to update themselves. */
+  for(CALayer * sublayer in [layer sublayers])
+    {
+      [self _updateLayer: sublayer
+                  atTime: theTime];
+    }
+}
+/* Internal method that renders a single layer and then proceeds by recursing, rendering its children. */
 - (void) _renderLayer: (CALayer *)layer
         withTransform: (CATransform3D)transform
 {
+  if([layer presentationLayer])
+    layer = [layer presentationLayer];
+  
   [layer displayIfNeeded];
 
   // apply transform and translate to position
