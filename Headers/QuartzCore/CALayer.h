@@ -147,7 +147,6 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 - (void) insertSublayer: (CALayer *)layer atIndex: (unsigned)index;
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
-- (CALayer *) rootLayer;
 
 - (CGPoint) convertPoint: (CGPoint)pt fromLayer: (CALayer *)layer;
 - (CGPoint) convertPoint: (CGPoint)pt toLayer: (CALayer *)layer;
@@ -179,6 +178,15 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
 /* Don't use these framework-private methods.
  * They may get removed at any time.
  */
+
+/* sets value passed into -[CARenderer beginFrameAtTime:...]
+   used as "time of object superior to root layer" (that is,
+   CARenderer) */
++ (void) setCurrentFrameBeginTime: (CFTimeInterval)frameTime;
+- (CALayer *) rootLayer;
+- (NSArray *) allAncestorLayers;
+- (CALayer *) nextAncestorOf: (CALayer *)layer;
+
 - (void) discardPresentationLayer;
 - (void) applyAnimationsAtTime: (CFTimeInterval)time;
 

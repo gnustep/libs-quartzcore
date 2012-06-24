@@ -37,6 +37,8 @@
 #endif
 #import <stdlib.h>
 
+static CFTimeInterval currentFrameBeginTime = 0;
+
 NSString *const kCAGravityResize = @"CAGravityResize";
 NSString *const kCAGravityResizeAspect = @"CAGravityResizeAspect";
 NSString *const kCAGravityResizeAspectFill = @"CAGravityResizeAspectFill";
@@ -447,13 +449,16 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
             // alternatively, this needs to be applied to the
             // animation upon +[CATransaction commit]
             
-            [animation setBeginTime: CACurrentMediaTime()];
+            CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
+            currentFrameBeginTime = CACurrentMediaTime();
+            [animation setBeginTime: [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]]];
+            currentFrameBeginTime = oldFrameBeginTime;
           }
         if([animation isKindOfClass: [CAPropertyAnimation class]])
           {
             CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
-            
-            if([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWhenApplyingToLayer: self] > [propertyAnimation duration])
+                        
+            if([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration])
               {
                 /* FIXME: doesn't take into account repeat time nor speed */
                 
@@ -496,7 +501,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [layer setSuperlayer: self];
 }
 
-- (void) 	insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
+- (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
   
@@ -523,44 +528,143 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   return layer;
 }
 
-- (CFTimeInterval) activeTime
+- (NSArray *) allAncestorLayers
+{
+  /* This could be cached. It could even be updated at 
+    -addSublayer: and -insertSublayer:... methods. */
+  
+  NSMutableArray * allAncestorLayers = [NSMutableArray array];
+  
+  CALayer * layer = self;
+  while([layer superlayer])
+    {
+      layer = [layer superlayer];
+      if(layer)
+        [allAncestorLayers addObject: layer];
+    }
+  
+  return allAncestorLayers;
+}
+
+- (CALayer *) nextAncestorOf: (CALayer *)layer
+{
+  if([[self sublayers] containsObject: layer])
+    return self;
+    
+  for(id i in [self sublayers])
+    {
+      if([i nextAncestorOf: layer])
+        return i;
+    }
+  
+  return nil;
+}
+
++ (void) setCurrentFrameBeginTime:(CFTimeInterval)frameTime
+{
+  currentFrameBeginTime = frameTime;
+}
+
+- (CFTimeInterval) activeTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
 {
   /* Slides */
-  id timeAuthority = [self superlayer];
-  CFTimeInterval timeAuthorityLocalTime = timeAuthority ? [timeAuthority localTime] : CACurrentMediaTime();
   CFTimeInterval activeTime = (timeAuthorityLocalTime - [self beginTime]) * [self speed] + [self timeOffset];
+  assert(activeTime > 0);
 
   return activeTime;
 }
 
-- (CFTimeInterval) localTime
+- (CFTimeInterval) localTimeWithTimeAuthority: (id<CAMediaTiming>)timeAuthority
 {
   /* Slides */
-  CFTimeInterval activeTime = [self activeTime];
+  CFTimeInterval timeAuthorityLocalTime = [timeAuthority localTime];
+  if(!timeAuthority)
+    timeAuthorityLocalTime = currentFrameBeginTime ? currentFrameBeginTime : CACurrentMediaTime();
+  
+  CFTimeInterval activeTime = [self activeTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
   if(isinf([self duration]))
     return activeTime;
   
   NSInteger k = floor(activeTime / [self duration]);
-  CFTimeInterval layerTime = activeTime - k * [self duration];
+  CFTimeInterval localTime = activeTime - k * [self duration];
   if([self autoreverses] && k % 2 == 1)
     {
-      layerTime = [self duration] - layerTime;
+      localTime = [self duration] - localTime;
     }
-  
-  return layerTime;
+    
+  return localTime;
+}
+
+
+
+
+- (CFTimeInterval) activeTime
+{
+  /* Slides */
+  id<CAMediaTiming> timeAuthority = [self superlayer];
+  if(!timeAuthority)
+    return [self activeTimeWithTimeAuthorityLocalTime: currentFrameBeginTime ? currentFrameBeginTime : CACurrentMediaTime()];
+  else
+    return [self activeTimeWithTimeAuthorityLocalTime: [timeAuthority localTime]];
+}
+
+- (CFTimeInterval) localTime
+{
+  id<CAMediaTiming> timeAuthority = [self superlayer];
+  return [self localTimeWithTimeAuthority: timeAuthority];
 }
 
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime fromLayer: (CALayer *)layer
 {
   if(layer == nil)
     return [self localTime];
-  // TODO.
-  return 0;
+
+  /* Just make use of convertTime:toLayer: instead of reimplementing */
+  return [layer convertTime: theTime toLayer: self];
 }
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime toLayer: (CALayer *)layer
 {
-  // TODO.
-  return 0;
+  /* Method used to convert 'activeTime' of self into 'activeTime' 
+     of 'layer'. */
+
+  if(layer == self)
+    return theTime;
+
+  /* First, convert theTime to the "media time" timespace, the 
+     timespace returned by CACurrentMediaTime(). */
+     
+  /* For self, invert formula in theTime. */
+  theTime -= [self timeOffset];
+  theTime /= [self speed];
+  theTime += [self beginTime];
+
+  NSArray * ancestorLayers = [self allAncestorLayers];
+  for(CALayer * l in ancestorLayers)
+    {
+      /* layer was one of our ancestors? great! */
+      if(layer == l)
+        return theTime;
+      
+      /* For each layer, we invert the formula in -activeTime. */
+      theTime -= [l timeOffset];
+      theTime /= [l speed];
+      theTime += [l beginTime];
+    }
+  
+  if(layer == nil)
+    {
+      /* We were requested time in "media time" timespace. */
+      return theTime;
+    }
+  
+  /* Use activeTime/localTime mechanism to convert media time into 
+     layer time */
+  CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
+  currentFrameBeginTime = theTime;
+  theTime = [layer activeTime];
+  currentFrameBeginTime = oldFrameBeginTime;
+  
+  return theTime;
 }
 
 /* Unimplemented functions: */

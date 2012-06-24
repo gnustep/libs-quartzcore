@@ -38,6 +38,16 @@
 @property CFTimeInterval duration;
 @property float speed;
 
+
+/* GNUstep private extensions */
+@optional
+- (CFTimeInterval) activeTime;
+- (CFTimeInterval) localTime;
+
+- (CFTimeInterval) activeTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime;
+- (CFTimeInterval) localTimeWithTimeAuthority: (id<CAMediaTiming>)timeAuthority;
+
+
 @end 
 
 extern NSString *const kCAFillModeRemoved;

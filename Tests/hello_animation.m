@@ -185,12 +185,12 @@ Class classOfTestOpenGLView()
   NSLog(@"modelani: %@", [layer animationKeys]);
   for(NSString * ani in [layer animationKeys])
     {
-      NSLog(@" %@", [layer animationForKey: ani]);
+      NSLog(@" %@ %g", [layer animationForKey: ani], [[layer animationForKey: ani] beginTime]);
     }
   NSLog(@"pres ani: %@", [presLayer animationKeys]);
   for(NSString * ani in [presLayer animationKeys])
     {
-      NSLog(@" %@", [presLayer animationForKey: ani]);
+      NSLog(@" %@ %g", [presLayer animationForKey: ani], [[presLayer animationForKey: ani] beginTime]);
     }
   NSLog(@"--------");
 #endif
@@ -234,6 +234,8 @@ Class classOfTestOpenGLView()
   [layer2 setDuration: __builtin_inf()];
   [layer2 setBeginTime: CACurrentMediaTime()*[layer speed]+1];
   */
+  [layer2 setBeginTime: 1];
+  [layer setBeginTime: 1];
   [layer2 setNeedsDisplay];
   [layer addSublayer: layer2];
   _theSublayer = [layer2 retain];
@@ -267,13 +269,17 @@ Class classOfTestOpenGLView()
   /* */
   [_renderer beginFrameAtTime: CACurrentMediaTime()
                     timeStamp: NULL];
-  [_renderer addUpdateRect:[_renderer bounds]];
+  [_renderer addUpdateRect: [_renderer bounds]];
   [_renderer render];
   [_renderer endFrame];
   /* */
   NSLog(@"Time conversion of layer - postrender: %g %g", CACurrentMediaTime(), [_renderer.layer convertTime: CACurrentMediaTime() fromLayer: nil]);
   NSLog(@"Time conversion of sublayer to layer - postrender: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: _renderer.layer]);
   
+  NSLog(@"Experimenting: %g", [_renderer.layer convertTime: CACurrentMediaTime() toLayer: _theSublayer]);
+  if([[_renderer.layer animationKeys] count])
+    NSLog(@"Experimenting2: %g", [[_renderer.layer animationForKey:[[_renderer.layer animationKeys] objectAtIndex:0]] beginTime]);
+
   glFlush();
 
   [[self openGLContext] flushBuffer];

@@ -1,3 +1,28 @@
+2012-06-24  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/CAAnimation.h:
+	* Headers/QuartzCore/CAMediaTiming.h:
+	* Source/CAAnimation.m:
+	* Source/CALayer.m:
+	* Source/CARenderer.m:
+	* Tests/hello_animation.m:
+	Rework of timing model, introducing frame begin time, and
+	approximating behavior when frame begin time doesn't match
+	CACurrentMediaTime(). It's not highly important to match
+	it exactly, as it doesn't seem like it should be used with
+	Cocoa implementation either (if one passes, e.g.,
+	CACurrentMediaTime()-1, animations are delayed, but time
+	conversion methods are unaffected).
+	
+	Some methods have been moved to CAMediaTiming protocol which
+	ordinarily don't belong there.
+
+	Time conversion functions, for converting between layers,
+	have been implemented.
+
+	* Headers/QuartzCore/CALayer.h:
+	Added some private methods for traversing the layer tree.
+
 2012-06-23  Ivan Vučica  <ivan@vucica.net>
 
 	* GSQuartzCore.xcodeproj/project.pbxproj:

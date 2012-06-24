@@ -136,7 +136,7 @@ typedef struct ct_additions ct_additions;
       _firstRender = timeInterval;
       return;
     }
-  [self _updateLayer: _layer atTime: timeInterval-_firstRender];
+  [self _updateLayer: _layer atTime: timeInterval];
 }
 
 /* Ends rendering the frame, releasing any temporary data. */
@@ -179,7 +179,9 @@ typedef struct ct_additions ct_additions;
 {
   if([layer modelLayer])
     layer = [layer modelLayer];
-    
+
+  [CALayer setCurrentFrameBeginTime: theTime];
+  
   /* Destroy and then recreate the presentation layer.
      This is the easiest way to reset it to default values. */
   [layer discardPresentationLayer];

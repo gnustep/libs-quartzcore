@@ -65,8 +65,6 @@
 /* Don't use these framework-private methods.
  * They may get removed at any time.
  */
-- (CFTimeInterval) activeTimeWhenApplyingToLayer: (CALayer *)layer;
-- (CFTimeInterval) localTimeWhenApplyingToLayer: (CALayer *)layer;
 @end
 
 /* *********************************** */

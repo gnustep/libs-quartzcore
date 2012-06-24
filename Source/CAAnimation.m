@@ -109,31 +109,30 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return YES;
 }
 
-- (CFTimeInterval) activeTimeWhenApplyingToLayer: (CALayer *)layer
+- (CFTimeInterval) activeTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
 {
   /* Slides */
-  id timeAuthority = layer;
-  CFTimeInterval timeAuthorityLocalTime = timeAuthority ? [timeAuthority localTime] : CACurrentMediaTime();
   CFTimeInterval activeTime = (timeAuthorityLocalTime - [self beginTime]) * [self speed] + [self timeOffset];
 
   return activeTime;
 }
 
-- (CFTimeInterval) localTimeWhenApplyingToLayer: (CALayer *)layer
+- (CFTimeInterval) localTimeWithTimeAuthority: (id<CAMediaTiming>)timeAuthority
 {
   /* Slides */
-  CFTimeInterval activeTime = [self activeTimeWhenApplyingToLayer: layer];
+  CFTimeInterval timeAuthorityLocalTime = [timeAuthority localTime];
+  CFTimeInterval activeTime = [self activeTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
   if(isinf([self duration]))
     return activeTime;
   
   NSInteger k = floor(activeTime / [self duration]);
-  CFTimeInterval layerTime = activeTime - k * [self duration];
+  CFTimeInterval localTime = activeTime - k * [self duration];
   if([self autoreverses] && k % 2 == 1)
     {
-      layerTime = [self duration] - layerTime;
+      localTime = [self duration] - localTime;
     }
     
-  return layerTime;
+  return localTime;
 }
 
 @end
@@ -201,8 +200,10 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
 - (void) applyToLayer: (CALayer *)layer
 {
-  CFTimeInterval theTime = [self localTimeWhenApplyingToLayer: [layer modelLayer]];
-  
+  CFTimeInterval theTime = [self localTimeWithTimeAuthority: [layer modelLayer]];
+    NSLog(@"%g (authority: %g)", [self activeTimeWithTimeAuthorityLocalTime:[layer localTime]], [layer localTime]);
+    NSLog(@"my begin time %g", [self beginTime]);
+
   id modelValue = [[layer modelLayer] valueForKeyPath: [self keyPath]];
   id calculatedValue = [self calculatedAnimationValueAtTime: theTime];
 
@@ -235,7 +236,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
    */
   
   float fraction = theTime / _duration;
-  
+
   if([_fromValue isKindOfClass: [NSNumber class]] && [_toValue isKindOfClass: [NSNumber class]])
     {
       /* It should be safe to presume that values can be
