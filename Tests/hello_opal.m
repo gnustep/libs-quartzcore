@@ -30,6 +30,7 @@
 #else
 #import <OpenGL/OpenGL.h>
 #endif
+#import <AppKit/NSOpenGL.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <cairo/cairo.h>
 

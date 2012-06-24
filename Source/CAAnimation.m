@@ -25,6 +25,7 @@
 */
 
 #import "QuartzCore/CAAnimation.h"
+#import "QuartzCore/CALayer.h"
 
 NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
@@ -98,7 +99,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     }
   if([key isEqualToString:@"autoreverses"])
     {
-      return [NSNumber numberWithBool: YES];
+      return [NSNumber numberWithBool: NO];
     }
   if([key isEqualToString:@"repeatCount"])
     {

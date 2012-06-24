@@ -30,6 +30,7 @@
 
 @class CAMediaTimingFunction;
 @class CAValueFunction;
+@class CALayer;
 
 /* *********************************** */
 

@@ -28,6 +28,7 @@
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSOpenGL.h>
 #import <AppKit/NSApplication.h>
+#import <AppKit/NSMenu.h>
 #if !(GSIMPL_UNDER_COCOA)
 #import <QuartzCore/QuartzCore.h>
 #else
@@ -45,6 +46,20 @@
 @implementation AppController
 -(void)applicationDidFinishLaunching: (NSNotification*)aNote
 {
+#if GNUSTEP
+  NSMenu * menu = [[NSMenu alloc] initWithTitle: @"Main Menu"];
+
+  [menu addItemWithTitle: [classOfTestOpenGLView() description]
+                  action: @selector(orderFrontStandardAboutPanel:)
+           keyEquivalent: @""];
+  [menu addItemWithTitle: @"Quit"
+                  action: @selector(terminate:)
+           keyEquivalent: @"q"];
+
+  [NSApp setMainMenu: menu];
+  [menu release];
+#endif
+
   window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,640,480)
                                        styleMask: NSTitledWindowMask | NSClosableWindowMask
                                          backing: NSBackingStoreBuffered

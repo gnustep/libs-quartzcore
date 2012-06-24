@@ -27,6 +27,7 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import "QuartzCore/CAAnimation.h"
 #import "QuartzCore/CALayer.h"
 #import "CABackingStore.h"
 #if GNUSTEP

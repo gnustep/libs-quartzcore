@@ -116,7 +116,8 @@ Class classOfTestOpenGLView()
   NSMenu * mainMenu = [[NSApplication sharedApplication] mainMenu];
   
   NSMenuItem * testsMenuItem = [[NSMenuItem alloc] init];
-  NSMenu * testsMenu = [[NSMenu alloc] initWithTitle:@"Tests"];
+  [testsMenuItem setTitle: @"Tests"]; /* Note: needed only under GNUstep */
+  NSMenu * testsMenu = [[NSMenu alloc] initWithTitle: @"Tests"];
   {
     [testsMenu addItemWithTitle:@"Animation 1" action:@selector(animation1:) keyEquivalent:@"1"];
     [testsMenu addItemWithTitle:@"Animation 2" action:@selector(animation2:) keyEquivalent:@"2"];

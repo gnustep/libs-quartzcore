@@ -1,5 +1,23 @@
 2012-06-24  Ivan Vučica  <ivan@vucica.net>
 
+	* Headers/QuartzCore/CAAnimation.h:
+	* Source/CALayer.m:
+	* Tests/hello_opal.m:
+	Fixed compiling.
+
+	* Source/CAAnimation.m:
+	Autoreverses now defaults to correct value of 'NO'. Fixed 
+	compiling.
+	
+	* Tests/hello_animation.m:
+	Fixed label on 'Tests' menu under GNUstep.
+
+	* Tests/main.m:
+	Added main menu under GNUstep, so that hello_animation test
+	gets its menu.
+
+2012-06-24  Ivan Vučica  <ivan@vucica.net>
+
 	* Headers/QuartzCore/CALayer.h:
 	Added sublayerTransform property.
 
