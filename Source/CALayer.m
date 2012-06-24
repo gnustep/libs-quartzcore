@@ -113,6 +113,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @synthesize position=_position;
 @synthesize opacity=_opacity;
 @synthesize transform=_transform;
+@synthesize sublayerTransform=_sublayerTransform;
 @synthesize opaque=_opaque;
 @synthesize geometryFlipped=_geometryFlipped;
 @synthesize backgroundColor=_backgroundColor;
@@ -154,7 +155,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       /* TODO: use +defaultValueForKey: to set default values */
       [self setAnchorPoint: CGPointMake(0.5, 0.5)];
       [self setTransform: CATransform3DIdentity];
-      [self setSpeed: 1];
+      [self setSublayerTransform: CATransform3DIdentity];
+      [self setRepeatCount: 1.0];
+      [self setSpeed: 1.0];
       [self setDuration: __builtin_inf()];
       /* FIXME: is there a cleaner way to get inf apart from "1./0"? */
     }
@@ -179,6 +182,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       [self setPosition: [layer position]];
       [self setOpacity: [layer opacity]];
       [self setTransform: [layer transform]];
+      [self setSublayerTransform: [layer sublayerTransform]];
       [self setOpaque: [layer isOpaque]];
       [self setGeometryFlipped: [layer isGeometryFlipped]];
       [self setBackgroundColor: [layer backgroundColor]];
@@ -458,9 +462,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
           {
             CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
                         
-            if([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration])
+            if([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
               {
-                /* FIXME: doesn't take into account repeat time nor speed */
+                /* FIXME: doesn't take into account speed */
                 
                 [animationKeysToRemove addObject: animationKey];
                 continue; /* Prevents animation from applying for one frame longer than its duration */

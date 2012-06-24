@@ -1,5 +1,26 @@
 2012-06-24  Ivan Vučica  <ivan@vucica.net>
 
+	* Headers/QuartzCore/CALayer.h:
+	Added sublayerTransform property.
+
+	* Source/CAAnimation.m:
+	Added default value for repeatCount property.
+
+	* Source/CALayer.m:
+	Added sublayerTransform property and support for animation's
+	repeatCount property (preventing removal if animation is
+	repeating). Property 'autoreverses' doubles the time needed
+	for the animation.
+
+	* Source/CARenderer.m:
+	Added support for sublayers.
+
+	* Tests/hello_animation.m:
+	Testing of the sublayerTransform property. Changed some
+	positions and angles to make things more visible.
+
+2012-06-24  Ivan Vučica  <ivan@vucica.net>
+
 	* Headers/QuartzCore/CAAnimation.h:
 	* Headers/QuartzCore/CAMediaTiming.h:
 	* Source/CAAnimation.m:

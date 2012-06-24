@@ -57,7 +57,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   if(!self)
     return nil;
   
-  static NSString * keys[] = {@"delegate", @"removedOnCompletion", @"timingFunction", @"duration", @"speed"};
+  static NSString * keys[] = {@"delegate", @"removedOnCompletion", @"timingFunction", @"duration", @"speed", @"autoreverses", @"repeatCount"};
   for(int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       id defaultValue = [[self class] defaultValueForKey: keys[i]];
@@ -99,6 +99,10 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   if([key isEqualToString:@"autoreverses"])
     {
       return [NSNumber numberWithBool: YES];
+    }
+  if([key isEqualToString:@"repeatCount"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
     }
   return nil;
 }
@@ -201,8 +205,6 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 - (void) applyToLayer: (CALayer *)layer
 {
   CFTimeInterval theTime = [self localTimeWithTimeAuthority: [layer modelLayer]];
-    NSLog(@"%g (authority: %g)", [self activeTimeWithTimeAuthorityLocalTime:[layer localTime]], [layer localTime]);
-    NSLog(@"my begin time %g", [self beginTime]);
 
   id modelValue = [[layer modelLayer] valueForKeyPath: [self keyPath]];
   id calculatedValue = [self calculatedAnimationValueAtTime: theTime];

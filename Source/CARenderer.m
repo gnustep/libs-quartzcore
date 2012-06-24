@@ -334,7 +334,12 @@ typedef struct ct_additions ct_additions;
 
     }
 
-  // TODO render sublayers
+  transform = CATransform3DConcat ([layer sublayerTransform], transform);
+  transform = CATransform3DTranslate (transform, -[layer bounds].size.width/2, -[layer bounds].size.height/2, 0);
+  for(CALayer * sublayer in [layer sublayers])
+    {
+      [self _renderLayer: sublayer withTransform: transform];
+    }
 }
 
 /* Returns rectangle containing all pixels that should be updated. */

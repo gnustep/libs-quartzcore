@@ -122,6 +122,7 @@ Class classOfTestOpenGLView()
     [testsMenu addItemWithTitle:@"Animation 2" action:@selector(animation2:) keyEquivalent:@"2"];
     [testsMenu addItemWithTitle:@"Animation 3" action:@selector(animation3:) keyEquivalent:@"3"];
     [testsMenu addItemWithTitle:@"Animation 4" action:@selector(animation4:) keyEquivalent:@"4"];
+    [testsMenu addItemWithTitle:@"Animation 5" action:@selector(animation5:) keyEquivalent:@"5"];
   }
   
   [testsMenuItem setSubmenu:testsMenu];
@@ -152,8 +153,8 @@ Class classOfTestOpenGLView()
 {
   CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
   [animation setDuration: 1];
-  [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(100, 100)]];
-  [animation setToValue: [NSValue valueWithPoint: NSMakePoint(100, 200)]];
+  [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(400, 150)]];
+  [animation setToValue: [NSValue valueWithPoint: NSMakePoint(400, 250)]];
   
   [[_renderer layer] addAnimation: animation forKey:@"thePositionAnimation"];
   
@@ -173,6 +174,18 @@ Class classOfTestOpenGLView()
   
   [_theSublayer addAnimation: animation forKey:@"repeatingAnimation"];
   
+}
+
+- (void) animation5:sender
+{
+  static BOOL toggle = NO;
+  CALayer * layer = [_renderer layer];
+  if(!toggle)
+    [layer setTransform: CATransform3DMakeRotation(M_PI_4/2, 0, 0, 1)];
+  else
+    [layer setTransform: CATransform3DIdentity];
+  
+  toggle = !toggle;
 }
 
 - (void) printPos: (CALayer*)layer
@@ -209,7 +222,6 @@ Class classOfTestOpenGLView()
   CALayer * layer = [CALayer layer];
   [layer setBounds: CGRectMake(0, 0, [self frame].size.width*0.6, [self frame].size.height*0.6)];
   [layer setPosition: CGPointMake([self frame].size.width/2, [self frame].size.height/2)];
-  [layer setTransform: CATransform3DMakeRotation(M_PI_4/2, 0, 0, 1)];
   [layer setBackgroundColor: yellowColor];
   [layer setDelegate: _layerDelegate];
   [layer setNeedsDisplay];
@@ -239,6 +251,8 @@ Class classOfTestOpenGLView()
   [layer2 setNeedsDisplay];
   [layer addSublayer: layer2];
   _theSublayer = [layer2 retain];
+  
+  [layer setSublayerTransform: CATransform3DMakeRotation(M_PI_2 * 0.25 /* 45 deg */, 0, 0, 1)];
 }
 
 - (void) dealloc
@@ -264,8 +278,10 @@ Class classOfTestOpenGLView()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
-  NSLog(@"Time conversion of layer: %g %g", CACurrentMediaTime(), [_renderer.layer convertTime: CACurrentMediaTime() fromLayer: nil]);
+  #if 0
+  NSLog(@"Time conversion of layer: %g %g", CACurrentMediaTime(), [[_renderer layer] convertTime: CACurrentMediaTime() fromLayer: nil]);
   NSLog(@"Time conversion of sublayer: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: nil]);
+  #endif
   /* */
   [_renderer beginFrameAtTime: CACurrentMediaTime()
                     timeStamp: NULL];
@@ -273,13 +289,15 @@ Class classOfTestOpenGLView()
   [_renderer render];
   [_renderer endFrame];
   /* */
-  NSLog(@"Time conversion of layer - postrender: %g %g", CACurrentMediaTime(), [_renderer.layer convertTime: CACurrentMediaTime() fromLayer: nil]);
-  NSLog(@"Time conversion of sublayer to layer - postrender: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: _renderer.layer]);
+  #if 0
+  NSLog(@"Time conversion of layer - postrender: %g %g", CACurrentMediaTime(), [[_renderer layer] convertTime: CACurrentMediaTime() fromLayer: nil]);
+  NSLog(@"Time conversion of sublayer to layer - postrender: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: [_renderer layer]]);
   
-  NSLog(@"Experimenting: %g", [_renderer.layer convertTime: CACurrentMediaTime() toLayer: _theSublayer]);
-  if([[_renderer.layer animationKeys] count])
-    NSLog(@"Experimenting2: %g", [[_renderer.layer animationForKey:[[_renderer.layer animationKeys] objectAtIndex:0]] beginTime]);
-
+  NSLog(@"Experimenting: %g", [[_renderer layer] convertTime: CACurrentMediaTime() toLayer: _theSublayer]);
+  if([[[_renderer layer] animationKeys] count])
+    NSLog(@"Experimenting2: %g", [[[_renderer layer] animationForKey:[[[_renderer layer] animationKeys] objectAtIndex:0]] beginTime]);
+  #endif
+  
   glFlush();
 
   [[self openGLContext] flushBuffer];
