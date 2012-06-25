@@ -26,18 +26,62 @@
 
 #import "QCTestOpenGLView.h"
 
+#if QC_USEOPENGLES
+#import "GLESContext.h"
+#endif
+
 @implementation QCTestOpenGLView
+
+#if QC_USEOPENGLES
+// OpenGL ES only code
+
+- (id) initWithFrame: (NSRect)frame pixelFormat: (NSOpenGLPixelFormat *)format
+{
+  self = [super initWithFrame: frame];
+  if(!self)
+    return nil;
+
+  return self;
+}
+- (void) viewDidMoveToSuperview
+{
+  [super viewDidMoveToSuperview];
+
+  if ([self superview])
+    {
+      [self prepareOpenGL];
+    }
+}
++ (NSOpenGLPixelFormat *)defaultPixelFormat
+{
+  // Should never be called for ES.
+  return nil;
+}
+- (id) openGLContext
+{
+  // return EGL context...
+  return _openGLContext;
+}
 
 - (void) prepareOpenGL
 {
-  [super prepareOpenGL];
-  
+  _openGLContext = [[GLESContext alloc] init];
+  [_openGLContext setView: self];
+  [_openGLContext createContext];
 }
+#endif
+
 - (void) dealloc
 {
   if(_isAnimating)
     [self stopAnimation];
 
+#if QC_USEOPENGLES
+  if(_openGLContext)
+    {
+      [_openGLContext release];
+    }
+#endif
   [super dealloc];
 }
 

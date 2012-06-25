@@ -1,5 +1,33 @@
 2012-06-25  Ivan Vučica  <ivan@vucica.net>
 
+	* Tests/GLES/GLESContext.h:
+	* Tests/GLES/GLESContext.m:
+	Experimental GLESContext class which uses EGL and a small bit
+	of misuse of a class in -back in order to provide an OpenGL ES
+	context. Once finished, probably needs to find a home elsewhere
+	and not in QuartzCore tests.
+
+	In the future, it can provide an ES context for AppKit, an ES
+	context for UIKit, and an ES context for CAEAGLLayer.
+
+	Class temporarily includes a definition for gluBuild2DMipmaps()
+	which is missing in ES, but is currently referenced to in a
+	few places.
+
+	* Tests/GNUmakefile:
+	Added commented-out lines that enable compiling for OpenGL ES.
+
+	* Tests/hello.m:
+	Example adapted for ES by switching away from glBegin()/glEnd().
+
+	* Tests/QCTestOpenGLView.h:
+	* Tests/QCTestOpenGLView.m:
+	Added a compile time option which makes this view inherit from
+	NSView, but implement equivalent methods for using GLESContext
+	in place of a regular NSOpenGLContext.
+
+2012-06-25  Ivan Vučica  <ivan@vucica.net>
+
 	* Headers/QuartzCore/CALayer.h:
 	* Source/CALayer.m:
 	* Source/CARenderer.m:

@@ -66,7 +66,6 @@ Class classOfTestOpenGLView()
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
- 
   glClear(GL_COLOR_BUFFER_BIT);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -77,15 +76,22 @@ Class classOfTestOpenGLView()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
-  // Using glBegin() in a small test like this one shouldn't be a problem.
-  glBegin(GL_TRIANGLES);
-  glColor3f(1.0, 0.0, 0.0);
-  glVertex2f(0.0, 0.0);
-  glColor3f(0.0, 1.0, 0.0);
-  glVertex2f(1.0, 0.0);
-  glColor3f(0.0, 0.0, 1.0);
-  glVertex2f(1.0, 1.0);
-  glEnd();
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_COLOR_ARRAY);
+  GLfloat vertices[] = {
+    0.0, 0.0,
+    1.0, 0.0,
+    1.0, 1.0,
+  };
+  GLfloat colors[] = {
+    1.0, 0.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+  };
+  glVertexPointer(2, GL_FLOAT, 0, vertices);
+  glColorPointer(3, GL_FLOAT, 0, colors);
+
+  glDrawArrays(GL_TRIANGLES, 0, 6);
 
   glFlush();
 

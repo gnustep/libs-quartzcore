@@ -26,10 +26,23 @@
 
 #import <AppKit/NSOpenGLView.h>
 #import <Foundation/Foundation.h>
-@interface QCTestOpenGLView : NSOpenGLView
+
+#define QC_USEOPENGLES 0
+
+#if !(QC_USEOPENGLES)
+#define BASE_CLASS NSOpenGLView
+#else
+#define BASE_CLASS NSView
+@class GLESContext;
+#endif
+
+@interface QCTestOpenGLView : BASE_CLASS
 {
   NSTimer * _timer;
   BOOL _isAnimating;
+#if QC_USEOPENGLES
+  GLESContext * _openGLContext;
+#endif
 }
 
 - (void) startAnimation;

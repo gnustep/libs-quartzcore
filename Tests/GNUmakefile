@@ -1,8 +1,11 @@
 include $(GNUSTEP_MAKEFILES)/common.make
 
 TOOL_NAME = hello hello_opal hello_carenderer hello_animation
-
 main_files = main.m QCTestOpenGLView.m
+
+# OpenGL ES:
+#TOOL_NAME = hello hello_carenderer hello_animation
+#main_files = main.m QCTestOpenGLView.m GLES/GLESContext.m
 
 hello_OBJC_FILES = $(main_files) hello.m
 hello_opal_OBJC_FILES = $(main_files) hello_opal.m
@@ -35,8 +38,11 @@ ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_LDFLAGS += -L../Source/obj -L../Source/QuartzCore.framework
 ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lopal -lQuartzCore
-
 ADDITIONAL_INCLUDE_DIRS = -I../Headers
+
+# OpenGL ES:
+#ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lEGL -lGLESv1_CM -lopal -lQuartzCore 
+#ADDITIONAL_INCLUDE_DIRS = -I../Headers -IGLES
 
 -include GNUmakefile.preamble
 include $(GNUSTEP_MAKEFILES)/tool.make
