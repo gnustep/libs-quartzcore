@@ -33,9 +33,6 @@
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
 #endif
-#if !(GSIMPL_UNDER_COCOA)
-#import <cairo/cairo.h>
-#endif
 #import <stdlib.h>
 
 static CFTimeInterval currentFrameBeginTime = 0;
@@ -53,7 +50,6 @@ NSString *const kCAGravityTopRight = @"CAGravityTopRight";
 NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
 NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
-#if GSIMPL_UNDER_COCOA
 static CGContextRef createCGBitmapContext (int pixelsWide,
                                     int pixelsHigh)
 {
@@ -67,19 +63,36 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   bitmapByteCount     = (bitmapBytesPerRow * pixelsHigh);
   
   colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
-  bitmapData = malloc(bitmapByteCount);
+#if !GNUSTEP
+  bitmapData = malloc(bitmapByteCount * bitmapBytesPerRow);
   if (bitmapData == NULL)
     {
       fprintf (stderr, "Memory not allocated!");
       return NULL;
     }
+#else
+  // Let CGBitmapContextCreate() allocate the memory.
+  // This should be good under Cocoa too.
+
+  // However, either Opal or my understanding need fixing.
+  // Under GNUstep, after very small amount of allocations,
+  // I keep getting NULL. Are we expected to free() the memory,
+  // or does CGContextRelease() do that?
+
+  bitmapData = NULL;
+#endif
   context = CGBitmapContextCreate (bitmapData,
                                    pixelsWide,
                                    pixelsHigh,
                                    8,      // bits per component
                                    bitmapBytesPerRow,
                                    colorSpace,
+#if !GNUSTEP
                                    kCGImageAlphaPremultipliedLast);
+#else
+  // Opal only supports kCGImageAlphaPremultipliedFirst.
+                                   kCGImageAlphaPremultipliedFirst);
+#endif
   if (context== NULL)
     {
       free (bitmapData);// 5
@@ -90,7 +103,6 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   
   return context;
 }
-#endif
 
 
 @interface CALayer()
@@ -224,9 +236,6 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [_contentsGravity release];
   [_fillMode release];
   
-#if !(GSIMPL_UNDER_COCOA)
-  cairo_surface_finish(_cairoSurface);
-#endif
   CGContextRelease(_opalContext);
   
   [_animations release];
@@ -246,17 +255,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
      Idea: let the backing store manage its own size, and do so
      intelligently (preserving e.g. contents). */
   /* FXIME: this doesn't support CGImageRef as contents */
-#if !(GSIMPL_UNDER_COCOA)
-  cairo_surface_finish(_cairoSurface);
-#endif
   CGContextRelease(_opalContext);
 
-#if !(GSIMPL_UNDER_COCOA)
-  _cairoSurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, bounds.size.width, bounds.size.height);
-  _opalContext = opal_new_CGContext(_cairoSurface, bounds.size);
-#else
   _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
-#endif
 
   if([self needsDisplayOnBoundsChange])
     {

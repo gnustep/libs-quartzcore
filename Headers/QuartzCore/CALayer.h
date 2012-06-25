@@ -50,17 +50,11 @@ NSString *const kCATransition;
 
 @class CAAnimation;
 @class NSLayoutManager;
-typedef struct _cairo_surface cairo_surface_t;
 
 @protocol CAAction
 @required
 - (void)runActionForKey:(NSString *)key object:(id)anObject arguments:(NSDictionary *)dict;
 @end
-
-#if !(GSIMPL_UNDER_COCOA)
-/* This needs to become a public interface of Opal! */
-CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
-#endif
 
 @interface CALayer : NSObject<CAMediaTiming>
 {
@@ -101,9 +95,6 @@ CGContextRef opal_new_CGContext(cairo_surface_t *target, CGSize device_size);
   
   /* i-vars */
   CGContextRef _opalContext;
-#if !(GSIMPL_UNDER_COCOA)
-  cairo_surface_t * _cairoSurface;
-#endif
   BOOL _needsDisplay;
   BOOL _needsLayout;
   NSMutableDictionary *_animations;

@@ -34,7 +34,7 @@ hello_animation_OBJC_FILES = $(main_files) hello_animation.m
 ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_LDFLAGS += -L../Source/obj -L../Source/QuartzCore.framework
-ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lcairo -lopal -lQuartzCore
+ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lopal -lQuartzCore
 
 ADDITIONAL_INCLUDE_DIRS = -I../Headers
 

@@ -1,3 +1,12 @@
+2012-06-25  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/CALayer.h:
+	* Source/CALayer.m:
+	* Source/CARenderer.m:
+	* Tests/CATransform3D/GNUmakefile:
+	* Tests/GNUmakefile:
+	Removed direct uses of Cairo, as well as related Opal hacks.
+
 2012-06-24  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CAAnimation.h:

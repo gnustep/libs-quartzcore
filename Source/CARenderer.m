@@ -42,10 +42,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #endif
 
-#if !(GSIMPL_UNDER_COCOA)
-#import <cairo/cairo.h>
-#endif
-
 #define USE_RECT 0
 #if USE_RECT
 /* FIXME: Use of rectangle textures is broken */
@@ -64,30 +60,6 @@
 @interface CARenderer()
 @property (assign) NSOpenGLContext *GLContext;
 @end
-
-#if !(GSIMPL_UNDER_COCOA)
-/* FIXME:
-   CGContext @interface has been COPIED from opal.
-   This is wrong.
-   The only reason why we need this is to get the cairo context
-   from a CGContextRef.
-   */
-/* ********************************** */
-typedef struct ct_additions ct_additions;
-@interface CGContext : NSObject
-{
-@public
-  cairo_t *ct;  /* A Cairo context -- destination of this CGContext */
-  ct_additions *add;  /* Additional things not in Cairo's gstate */
-  CGAffineTransform txtmatrix;
-  CGFloat scale_factor;
-  CGSize device_size;
-}
-- (id) initWithSurface: (cairo_surface_t *)target size: (CGSize)size;
-@end
-/* ************************************ */
-/* END FIXME */
-#endif
 
 @implementation CARenderer
 @synthesize layer=_layer;
@@ -301,22 +273,12 @@ typedef struct ct_additions ct_additions;
           CGContextRef layerContext = [layerContents context];
 
           glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-#if !(GSIMPL_UNDER_COCOA)
-          cairo_surface_t * cairoSurface = cairo_get_target(layerContext->ct);
-          qcLoadTexImage(GL_RGBA,
-                         cairo_image_surface_get_width(cairoSurface),
-                         cairo_image_surface_get_height(cairoSurface),
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         cairo_image_surface_get_data(cairoSurface));
-#else
           qcLoadTexImage(GL_RGBA,
                          CGBitmapContextGetWidth(layerContext),
                          CGBitmapContextGetHeight(layerContext),
                          GL_RGBA,
                          GL_UNSIGNED_BYTE,
                          CGBitmapContextGetData(layerContext));
-#endif
  
         }
 #if !(GSIMPL_UNDER_COCOA)
