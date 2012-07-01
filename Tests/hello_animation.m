@@ -125,6 +125,7 @@ Class classOfTestOpenGLView()
     [testsMenu addItemWithTitle:@"Animation 4" action:@selector(animation4:) keyEquivalent:@"4"];
     [testsMenu addItemWithTitle:@"Animation 5" action:@selector(animation5:) keyEquivalent:@"5"];
     [testsMenu addItemWithTitle:@"Animation 6" action:@selector(animation6:) keyEquivalent:@"6"];
+    [testsMenu addItemWithTitle:@"Animation 7" action:@selector(animation7:) keyEquivalent:@"7"];
     [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
   
@@ -195,6 +196,17 @@ Class classOfTestOpenGLView()
 {
   CALayer * layer = [_renderer layer];
   [layer setBounds:CGRectMake([layer bounds].origin.x, [layer bounds].origin.y, [layer bounds].size.width + rand() % 50 - 25, [layer bounds].size.height + rand() % 50 - 25)];
+}
+
+- (void) animation7:sender
+{
+  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+  [animation setFromValue: [NSValue valueWithCATransform3D: [_theSublayer transform]]];
+  [animation setToValue: [NSValue valueWithCATransform3D: CATransform3DRotate([_theSublayer transform], M_PI, 0, 0, 1)]];
+  [animation setDuration: 2];
+  [animation setAutoreverses:YES];
+  
+  [_theSublayer addAnimation: animation forKey: @"doABarrelRoll"];
 }
 
 - (void) layerSetNeedsDisplay:sender

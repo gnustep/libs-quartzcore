@@ -1,5 +1,22 @@
 2012-07-01  Ivan Vučica  <ivan@vucica.net>
 
+	* Source/CAAnimation.m:
+	Linear interpolation moved into separate function. Added functions
+	for conversion between rotation matrices and quaternions. 
+
+	Work on interpolating CATransform3D values. Matrix is decomposed into
+	translation, scale and rotation components, and each is interpolated
+	separately. Rotation is interpolated by conversion into quaternion
+	and then interpolating quaternion's components.
+
+	Unfortunately, some part of the process (possibly the entire concept)
+	still doesn't work.
+
+	* Tests/hello_animation.m:
+	Added a test for CATransform3D which involves rotation.
+
+2012-07-01  Ivan Vučica  <ivan@vucica.net>
+
 	* Headers/QuartzCore/AppleSupport.h:
 	* Headers/QuartzCore/AppleSupportRevert.h:
 	* Headers/QuartzCore/CATransform3D.h:
