@@ -52,17 +52,19 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return [[[self alloc] init] autorelease];
 }
 
-- (id)init
+- (id) init
 {
   self = [super init];
-  if(!self)
+  if (!self)
     return nil;
   
-  static NSString * keys[] = {@"delegate", @"removedOnCompletion", @"timingFunction", @"duration", @"speed", @"autoreverses", @"repeatCount"};
-  for(int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+  static NSString * keys[] = {
+    @"delegate", @"removedOnCompletion", @"timingFunction", 
+    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       id defaultValue = [[self class] defaultValueForKey: keys[i]];
-      if(defaultValue)
+      if (defaultValue)
         {
           [self setValue:defaultValue
                   forKey:keys[i]];
@@ -72,36 +74,36 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return self;
 }
 
-+ (id) defaultValueForKey:(NSString *)key
++ (id) defaultValueForKey: (NSString *)key
 {
-  if([key isEqualToString:@"delegate"])
+  if ([key isEqualToString:@"delegate"])
     {
       return nil;
     }
-  if([key isEqualToString:@"removedOnCompletion"])
+  if ([key isEqualToString:@"removedOnCompletion"])
     {
       return [NSNumber numberWithBool: YES];
     }
-  if([key isEqualToString:@"timingFunction"])
+  if ([key isEqualToString:@"timingFunction"])
     {
       return nil; /* indicates linear pacing */
     }
     
   /* CAMediaTiming */
   /* FIXME: some of these should be picked up from nearest CATransaction */
-  if([key isEqualToString:@"duration"])
+  if ([key isEqualToString:@"duration"])
     {
       return [NSNumber numberWithFloat: 0.25];
     }
-  if([key isEqualToString:@"speed"])
+  if ([key isEqualToString:@"speed"])
     {
       return [NSNumber numberWithFloat: 1.0];
     }
-  if([key isEqualToString:@"autoreverses"])
+  if ([key isEqualToString:@"autoreverses"])
     {
       return [NSNumber numberWithBool: NO];
     }
-  if([key isEqualToString:@"repeatCount"])
+  if ([key isEqualToString:@"repeatCount"])
     {
       return [NSNumber numberWithFloat: 1.0];
     }
@@ -127,12 +129,12 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   /* Slides */
   CFTimeInterval timeAuthorityLocalTime = [timeAuthority localTime];
   CFTimeInterval activeTime = [self activeTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
-  if(isinf([self duration]))
+  if (isinf([self duration]))
     return activeTime;
   
   NSInteger k = floor(activeTime / [self duration]);
   CFTimeInterval localTime = activeTime - k * [self duration];
-  if([self autoreverses] && k % 2 == 1)
+  if ([self autoreverses] && k % 2 == 1)
     {
       localTime = [self duration] - localTime;
     }
@@ -162,16 +164,16 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 - (id)initWithKeyPath:(NSString *)keyPath
 {
   self = [super init];
-  if(!self)
+  if (!self)
     return nil;
   
   [self setKeyPath: keyPath];
   
   static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
-  for(int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       id defaultValue = [[self class] defaultValueForKey: keys[i]];
-      if(defaultValue)
+      if (defaultValue)
         {
           [self setValue:defaultValue
                   forKey:keys[i]];
@@ -181,21 +183,21 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return self;
 }
 
-+ (id)defaultValueForKey:(NSString *)key
++ (id)defaultValueForKey: (NSString *)key
 {
-  if([key isEqualToString:@"additive"])
+  if ([key isEqualToString:@"additive"])
     {
       return NO;
     }
-  if([key isEqualToString:@"cumulative"])
+  if ([key isEqualToString:@"cumulative"])
     {
       return NO;
     }
-  if([key isEqualToString:@"keyPath"])
+  if ([key isEqualToString:@"keyPath"])
     {
       return nil;
     }
-  if([key isEqualToString:@"valueFunction"])
+  if ([key isEqualToString:@"valueFunction"])
     {
       return nil;
     }
@@ -240,7 +242,8 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   
   float fraction = theTime / _duration;
 
-  if([_fromValue isKindOfClass: [NSNumber class]] && [_toValue isKindOfClass: [NSNumber class]])
+  if ([_fromValue isKindOfClass: [NSNumber class]] &&
+      [_toValue isKindOfClass: [NSNumber class]])
     {
       /* It should be safe to presume that values can be
          represented as floats. */
@@ -252,12 +255,14 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
       return [NSNumber numberWithFloat: value];
     }
     
-  if ([_fromValue isKindOfClass: [NSValue class]] && [_toValue isKindOfClass: [NSValue class]] && !strcmp([_fromValue objCType], [_toValue objCType]))
+  if ([_fromValue isKindOfClass: [NSValue class]] &&
+      [_toValue isKindOfClass: [NSValue class]] &&
+      !strcmp([_fromValue objCType], [_toValue objCType]))
     {
       NSValue *from = _fromValue;
       NSValue *to = _toValue;
 
-      if(!strcmp([from objCType], @encode(NSPoint)))
+      if (!strcmp([from objCType], @encode(NSPoint)))
         {
           /* Just convert to CGPoint. Core Animation doesn't deal with NSPoints! */
           /* After that, don't return; instead let the CGPoint branch deal with the values. */
@@ -269,7 +274,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
           to = [NSValue valueWithBytes:&toPt objCType:@encode(CGPoint)];
         }
         
-      if(!strcmp([from objCType], @encode(CGPoint)))
+      if (!strcmp([from objCType], @encode(CGPoint)))
         {
           /* NSValue doesn't come with CGPoint support.
              Opal and Core Graphics don't provide it either.

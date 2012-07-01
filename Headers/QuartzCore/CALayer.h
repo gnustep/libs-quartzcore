@@ -49,7 +49,6 @@ NSString *const kCAGravityBottomRight;
 NSString *const kCATransition;
 
 @class CAAnimation;
-@class NSLayoutManager;
 
 @protocol CAAction
 @required
@@ -61,7 +60,7 @@ NSString *const kCATransition;
   /* property-backing i-vars */
   id _delegate;
   id _contents;
-  NSLayoutManager * _layoutManager;
+  id _layoutManager;
   CALayer * _superlayer;
   NSArray * _sublayers;
   CGRect _frame;
@@ -106,7 +105,7 @@ NSString *const kCATransition;
 
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
-@property (retain)                   NSLayoutManager *layoutManager;
+@property (retain)                   id layoutManager;
 @property (nonatomic,readonly)       CALayer *superlayer;
 @property (nonatomic,copy)           NSArray *sublayers;
 @property (assign)                   CGRect frame;

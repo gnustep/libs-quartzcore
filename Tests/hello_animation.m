@@ -181,7 +181,7 @@ Class classOfTestOpenGLView()
 {
   static BOOL toggle = NO;
   CALayer * layer = [_renderer layer];
-  if(!toggle)
+  if (!toggle)
     [layer setTransform: CATransform3DMakeRotation(M_PI_4/2, 0, 0, 1)];
   else
     [layer setTransform: CATransform3DIdentity];
@@ -197,12 +197,12 @@ Class classOfTestOpenGLView()
   NSLog(@"pres pos: %g %g", [presLayer position].x, [presLayer position].y);
   
   NSLog(@"modelani: %@", [layer animationKeys]);
-  for(NSString * ani in [layer animationKeys])
+  for (NSString * ani in [layer animationKeys])
     {
       NSLog(@" %@ %g", [layer animationForKey: ani], [[layer animationForKey: ani] beginTime]);
     }
   NSLog(@"pres ani: %@", [presLayer animationKeys]);
-  for(NSString * ani in [presLayer animationKeys])
+  for (NSString * ani in [presLayer animationKeys])
     {
       NSLog(@" %@ %g", [presLayer animationForKey: ani], [[presLayer animationForKey: ani] beginTime]);
     }
@@ -295,7 +295,7 @@ Class classOfTestOpenGLView()
   NSLog(@"Time conversion of sublayer to layer - postrender: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: [_renderer layer]]);
   
   NSLog(@"Experimenting: %g", [[_renderer layer] convertTime: CACurrentMediaTime() toLayer: _theSublayer]);
-  if([[[_renderer layer] animationKeys] count])
+  if ([[[_renderer layer] animationKeys] count])
     NSLog(@"Experimenting2: %g", [[[_renderer layer] animationForKey:[[[_renderer layer] animationKeys] objectAtIndex:0]] beginTime]);
   #endif
   

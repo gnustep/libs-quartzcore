@@ -45,7 +45,7 @@ static NSMutableArray *transactionStack = nil;
 
 + (void) begin
 {
-  if(!transactionStack)
+  if (!transactionStack)
     {
       transactionStack = [NSMutableArray new];
     }
@@ -123,7 +123,7 @@ static NSMutableArray *transactionStack = nil;
 - (id) init
 {
   self = [super init];
-  if(!self)
+  if (!self)
     return nil;
 
   // TODO

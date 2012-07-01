@@ -38,7 +38,7 @@
 - (id)initWithContext: (CGContextRef)context
 {
   self = [super init];
-  if(!self)
+  if (!self)
     return nil;
 
   [self setContext: context];
@@ -58,9 +58,9 @@
   return _context;
 }
 
-- (void)setContext:(CGContextRef)context
+- (void)setContext: (CGContextRef)context
 {
-  if(context == _context)
+  if (context == _context)
     return;
   
   CGContextRetain(context);

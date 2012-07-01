@@ -63,24 +63,11 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   bitmapByteCount     = (bitmapBytesPerRow * pixelsHigh);
   
   colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
-#if !GNUSTEP
-  bitmapData = malloc(bitmapByteCount);
-  if (bitmapData == NULL)
-    {
-      fprintf (stderr, "Memory not allocated!");
-      return NULL;
-    }
-#else
+
   // Let CGBitmapContextCreate() allocate the memory.
   // This should be good under Cocoa too.
-
-  // However, either Opal or my understanding need fixing.
-  // Under GNUstep, after very small amount of allocations,
-  // I keep getting NULL. Are we expected to free() the memory,
-  // or does CGContextRelease() do that?
-
   bitmapData = NULL;
-#endif
+
   context = CGBitmapContextCreate (bitmapData,
                                    pixelsWide,
                                    pixelsHigh,
@@ -91,8 +78,14 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
                                    kCGImageAlphaPremultipliedLast);
 #else
   // Opal only supports kCGImageAlphaPremultipliedFirst.
-                                   kCGImageAlphaPremultipliedFirst);
+  // However, this is incorrect since it implies ARGB.
+                                  kCGImageAlphaPremultipliedFirst);
 #endif
+
+  // Note: our use of premultiplied alpha means that we need to
+  // do alpha blending using:
+  //  GL_SRC_ALPHA, GL_ONE
+
   if (context== NULL)
     {
       free (bitmapData);// 5
@@ -160,7 +153,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 /* *** methods *** */
 - (id) init
 {
-  if((self = [super init]) != nil)
+  if ((self = [super init]) != nil)
     {
       _animations = [[NSMutableDictionary alloc] init];
       _sublayers = [[NSMutableArray alloc] init];
@@ -183,7 +176,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
      presentation layer. Not to be used by app developer for copying existing
      layers. */
 
-  if((self = [self init]) != nil)
+  if ((self = [self init]) != nil)
     {
       [self setDelegate: [layer delegate]];
       [self setLayoutManager: [layer layoutManager]];
@@ -237,9 +230,6 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [_fillMode release];
   
   CGContextRelease(_opalContext);
-  #if !GNUSTEP
-  free(CGBitmapContextGetData(_opalContext));
-  #endif
   
   [_animations release];
   
@@ -249,7 +239,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 /* *** properties *** */
 - (void) setBounds: (CGRect)bounds
 {
-  if(CGRectEqualToRect(bounds, _bounds))
+  if (CGRectEqualToRect(bounds, _bounds))
     return;
   
   _bounds = bounds;
@@ -259,21 +249,18 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
      intelligently (preserving e.g. contents). */
   /* FXIME: this doesn't support CGImageRef as contents */
   CGContextRelease(_opalContext);
-  #if !GNUSTEP
-  free(CGBitmapContextGetData(_opalContext));
-  #endif
 
   _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
 
-  if([self needsDisplayOnBoundsChange])
+  if ([self needsDisplayOnBoundsChange])
     {
       [self setNeedsDisplay];
     }
 }
 
-- (void)setBackgroundColor:(CGColorRef)backgroundColor
+- (void)setBackgroundColor: (CGColorRef)backgroundColor
 {
-  if(backgroundColor == _backgroundColor)
+  if (backgroundColor == _backgroundColor)
     return;
   
   CGColorRetain(backgroundColor);
@@ -285,7 +272,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 - (void) display
 {
-  if([_delegate respondsToSelector: @selector(displayLayer:)])
+  if ([_delegate respondsToSelector: @selector(displayLayer:)])
     {
       [_delegate displayLayer: self];
     }
@@ -304,7 +291,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 - (void) displayIfNeeded
 {
-  if(_needsDisplay)
+  if (_needsDisplay)
     {
       [self display];
     }
@@ -323,14 +310,14 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   _needsDisplay = YES;
 }
 
-- (void) setNeedsDisplayInRect:(CGRect)r
+- (void) setNeedsDisplayInRect: (CGRect)r
 {
   [self setNeedsDisplay];
 }
 
 - (void) drawInContext: (CGContextRef)context
 {
-  if([_delegate respondsToSelector: @selector(drawLayer:inContext:)])
+  if ([_delegate respondsToSelector: @selector(drawLayer:inContext:)])
     {
       [_delegate drawLayer: self inContext: context];
     }
@@ -352,7 +339,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 - (id) presentationLayer
 {
-  if(!_modelLayer && !_presentationLayer)
+  if (!_modelLayer && !_presentationLayer)
     {
       [self displayIfNeeded];
 
@@ -385,9 +372,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   return !_presentationLayer;
 }
 
-- (CALayer *)superlayer
+- (CALayer *) superlayer
 {
-  if(![self isPresentationLayer])
+  if (![self isPresentationLayer])
     {
       return _superlayer;
     }
@@ -397,16 +384,16 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
     }
 }
 
-- (NSArray *)sublayers
+- (NSArray *) sublayers
 {
-  if(![self isPresentationLayer])
+  if (![self isPresentationLayer])
     {
       return _sublayers;
     }
   else
     {
       NSMutableArray * presentationSublayers = [NSMutableArray arrayWithCapacity:[[[self modelLayer] sublayers] count]];
-      for(id modelSublayer in [[self modelLayer] sublayers])
+      for (id modelSublayer in [[self modelLayer] sublayers])
         {
           [presentationSublayers addObject: [modelSublayer presentationLayer]];
         }
@@ -415,18 +402,18 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 }
 
 /* ********************************** */
-- (void)addAnimation:(CAAnimation *)anim forKey:(NSString *)key
+- (void) addAnimation: (CAAnimation *)anim forKey: (NSString *)key
 {
   [_animations setValue: anim
                  forKey: key];
 }
 
-- (void)removeAnimationForKey:(NSString *)key
+- (void) removeAnimationForKey: (NSString *)key
 {
   [_animations removeObjectForKey: key];
 }
 
-- (CAAnimation *)animationForKey:(NSString *)key
+- (CAAnimation *)animationForKey: (NSString *)key
 {
   return [_animations valueForKey: key];
 }
@@ -436,12 +423,12 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   return [_animations allKeys];
 }
 
-- (void) applyAnimationsAtTime:(CFTimeInterval)theTime
+- (void) applyAnimationsAtTime: (CFTimeInterval)theTime
 {
-  if(![self isPresentationLayer])
+  if (![self isPresentationLayer])
     {
       static BOOL warned = NO;
-      if(!warned)
+      if (!warned)
         {
           NSLog(@"One time warning: Attempted to apply animations to model layer. Redirecting to presentation layer since applying animations only makes sense for presentation layers.");
           warned = YES;
@@ -451,10 +438,10 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
     }
     
     NSMutableArray * animationKeysToRemove = [NSMutableArray new];
-    for(NSString * animationKey in _animations)
+    for (NSString * animationKey in _animations)
       {
         CAAnimation * animation = [_animations objectForKey: animationKey];
-        if([animation beginTime] == 0)
+        if ([animation beginTime] == 0)
           {
             // FIXME: this MUST be grabbed from CATransaction, and
             // it must be done by the animation itself!
@@ -466,11 +453,11 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
             [animation setBeginTime: [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]]];
             currentFrameBeginTime = oldFrameBeginTime;
           }
-        if([animation isKindOfClass: [CAPropertyAnimation class]])
+        if ([animation isKindOfClass: [CAPropertyAnimation class]])
           {
             CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
                         
-            if([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
+            if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
               {
                 /* FIXME: doesn't take into account speed */
                 
@@ -551,7 +538,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   while([layer superlayer])
     {
       layer = [layer superlayer];
-      if(layer)
+      if (layer)
         [allAncestorLayers addObject: layer];
     }
   
@@ -560,19 +547,19 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 - (CALayer *) nextAncestorOf: (CALayer *)layer
 {
-  if([[self sublayers] containsObject: layer])
+  if ([[self sublayers] containsObject: layer])
     return self;
     
-  for(id i in [self sublayers])
+  for (id i in [self sublayers])
     {
-      if([i nextAncestorOf: layer])
+      if ([i nextAncestorOf: layer])
         return i;
     }
   
   return nil;
 }
 
-+ (void) setCurrentFrameBeginTime:(CFTimeInterval)frameTime
++ (void) setCurrentFrameBeginTime: (CFTimeInterval)frameTime
 {
   currentFrameBeginTime = frameTime;
 }
@@ -590,16 +577,16 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 {
   /* Slides */
   CFTimeInterval timeAuthorityLocalTime = [timeAuthority localTime];
-  if(!timeAuthority)
+  if (!timeAuthority)
     timeAuthorityLocalTime = currentFrameBeginTime ? currentFrameBeginTime : CACurrentMediaTime();
   
   CFTimeInterval activeTime = [self activeTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
-  if(isinf([self duration]))
+  if (isinf([self duration]))
     return activeTime;
   
   NSInteger k = floor(activeTime / [self duration]);
   CFTimeInterval localTime = activeTime - k * [self duration];
-  if([self autoreverses] && k % 2 == 1)
+  if ([self autoreverses] && k % 2 == 1)
     {
       localTime = [self duration] - localTime;
     }
@@ -614,7 +601,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 {
   /* Slides */
   id<CAMediaTiming> timeAuthority = [self superlayer];
-  if(!timeAuthority)
+  if (!timeAuthority)
     return [self activeTimeWithTimeAuthorityLocalTime: currentFrameBeginTime ? currentFrameBeginTime : CACurrentMediaTime()];
   else
     return [self activeTimeWithTimeAuthorityLocalTime: [timeAuthority localTime]];
@@ -628,7 +615,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime fromLayer: (CALayer *)layer
 {
-  if(layer == nil)
+  if (layer == nil)
     return [self localTime];
 
   /* Just make use of convertTime:toLayer: instead of reimplementing */
@@ -639,7 +626,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   /* Method used to convert 'activeTime' of self into 'activeTime' 
      of 'layer'. */
 
-  if(layer == self)
+  if (layer == self)
     return theTime;
 
   /* First, convert theTime to the "media time" timespace, the 
@@ -651,10 +638,10 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   theTime += [self beginTime];
 
   NSArray * ancestorLayers = [self allAncestorLayers];
-  for(CALayer * l in ancestorLayers)
+  for (CALayer * l in ancestorLayers)
     {
       /* layer was one of our ancestors? great! */
-      if(layer == l)
+      if (layer == l)
         return theTime;
       
       /* For each layer, we invert the formula in -activeTime. */
@@ -663,7 +650,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       theTime += [l beginTime];
     }
   
-  if(layer == nil)
+  if (layer == nil)
     {
       /* We were requested time in "media time" timespace. */
       return theTime;

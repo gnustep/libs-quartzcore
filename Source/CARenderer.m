@@ -81,7 +81,7 @@
 - (id) initWithNSOpenGLContext: (NSOpenGLContext*)ctx
                        options: options
 {
-  if((self = [super init]) != nil)
+  if ((self = [super init]) != nil)
     {
       [self setGLContext: ctx];
     }
@@ -103,7 +103,7 @@
 - (void) beginFrameAtTime: (CFTimeInterval)timeInterval
                 timeStamp: (CVTimeStamp *)timeStamp
 {
-  if(!_firstRender)
+  if (!_firstRender)
     {
       _firstRender = timeInterval;
       return;
@@ -149,7 +149,7 @@
 - (void) _updateLayer: (CALayer *)layer
                atTime: (CFTimeInterval)theTime
 {
-  if([layer modelLayer])
+  if ([layer modelLayer])
     layer = [layer modelLayer];
 
   [CALayer setCurrentFrameBeginTime: theTime];
@@ -163,7 +163,7 @@
   [presentationLayer applyAnimationsAtTime: theTime];
   
   /* Tell all children to update themselves. */
-  for(CALayer * sublayer in [layer sublayers])
+  for (CALayer * sublayer in [layer sublayers])
     {
       [self _updateLayer: sublayer
                   atTime: theTime];
@@ -173,7 +173,7 @@
 - (void) _renderLayer: (CALayer *)layer
         withTransform: (CATransform3D)transform
 {
-  if([layer presentationLayer])
+  if ([layer presentationLayer])
     layer = [layer presentationLayer];
   
   [layer displayIfNeeded];
@@ -181,7 +181,7 @@
   // apply transform and translate to position
   transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
   transform = CATransform3DConcat([layer transform], transform);
-  if(sizeof(transform.m11) == sizeof(GLdouble))
+  if (sizeof(transform.m11) == sizeof(GLdouble))
     glLoadMatrixd((GLdouble*)&transform);
   else
     glLoadMatrixf((GLfloat*)&transform);
@@ -227,14 +227,14 @@
   glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
   
   // apply anchor point
-  for(int i = 0; i < 6; i++)
+  for (int i = 0; i < 6; i++)
     {
       vertices[i*2 + 0] -= [layer anchorPoint].x * [layer bounds].size.width;
       vertices[i*2 + 1] -= [layer anchorPoint].y * [layer bounds].size.height;
     }
 
   // apply background color
-  if([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
+  if ([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
     {
       const CGFloat * componentsCG = CGColorGetComponents([layer backgroundColor]);
       GLfloat components[4];
@@ -260,14 +260,14 @@
     }
 
   // if there are some contents, draw them
-  if([layer contents])
+  if ([layer contents])
     {
       /* FIXME: should cache textures of layers, and update them
          only if needed */
       GLuint texture;
       glGenTextures(1, &texture);
       glBindTexture(TEXTURE_TARGET, texture);
-      if([[layer contents] isKindOfClass: [CABackingStore class]])
+      if ([[layer contents] isKindOfClass: [CABackingStore class]])
         {
           CABackingStore * layerContents = ((CABackingStore *)[layer contents]);
           CGContextRef layerContext = [layerContents context];
@@ -298,7 +298,7 @@
 
   transform = CATransform3DConcat ([layer sublayerTransform], transform);
   transform = CATransform3DTranslate (transform, -[layer bounds].size.width/2, -[layer bounds].size.height/2, 0);
-  for(CALayer * sublayer in [layer sublayers])
+  for (CALayer * sublayer in [layer sublayers])
     {
       [self _renderLayer: sublayer withTransform: transform];
     }

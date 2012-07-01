@@ -1,3 +1,21 @@
+2012-07-01  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/CALayer.h:
+	Replaced references to NSLayoutManager with id.
+
+	* Source/CAAnimation.m:
+	* Source/CABackingStore.m:
+	* Source/CARenderer.m:
+	* Source/CATransaction.m:
+	* Source/CATransform3D.m:
+	* Tests/QCTestOpenGLView.m:
+	* Tests/hello_animation.m:
+	Code style corrections.
+
+	* Source/CALayer.m:
+	Code style corrections. Now we always let Core Graphics allocate
+	date for the bitmap context.
+
 2012-06-25  Ivan Vučica  <ivan@vucica.net>
 
 	* Tests/GLES/GLESContext.h:

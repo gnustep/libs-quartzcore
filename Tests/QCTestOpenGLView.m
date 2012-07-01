@@ -38,7 +38,7 @@
 - (id) initWithFrame: (NSRect)frame pixelFormat: (NSOpenGLPixelFormat *)format
 {
   self = [super initWithFrame: frame];
-  if(!self)
+  if (!self)
     return nil;
 
   return self;
@@ -73,11 +73,11 @@
 
 - (void) dealloc
 {
-  if(_isAnimating)
+  if (_isAnimating)
     [self stopAnimation];
 
 #if QC_USEOPENGLES
-  if(_openGLContext)
+  if (_openGLContext)
     {
       [_openGLContext release];
     }
@@ -106,7 +106,7 @@
 
 - (void) startAnimation
 {
-  if(!_timer)
+  if (!_timer)
     _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60. 
                                               target: self 
                                             selector: @selector(timerAnimation:) 

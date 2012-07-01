@@ -159,10 +159,10 @@ CATransform3D CATransform3DConcat(CATransform3D b, CATransform3D a)
 }
 
 /* code for debug output:
-  for(int i = 0; i < 16; i++)
+  for (int i = 0; i < 16; i++)
     {
       printf("%g ", ((GLfloat*)&transform)[i]);
-      if(i%4 == 3) 
+      if (i%4 == 3) 
 	printf("\n");
     }
  */
