@@ -55,5 +55,12 @@ CATransform3D CATransform3DRotate(CATransform3D t, CGFloat radians, CGFloat x, C
 
 CATransform3D CATransform3DConcat(CATransform3D a, CATransform3D b);
 
+CATransform3D CATransform3DInvert(CATransform3D t);
+
+@interface NSValue (CATransform3D)
++ (NSValue *) valueWithCATransform3D: (CATransform3D)transform;
+- (CATransform3D) CATransform3DValue;
+@end
+
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
 

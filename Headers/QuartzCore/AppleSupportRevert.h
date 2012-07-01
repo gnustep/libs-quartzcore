@@ -117,6 +117,7 @@
 #undef CATransform3DScale
 #undef CATransform3DRotate
 #undef CATransform3DConcat
+#undef CATransform3DInvert
 
 /* CoreAnimation.h */
 

@@ -24,6 +24,10 @@
    Boston, MA 02110-1301, USA.
 */
 
+#if GSIMPL_UNDER_COCOA
+#import <GSQuartzCore/AppleSupport.h>
+#endif
+
 #import "QuartzCore/CATransform3D.h"
 #import "../Testing.h"
 
@@ -252,6 +256,23 @@ int main(int argc, char ** argv)
 
   PASS(QCCATransform3DsAreEqual(rotationArbitraryTransform, correctRotationArbitraryTransform), "rotation around arbitrary axis transform correctly constructed");
   PASS(!CATransform3DEqualToTransform(rotationArbitraryTransform, correctRotationArbitraryTransform), "rotation around arbitrary axis should fail equalToTransform test (precision)");
+
+  //////////////////////////
+
+  PASS(QCCATransform3DsAreEqual(CATransform3DInvert(CATransform3DIdentity), CATransform3DIdentity), "inverted identity matrix is still identity matrix");
+  PASS(QCCATransform3DsAreEqual(correctRotationYTransform, CATransform3DInvert(CATransform3DInvert(correctRotationYTransform))), "inversion of inversion of rotationYTransform is rotationYTransform");
+
+
+  CATransform3D correctInvertOfRotationArbitraryTransform = {
+    0.333333,	-0.244017,	0.910684,	-0,	
+    0.910684,	0.333333,	-0.244017,	0,	
+   -0.244017,	0.910684,	0.333333,	-0,	
+   -0,          0,              -0,             1
+  };
+  
+  CATransform3D invertOfRotationArbitraryTransform = CATransform3DInvert(rotationArbitraryTransform);
+  PASS(QCCATransform3DsAreEqual(invertOfRotationArbitraryTransform, correctInvertOfRotationArbitraryTransform), "inversion of rotationArbitraryTransform is correct");
+
 
   //////////////////////////
 

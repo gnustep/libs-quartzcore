@@ -1,5 +1,18 @@
 2012-07-01  Ivan Vučica  <ivan@vucica.net>
 
+	* Headers/QuartzCore/AppleSupport.h:
+	* Headers/QuartzCore/AppleSupportRevert.h:
+	* Headers/QuartzCore/CATransform3D.h:
+	* Source/CATransform3D.m:
+	Added CATransform3DInvert(). Added CATransform3D category on
+	NSValue.
+
+	* Tests/CATransform3D/catransform3d.m:
+	* Tests/CATransform3D/Makefile.gs.mac:
+	Added some tests for CATransform3DInvert().
+
+2012-07-01  Ivan Vučica  <ivan@vucica.net>
+
 	* GSQuartzCore.xcodeproj/project.pbxproj:
 	* Headers/QuartzCore/CAAnimation.h:
 	* Headers/QuartzCore/CALayer.h:

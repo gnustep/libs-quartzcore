@@ -5,4 +5,4 @@ syntax: glob
 *.xcuserdata/*
 *.xcuserdatad/*
 */*.xcworkspace/*
-
+Tests/CATransform3D/catransform3d*

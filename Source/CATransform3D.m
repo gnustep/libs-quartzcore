@@ -158,6 +158,87 @@ CATransform3D CATransform3DConcat(CATransform3D b, CATransform3D a)
   return result;
 }
 
+
+static CGFloat determinant2x2(CGFloat m11, CGFloat m12,
+	                          CGFloat m21, CGFloat m22)
+{
+  return m11 * m22 - m12 * m21;
+}
+
+
+static CGFloat determinant3x3(CGFloat m11, CGFloat m12, CGFloat m13,
+	                          CGFloat m21, CGFloat m22, CGFloat m23,
+	                          CGFloat m31, CGFloat m32, CGFloat m33)
+{
+  return m11 * determinant2x2(m22, m23, m32, m33 )
+       - m21 * determinant2x2(m12, m13, m32, m33 )
+       + m31 * determinant2x2(m12, m13, m22, m23 );
+}
+
+
+static CGFloat determinant4x4(CATransform3D t)
+{
+  return t.m11 * determinant3x3(t.m22, t.m23, t.m24, t.m32, t.m33, t.m34, t.m42, t.m43, t.m44)
+       - t.m21 * determinant3x3(t.m12, t.m13, t.m14, t.m32, t.m33, t.m34, t.m42, t.m43, t.m44)
+       + t.m31 * determinant3x3(t.m12, t.m13, t.m14, t.m22, t.m23, t.m24, t.m42, t.m43, t.m44)
+       - t.m41 * determinant3x3(t.m12, t.m13, t.m14, t.m22, t.m23, t.m24, t.m32, t.m33, t.m34);
+}
+
+CATransform3D CATransform3DInvert(CATransform3D t)
+{
+  const CGFloat epsilon = 0.0001; /* TODO: which value should we use? */
+  CGFloat determinant = determinant4x4(t);
+  if (fabs(determinant) > epsilon)
+    {
+      /* can be inverted */
+      
+      CATransform3D m;
+      
+      m.m11 =   determinant3x3(t.m22, t.m23, t.m24, t.m32, t.m33, t.m34, t.m42, t.m43, t.m44);
+      m.m12 = - determinant3x3(t.m12, t.m13, t.m14, t.m32, t.m33, t.m34, t.m42, t.m43, t.m44);
+      m.m13 =   determinant3x3(t.m12, t.m13, t.m14, t.m22, t.m23, t.m24, t.m42, t.m43, t.m44);
+      m.m14 = - determinant3x3(t.m12, t.m13, t.m14, t.m22, t.m23, t.m24, t.m32, t.m33, t.m34);
+
+      m.m21 = - determinant3x3(t.m21, t.m23, t.m24, t.m31, t.m33, t.m34, t.m41, t.m43, t.m44);
+      m.m22 =   determinant3x3(t.m11, t.m13, t.m14, t.m31, t.m33, t.m34, t.m41, t.m43, t.m44);
+      m.m23 = - determinant3x3(t.m11, t.m13, t.m14, t.m21, t.m23, t.m24, t.m41, t.m43, t.m44);
+      m.m24 =   determinant3x3(t.m11, t.m13, t.m14, t.m21, t.m23, t.m24, t.m31, t.m33, t.m34);
+  
+      m.m31 =   determinant3x3(t.m21, t.m22, t.m24, t.m31, t.m32, t.m34, t.m41, t.m42, t.m44);
+      m.m32 = - determinant3x3(t.m11, t.m12, t.m14, t.m31, t.m32, t.m34, t.m41, t.m42, t.m44);
+      m.m33 =   determinant3x3(t.m11, t.m12, t.m14, t.m21, t.m22, t.m24, t.m41, t.m42, t.m44);
+      m.m34 = - determinant3x3(t.m11, t.m12, t.m14, t.m21, t.m22, t.m24, t.m31, t.m32, t.m34);
+  
+      m.m41 = - determinant3x3(t.m21, t.m22, t.m23, t.m31, t.m32, t.m33, t.m41, t.m42, t.m43);
+      m.m42 =   determinant3x3(t.m11, t.m12, t.m13, t.m31, t.m32, t.m33, t.m41, t.m42, t.m43);
+      m.m43 = - determinant3x3(t.m11, t.m12, t.m13, t.m21, t.m22, t.m23, t.m41, t.m42, t.m43);
+      m.m44 =   determinant3x3(t.m11, t.m12, t.m13, t.m21, t.m22, t.m23, t.m31, t.m32, t.m33);
+
+      return m;
+    }
+  else
+    {
+      /* cannot be inverted */
+      return t;
+    }
+}
+
+@implementation NSValue (CATransform3D)
+
++ (NSValue *) valueWithCATransform3D:(CATransform3D)transform
+{
+  return [NSValue valueWithBytes:&transform objCType:@encode(CATransform3D)];
+}
+
+- (CATransform3D) CATransform3DValue
+{
+  CATransform3D value;
+  [self getValue: &value];
+  return value;
+}
+
+@end
+
 /* code for debug output:
   for (int i = 0; i < 16; i++)
     {

@@ -122,6 +122,7 @@
 #define CATransform3DScale GSCATransform3DScale
 #define CATransform3DRotate GSCATransform3DRotate
 #define CATransform3DConcat GSCATransform3DConcat
+#define CATransform3DInvert GSCATransform3DInvert
 
 /* CATransformLayer.h */
 

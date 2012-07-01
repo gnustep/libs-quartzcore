@@ -1,0 +1,14 @@
+
+CFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+CXXFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+OBJCFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+
+all: catransform3d
+
+catransform3d.o: ../Testing.h
+
+catransform3d: catransform3d.o ../Testing.h
+	$(CC) -arch i386 catransform3d.o -o catransform3d -framework GSQuartzCore && ./catransform3d
+
+clean:
+	-rm catransform3d.o catransform3d
