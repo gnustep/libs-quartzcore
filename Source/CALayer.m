@@ -64,7 +64,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   
   colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
 #if !GNUSTEP
-  bitmapData = malloc(bitmapByteCount * bitmapBytesPerRow);
+  bitmapData = malloc(bitmapByteCount);
   if (bitmapData == NULL)
     {
       fprintf (stderr, "Memory not allocated!");
@@ -237,6 +237,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [_fillMode release];
   
   CGContextRelease(_opalContext);
+  #if !GNUSTEP
+  free(CGBitmapContextGetData(_opalContext));
+  #endif
   
   [_animations release];
   
@@ -256,6 +259,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
      intelligently (preserving e.g. contents). */
   /* FXIME: this doesn't support CGImageRef as contents */
   CGContextRelease(_opalContext);
+  #if !GNUSTEP
+  free(CGBitmapContextGetData(_opalContext));
+  #endif
 
   _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
 
