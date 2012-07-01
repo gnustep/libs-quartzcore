@@ -166,26 +166,6 @@ NSString *const kCATransition;
 
 @end
 
-@interface CALayer (FrameworkPrivate)
-/* Don't use these framework-private methods.
- * They may get removed at any time.
- */
-
-/* sets value passed into -[CARenderer beginFrameAtTime:...]
-   used as "time of object superior to root layer" (that is,
-   CARenderer) */
-+ (void) setCurrentFrameBeginTime: (CFTimeInterval)frameTime;
-- (CALayer *) rootLayer;
-- (NSArray *) allAncestorLayers;
-- (CALayer *) nextAncestorOf: (CALayer *)layer;
-
-- (void) discardPresentationLayer;
-- (void) applyAnimationsAtTime: (CFTimeInterval)time;
-
-- (CFTimeInterval) activeTime;
-- (CFTimeInterval) localTime;
-@end
-
 @interface NSObject (CALayer)
 - (void) displayLayer: (CALayer*)layer;
 - (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;

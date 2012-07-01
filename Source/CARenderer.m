@@ -28,6 +28,7 @@
 #import "QuartzCore/CARenderer.h"
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CALayer.h"
+#import "CALayer+FrameworkPrivate.h"
 #import "CABackingStore.h"
 #if !(__APPLE__)
 #import <GL/gl.h>
@@ -181,6 +182,7 @@
   // apply transform and translate to position
   transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
   transform = CATransform3DConcat([layer transform], transform);
+  
   if (sizeof(transform.m11) == sizeof(GLdouble))
     glLoadMatrixd((GLdouble*)&transform);
   else

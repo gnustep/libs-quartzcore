@@ -87,9 +87,6 @@
 
 @end
 
-@interface CAPropertyAnimation (FrameworkPrivate)
-- (void) applyToLayer: (CALayer *)layer;
-@end
 
 /* *********************************** */
 

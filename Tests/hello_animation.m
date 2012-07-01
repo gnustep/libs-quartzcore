@@ -124,6 +124,8 @@ Class classOfTestOpenGLView()
     [testsMenu addItemWithTitle:@"Animation 3" action:@selector(animation3:) keyEquivalent:@"3"];
     [testsMenu addItemWithTitle:@"Animation 4" action:@selector(animation4:) keyEquivalent:@"4"];
     [testsMenu addItemWithTitle:@"Animation 5" action:@selector(animation5:) keyEquivalent:@"5"];
+    [testsMenu addItemWithTitle:@"Animation 6" action:@selector(animation6:) keyEquivalent:@"6"];
+    [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
   
   [testsMenuItem setSubmenu:testsMenu];
@@ -188,6 +190,19 @@ Class classOfTestOpenGLView()
   
   toggle = !toggle;
 }
+
+- (void) animation6:sender
+{
+  CALayer * layer = [_renderer layer];
+  [layer setBounds:CGRectMake([layer bounds].origin.x, [layer bounds].origin.y, [layer bounds].size.width + rand() % 50 - 25, [layer bounds].size.height + rand() % 50 - 25)];
+}
+
+- (void) layerSetNeedsDisplay:sender
+{
+  CALayer * layer = [_renderer layer];
+  [layer setNeedsDisplay];  
+}
+
 
 - (void) printPos: (CALayer*)layer
 {

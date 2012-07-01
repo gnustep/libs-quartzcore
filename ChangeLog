@@ -1,5 +1,24 @@
 2012-07-01  Ivan Vučica  <ivan@vucica.net>
 
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Headers/QuartzCore/CAAnimation.h:
+	* Headers/QuartzCore/CALayer.h:
+	* Source/CAAnimation+FrameworkPrivate.h:
+	* Source/CALayer+FrameworkPrivate.h:
+	* Source/CAAnimation.m:
+	* Source/CARenderer.m:
+	Moved framework-private method declarations into separate headers.
+
+	* Source/CALayer.m:
+	Content now preserved upon resize. Context created when required
+	and in appropriate place: -[CALayer display].
+	Moved framework-private method declarations into separate headers.
+
+	* Tests/hello_animation.m:
+	Test code for bounds resize.
+
+2012-07-01  Ivan Vučica  <ivan@vucica.net>
+
 	* Headers/QuartzCore/CALayer.h:
 	Replaced references to NSLayoutManager with id.
 

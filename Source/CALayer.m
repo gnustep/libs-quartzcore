@@ -30,6 +30,9 @@
 #import "QuartzCore/CAAnimation.h"
 #import "QuartzCore/CALayer.h"
 #import "CABackingStore.h"
+#import "CALayer+FrameworkPrivate.h"
+#import "CAAnimation+FrameworkPrivate.h"
+
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
 #endif
@@ -244,14 +247,6 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   
   _bounds = bounds;
 
-  /* FIXME: we shouldn't lose existing content when changing bounds.
-     Idea: let the backing store manage its own size, and do so
-     intelligently (preserving e.g. contents). */
-  /* FXIME: this doesn't support CGImageRef as contents */
-  CGContextRelease(_opalContext);
-
-  _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
-
   if ([self needsDisplayOnBoundsChange])
     {
       [self setNeedsDisplay];
@@ -279,7 +274,18 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   else
     {
       /* By default, uses -drawInContext: to update the 'contents' property. */
+    
+      CGRect bounds = [self bounds];
+      
+      if (!_opalContext ||
+          CGBitmapContextGetWidth(_opalContext) != bounds.size.width ||
+          CGBitmapContextGetHeight(_opalContext) != bounds.size.height)
+      {
+        CGContextRelease(_opalContext);
 
+        _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
+      }
+      
       CGContextSaveGState (_opalContext);
       CGContextClipToRect (_opalContext, [self bounds]);
       [self drawInContext: _opalContext];
