@@ -168,6 +168,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       [self setRepeatCount: 1.0];
       [self setSpeed: 1.0];
       [self setDuration: __builtin_inf()];
+      [self setOpacity: 1.0];
       /* FIXME: is there a cleaner way to get inf apart from "1./0"? */
     }
   return self;

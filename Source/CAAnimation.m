@@ -354,6 +354,39 @@ static GSQuartzCoreQuaternion matrixToQuaternion(CATransform3D m)
   return q;
 }
 
+static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaternion a, GSQuartzCoreQuaternion b, CGFloat fraction)
+{
+    // slerp
+	GSQuartzCoreQuaternion qr;
+    
+    CGFloat dotproduct = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+	CGFloat theta, st, sut, sout, coeff1, coeff2;
+
+	theta = acos(dotproduct);
+	if (theta<0.0)
+      theta=-theta;
+	
+	st = sin(theta);
+	sut = sin(fraction*theta);
+	sout = sin((1-fraction)*theta);
+	coeff1 = sout/st;
+	coeff2 = sut/st;
+
+	qr.x = coeff1*a.x + coeff2*b.x;
+	qr.y = coeff1*a.y + coeff2*b.y;
+	qr.z = coeff1*a.z + coeff2*b.z;
+	qr.w = coeff1*a.w + coeff2*b.w;
+
+    // normalize
+    CGFloat qrLen = sqrt(qr.x*qr.x + qr.y*qr.y + qr.z*qr.z + qr.w*qr.w);
+    qr.x /= qrLen;
+    qr.y /= qrLen;
+    qr.z /= qrLen;
+    qr.w /= qrLen;
+    
+    return qr;
+    
+}
 /** End helper math functions **/
 /*******************************/
 
@@ -534,11 +567,27 @@ static GSQuartzCoreQuaternion matrixToQuaternion(CATransform3D m)
           GSQuartzCoreQuaternion fromQuat = matrixToQuaternion(fromRotation);
           GSQuartzCoreQuaternion toQuat = matrixToQuaternion(toRotation);
           
+          CGFloat fromQuatLen = sqrt(fromQuat.x*fromQuat.x + fromQuat.y*fromQuat.y + fromQuat.z*fromQuat.z + fromQuat.w*fromQuat.w);
+          fromQuat.x /= fromQuatLen;
+          fromQuat.y /= fromQuatLen;
+          fromQuat.z /= fromQuatLen;
+          fromQuat.w /= fromQuatLen;
+          CGFloat toQuatLen = sqrt(toQuat.x*toQuat.x + toQuat.y*toQuat.y + toQuat.z*toQuat.z + toQuat.w*toQuat.w);
+          toQuat.x /= toQuatLen;
+          toQuat.y /= toQuatLen;
+          toQuat.z /= toQuatLen;
+          toQuat.w /= toQuatLen;
+          
           GSQuartzCoreQuaternion valueQuat;
+          #if 0
           valueQuat.x = linearInterpolation(fromQuat.x, toQuat.x, fraction);
           valueQuat.y = linearInterpolation(fromQuat.y, toQuat.y, fraction);
           valueQuat.z = linearInterpolation(fromQuat.z, toQuat.z, fraction);
           valueQuat.w = linearInterpolation(fromQuat.w, toQuat.w, fraction);
+          valueQuat.w = 1;
+          #else
+          valueQuat = linearInterpolationQuaternion(fromQuat, toQuat, fraction);
+          #endif
           
           valueTf = quaternionToMatrix(valueQuat);
 
@@ -560,9 +609,11 @@ static GSQuartzCoreQuaternion matrixToQuaternion(CATransform3D m)
           valueTf.m24 = valueTY;
           valueTf.m34 = valueTZ;
 
+
           //NSLog(@"scales %g %g %g", valueSX, valueSY, valueSZ);
           //NSLog(@"tf %g %g %g", valueTX, valueTY, valueTZ);
           valueTf = transpose(valueTf);
+          
 #endif
           return [NSValue valueWithCATransform3D: valueTf];
         }

@@ -1,6 +1,25 @@
 2012-07-01  Ivan Vučica  <ivan@vucica.net>
 
 	* Source/CAAnimation.m:
+	Slerp for interpolating quaternions gained from decomposing of
+	transform matrix. This works in at least elementary case added
+	into hello_animation.
+
+	* Source/CALayer.m:
+	Opacity set to 1.0 by default.
+
+	* Source/CARenderer.m:
+	Support for opacity when rendering.
+
+	* Tests/hello_animation.m:
+	Improved test involving transform interpolation, and added opacity
+	pulse animation to the same test. This test now also translates
+	in addition to rotating.
+
+
+2012-07-01  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CAAnimation.m:
 	Linear interpolation moved into separate function. Added functions
 	for conversion between rotation matrices and quaternions. 
 

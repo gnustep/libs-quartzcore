@@ -235,6 +235,12 @@
       vertices[i*2 + 1] -= [layer anchorPoint].y * [layer bounds].size.height;
     }
 
+  // apply opacity to white color
+  for (int i = 0; i < 6; i++)
+    {
+        whiteColor[i*4 + 3] *= [layer opacity];
+    }
+
   // apply background color
   if ([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
     {
@@ -246,6 +252,9 @@
       components[1] = componentsCG[1];
       components[2] = componentsCG[2];
       components[3] = componentsCG[3];
+      
+      // apply opacity
+      components[3] *= [layer opacity];
       
       // FIXME: here we presume that color contains RGBA channels.
       // However this may depend on colorspace, number of components et al

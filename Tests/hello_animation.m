@@ -202,11 +202,19 @@ Class classOfTestOpenGLView()
 {
   CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"transform"];
   [animation setFromValue: [NSValue valueWithCATransform3D: [_theSublayer transform]]];
-  [animation setToValue: [NSValue valueWithCATransform3D: CATransform3DRotate([_theSublayer transform], M_PI, 0, 0, 1)]];
+  [animation setToValue: [NSValue valueWithCATransform3D: CATransform3DTranslate(CATransform3DRotate([_theSublayer transform], M_PI, 0, 0, 1), -150, 0, 0)]];
   [animation setDuration: 2];
-  [animation setAutoreverses:YES];
+  [animation setAutoreverses: YES];
   
   [_theSublayer addAnimation: animation forKey: @"doABarrelRoll"];
+  
+  CABasicAnimation * opacity = [CABasicAnimation animationWithKeyPath:@"opacity"];
+  [opacity setFromValue: [NSNumber numberWithFloat: [_theSublayer opacity]]];
+  [opacity setToValue: [NSNumber numberWithFloat: 0.5]];
+  [opacity setDuration: 2];
+  [opacity setAutoreverses: YES];
+  
+  [_theSublayer addAnimation: opacity forKey: @"pulse"];
 }
 
 - (void) layerSetNeedsDisplay:sender
