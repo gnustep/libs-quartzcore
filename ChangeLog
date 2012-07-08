@@ -1,3 +1,13 @@
+2012-07-08  Ivan Vučica  <ivan@vucica.net>
+	
+	* Source/CALayer+FrameworkPrivate.h:
+	* Source/CAAnimation+FrameworkPrivate.h:
+	* Source/CALayer.m
+	* Source/GNUmakefile:
+	* Tests/GNUmakefile:
+	Changes from Fred Kiefer to fix compiling with GCC under GNUstep.
+	Some additional small fixes.
+
 2012-07-01  Ivan Vučica  <ivan@vucica.net>
 
 	* Source/CAAnimation.m:

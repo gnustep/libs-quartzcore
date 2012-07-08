@@ -103,7 +103,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 @interface CALayer()
 @property (nonatomic, assign) CALayer *superlayer;
-@property (nonatomic, retain) NSDictionary *animations;
+@property (nonatomic, retain) NSMutableDictionary *animations;
 
 - (void)setModelLayer: (id)modelLayer;
 - (BOOL)isPresentationLayer;

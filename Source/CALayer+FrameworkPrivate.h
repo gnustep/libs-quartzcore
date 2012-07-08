@@ -1,4 +1,4 @@
-/* CAAnimation+FrameworkPrivate.h
+/* CALayer+FrameworkPrivate.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
    
@@ -24,7 +24,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "CALayer.h"
+#import "QuartzCore/CALayer.h"
 
 @interface CALayer (FrameworkPrivate)
 /* sets value passed into -[CARenderer beginFrameAtTime:...]

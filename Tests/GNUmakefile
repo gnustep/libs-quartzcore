@@ -34,6 +34,8 @@ hello_animation_OBJC_FILES = $(main_files) hello_animation.m
 #ADDITIONAL_LDFLAGS += -lgdi32
 #endif
 
+ADDITIONAL_LDFLAGS += $(shell pkg-config --libs cairo)
+
 ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_LDFLAGS += -L../Source/obj -L../Source/QuartzCore.framework

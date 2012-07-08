@@ -24,6 +24,10 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import "QuartzCore/CAAnimation.h"
+
+@class CALayer;
+
 @interface CAPropertyAnimation (FrameworkPrivate)
 - (void) applyToLayer: (CALayer *)layer;
 @end
