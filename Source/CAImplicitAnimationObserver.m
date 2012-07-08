@@ -1,5 +1,5 @@
 /* 
-   CAAction.h
+   CAImplicitAnimationObserver.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
@@ -25,8 +25,46 @@
    Boston, MA 02110-1301, USA.
 */
 
-@protocol CAAction
-@required
-- (void)runActionForKey:(NSString *)key object:(id)anObject arguments:(NSDictionary *)dict;
+#import <Foundation/Foundation.h>
+#import "CAImplicitAnimationObserver.h"
+
+static CAImplicitAnimationObserver * sharedObserver;
+
+@implementation CAImplicitAnimationObserver
++ (CAImplicitAnimationObserver *)sharedObserver
+{
+  if(!sharedObserver)
+    {
+      sharedObserver = [CAImplicitAnimationObserver new];
+    }
+
+  return sharedObserver;
+}
+
+- (id) init
+{
+  self = [super init];
+  if (!self)
+    {
+      return nil;
+    }
+  
+  return self;
+}
+
+- (void) observeValueForKeyPath: (NSString *)keyPath 
+                       ofObject: (id)object
+                         change: (NSDictionary *)change
+                        context: (void *)context
+{
+  if ([object isPresentationLayer])
+    {
+      return;
+    }
+
+  NSLog(@"- Creation of implicit animation for %p for %@", object, keyPath);
+}
+
 @end
+
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

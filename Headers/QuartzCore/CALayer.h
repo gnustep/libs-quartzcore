@@ -94,6 +94,7 @@ NSString *const kCATransition;
   BOOL _needsDisplay;
   BOOL _needsLayout;
   NSMutableDictionary *_animations;
+  NSMutableArray *_observedKeyPaths;
 }
 
 + (id) layer;

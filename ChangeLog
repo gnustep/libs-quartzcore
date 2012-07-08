@@ -1,4 +1,15 @@
 2012-07-08  Ivan Vučica  <ivan@vucica.net>
+	
+	* Source/CALayer.m:
+	Support for +defaultValueForKey:.
+
+	* Headers/QuartzCore/CALayer.h:
+	* Source/CALayer.m:
+	* Source/CAImplicitAnimationObserver.h:
+	* Source/CAImplicitAnimationObserver.m:
+	Initial work on using KVO to support implicit animations.
+
+2012-07-08  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/AppleSupport.h:
 	* Headers/QuartzCore/AppleSupportRevert.h:

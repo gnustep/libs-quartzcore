@@ -33,6 +33,7 @@
 #import "CABackingStore.h"
 #import "CALayer+FrameworkPrivate.h"
 #import "CAAnimation+FrameworkPrivate.h"
+#import "CAImplicitAnimationObserver.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
@@ -153,7 +154,55 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   return [[self new] autorelease];
 }
 
++ (id) defaultValueForKey: (NSString *)key
+{
+  if ([key isEqualToString:@"delegate"])
+    {
+      return nil;
+    }
+  if ([key isEqualToString: @"anchorPoint"])
+    {
+      CGPoint pt = CGPointMake(0.5, 0.5);
+      return [NSValue valueWithBytes: &pt objCType: @encode(CGPoint)];
+    }
+  if ([key isEqualToString: @"transform"])
+    {
+      return [NSValue valueWithCATransform3D: CATransform3DIdentity];
+    }
+  if ([key isEqualToString: @"sublayerTransform"])
+    {
+      return [NSValue valueWithCATransform3D: CATransform3DIdentity];
+    }
+  if ([key isEqualToString:@"opacity"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
+    }
+    
+  /* CAMediaTiming */
+  if ([key isEqualToString:@"duration"])
+    {
+      return [NSNumber numberWithFloat: __builtin_inf()];
+      /* FIXME: is there a cleaner way to get inf apart from "1./0"? */
+    }
+  if ([key isEqualToString:@"speed"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
+    }
+  if ([key isEqualToString:@"autoreverses"])
+    {
+      return [NSNumber numberWithBool: NO];
+    }
+  if ([key isEqualToString:@"repeatCount"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
+    }
+  if ([key isEqualToString: @"beginTime"])
+    {
+      return [NSNumber numberWithFloat: 0.0];
+    }
 
+  return nil;
+}
 /* *** methods *** */
 - (id) init
 {
@@ -161,16 +210,38 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
     {
       _animations = [[NSMutableDictionary alloc] init];
       _sublayers = [[NSMutableArray alloc] init];
+      _observedKeyPaths = [[NSMutableArray alloc] init];
+
+      /* TODO: list all properties below */
+      static NSString * keys[] = {
+        @"anchorPoint", @"transform", @"sublayerTransform",
+        @"opacity", @"delegate", 
+        
+        @"beginTime", @"duration", @"speed", @"autoreverses",
+        @"repeatCount",
+        
+        @"bounds", @"position" };
       
-      /* TODO: use +defaultValueForKey: to set default values */
-      [self setAnchorPoint: CGPointMake(0.5, 0.5)];
-      [self setTransform: CATransform3DIdentity];
-      [self setSublayerTransform: CATransform3DIdentity];
-      [self setRepeatCount: 1.0];
-      [self setSpeed: 1.0];
-      [self setDuration: __builtin_inf()];
-      [self setOpacity: 1.0];
-      /* FIXME: is there a cleaner way to get inf apart from "1./0"? */
+      for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+        {
+          id defaultValue = [[self class] defaultValueForKey: keys[i]];
+          if (defaultValue)
+            {
+              [self setValue: defaultValue
+                      forKey: keys[i]];
+            }
+
+          /* implicit animations support */
+          /* TODO: only animatable properties should be observed */
+          /* TODO: @dynamically created properties also need to be
+              set up and observed. */
+          [self addObserver: [CAImplicitAnimationObserver sharedObserver]
+                 forKeyPath: keys[i]
+                    options: NSKeyValueObservingOptionOld
+                    context: nil];
+          [_observedKeyPaths addObject: keys[i]];
+        }
+
     }
   return self;
 }
@@ -183,6 +254,14 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
   if ((self = [self init]) != nil)
     {
+#if 1
+      // REMOVE THIS
+      for(id i in _observedKeyPaths)
+	{
+	  [self removeObserver: [CAImplicitAnimationObserver sharedObserver] forKeyPath: i];
+	}
+#endif
+
       [self setDelegate: [layer delegate]];
       [self setLayoutManager: [layer layoutManager]];
       [self setSuperlayer: [layer superlayer]]; /* if copied for use in presentation layer, then ignored */
@@ -227,6 +306,12 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 
 - (void) dealloc
 {
+  for(NSString *keyPath in _observedKeyPaths)
+    {
+      [self removeObserver: [CAImplicitAnimationObserver sharedObserver]
+                forKeyPath: keyPath];
+    }
+  [_observedKeyPaths release];
   [_layoutManager release];
   [_contents release];
   [_sublayers release];
@@ -239,6 +324,14 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [_animations release];
   
   [super dealloc];
+}
+
+- (NSString *)description
+{
+  return [NSString stringWithFormat: @"<%@: %p; position: %g,%g>",
+          [self class],
+          self,
+          [self position].x, [self position].y];
 }
 
 /* *** properties *** */
