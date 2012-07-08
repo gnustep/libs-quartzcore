@@ -25,12 +25,35 @@
    Boston, MA 02110-1301, USA.
 */
 
+/* This file renames the Core Animation classes that we implement so they
+   don't conflict with Apple's implementation when testing under Cocoa. This
+   is desirable so the implementations can quickly and easily be compared.
+   All top-level symbols that might conflict with Apple's implementation 
+   should be renamed.
+
+   All symbols are renamed by #define'ing their name, changing their prefix
+   from CA (Core Animation) into GSCA (GNUstep Core Animation).
+
+   This file should be #include'd and not #import'ed, since it needs to be
+   possible to revert what's done here, and then re-apply it again. File
+   contains #define guards, so there should be no bad consequences following
+   this advice.
+
+   To revert what's done in this file, companion file AppleSupportRevert.h
+   is provided. 
+
+   Note: despite this header being currently publicly available, it should
+   be used stricly for testing purposes. Don't depend on it. */
+
 #ifndef GSQUARTZCORE_APPLESUPPORT_H
 #define GSQUARTZCORE_APPLESUPPORT_H
 
 #ifndef GSIMPL_UNDER_COCOA
 #define GSIMPL_UNDER_COCOA 1
 #endif
+
+/* CAAction.h */
+#define CAAction GSCAAction
 
 /* CAAnimation.h */
 #define CAAnimation GSCAAnimation
@@ -71,8 +94,6 @@
 #define kCAGravityBottomLeft kGSCAGravityBottomLeft
 #define kCAGravityBottomRight kGSCAGravityBottomRight
 #define kCATransition kGSCATransition
-
-#define CAAction GSCAAction
 
 #define CALayer GSCALayer
 

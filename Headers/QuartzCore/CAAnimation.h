@@ -1,4 +1,3 @@
-
 /* 
    CAAnimation.h
 
@@ -6,6 +5,9 @@
 
    Author: Amr Aboelela <amraboelela@gmail.com>
    Date: January 2011
+
+   Author: Ivan Vucica <ivan@vucica.net>
+   Date: June 2012
 
    This file is part of QuartzCore.
 
@@ -27,6 +29,7 @@
 */
 
 #import "QuartzCore/CAMediaTiming.h"
+#import "QuartzCore/CAAction.h"
 
 @class CAMediaTimingFunction;
 @class CAValueFunction;
@@ -34,7 +37,7 @@
 
 /* *********************************** */
 
-@interface CAAnimation : NSObject <CAMediaTiming>
+@interface CAAnimation : NSObject <NSCoding, NSCopying, CAAction, CAMediaTiming>
 {
   /* property-backing ivars */
   id _delegate;
@@ -60,12 +63,6 @@
 @property (retain) CAMediaTimingFunction *timingFunction;
 @property BOOL removedOnCompletion;
 
-@end
-
-@interface CAAnimation (FrameworkPrivate)
-/* Don't use these framework-private methods.
- * They may get removed at any time.
- */
 @end
 
 /* *********************************** */

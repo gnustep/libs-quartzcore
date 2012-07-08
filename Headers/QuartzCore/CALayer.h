@@ -50,10 +50,7 @@ NSString *const kCATransition;
 
 @class CAAnimation;
 
-@protocol CAAction
-@required
-- (void)runActionForKey:(NSString *)key object:(id)anObject arguments:(NSDictionary *)dict;
-@end
+#import "QuartzCore/CAAction.h"
 
 @interface CALayer : NSObject<CAMediaTiming>
 {
@@ -166,11 +163,14 @@ NSString *const kCATransition;
 
 @end
 
-@interface NSObject (CALayer)
+@interface NSObject (CALayerActions)
 - (void) displayLayer: (CALayer*)layer;
 - (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;
-- (void) layoutSublayersOfLayer: (CALayer*)layer;
 - (id<CAAction>) actionForLayer: (CALayer*)layer forKey: (NSString*)eventKey;
+@end
+
+@interface NSObject (CALayerLayoutManager)
+- (void) layoutSublayersOfLayer: (CALayer*)layer;
 @end
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

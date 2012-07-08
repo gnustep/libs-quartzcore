@@ -21,6 +21,7 @@ QuartzCore_HEADER_FILES_DIR = ../Headers/QuartzCore
 QuartzCore_HEADER_FILES = \
 	AppleSupport.h \
 	AppleSupportRevert.h \
+	CAAction.h \
 	CAAnimation.h \
 	CABase.h \
 	CADisplayLink.h \

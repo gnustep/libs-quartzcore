@@ -25,7 +25,12 @@
    Boston, MA 02110-1301, USA.
 */
 
+/* For documentation about this file, please look at AppleSupport.h. */
+
 #undef GSQUARTZCORE_APPLESUPPORT_H
+
+/* CAAction.h */
+#undef CAAction
 
 /* CAAnimation.h */
 #undef CAAnimation
@@ -66,8 +71,6 @@
 #undef kCAGravityBottomLeft
 #undef kCAGravityBottomRight
 #undef kCATransition
-
-#undef CAAction
 
 #undef CALayer
 

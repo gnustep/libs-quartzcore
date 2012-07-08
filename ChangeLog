@@ -1,4 +1,31 @@
 2012-07-08  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/AppleSupport.h:
+	* Headers/QuartzCore/AppleSupportRevert.h:
+	Added a bit of documentation on purpose of these files.
+	Moved CAAction into a separate file.
+		
+	* Headers/QuartzCore/CAAction.h:
+	* Source/GNUmakefile:
+	Moved CAAction into a separate file.
+
+	* Headers/QuartzCore/CAAnimation.h:
+	Added specification about which protocols CAAnimation should
+	implement. Removed dead code.
+	
+	* Headers/QuartzCore/CABase.h:
+	Removed inclusion of Foundation/Foundation.h.
+
+	* Headers/QuartzCore/CALayer.h:
+	Moved CAAction into a separate file. Split up the informal protocols
+	for the layer delegate and the layout manager.
+
+	* Source/CAAnimation.m:
+	* Source/CALayer.m:
+	* Source/CAMediaTiming.m:
+	Added inclusion of Foundation/Foundation.h
+
+2012-07-08  Ivan Vučica  <ivan@vucica.net>
 	
 	* Source/CALayer+FrameworkPrivate.h:
 	* Source/CAAnimation+FrameworkPrivate.h:

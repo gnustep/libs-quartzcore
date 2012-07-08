@@ -1,8 +1,10 @@
-/* CABase.h
+/* 
+   CAAction.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Author: Ivan Vucica <ivan@vucica.net>
+   Date: July 2012
 
    This file is part of QuartzCore.
 
@@ -23,6 +25,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <CoreFoundation/CoreFoundation.h>
-
-CFTimeInterval CACurrentMediaTime(void);
+@protocol CAAction
+@required
+- (void)runActionForKey:(NSString *)key object:(id)anObject arguments:(NSDictionary *)dict;
+@end
