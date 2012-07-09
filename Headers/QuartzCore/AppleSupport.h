@@ -80,6 +80,9 @@
 
 /* CAGradientLayer.h */
 
+/* CAImplicitAnimationObserver.h */
+#define CAImplicitAnimationObserver GSCAImplicitAnimationObserver
+
 /* CALayer.h */
 #define kCAGravityResize kGSCAGravityResize
 #define kCAGravityResizeAspect kGSCAGravityResizeAspect
@@ -106,6 +109,7 @@
 #define kCAFillModeFrozen kGSCAFillModeFrozen
 
 /* CAMediaTimingFunction.h */
+#define kCAMediaTimingFunctionDefault kGSCAMediaTimingFunctionDefault
 #define kCAMediaTimingFunctionEaseInEaseOut kGSCAMediaTimingFunctionEaseInEaseOut
 #define kCAMediaTimingFunctionEaseIn kGSCAMediaTimingFunctionEaseIn
 #define kCAMediaTimingFunctionEaseOut kGSCAMediaTimingFunctionEaseOut

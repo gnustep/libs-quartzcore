@@ -27,6 +27,9 @@
 
 #import <Foundation/Foundation.h>
 #import "CAImplicitAnimationObserver.h"
+#import "CALayer+FrameworkPrivate.h"
+#import "CATransaction+FrameworkPrivate.h"
+#import "QuartzCore/CATransaction.h"
 
 static CAImplicitAnimationObserver * sharedObserver;
 
@@ -63,6 +66,19 @@ static CAImplicitAnimationObserver * sharedObserver;
     }
 
   NSLog(@"- Creation of implicit animation for %p for %@", object, keyPath);
+  
+  id from = [change valueForKey: NSKeyValueChangeOldKey];
+  id to = [change valueForKey: NSKeyValueChangeNewKey];
+  
+  if (!from)
+    from = [object valueForKeyPath: keyPath];
+  if (!to)
+    to = [object valueForKeyPath: keyPath];
+  
+  [[CATransaction topTransaction] registerImplicitAnimationOnObject: object
+                                                            keyPath: keyPath
+                                                               from: from
+                                                                 to: to];
 }
 
 @end

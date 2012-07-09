@@ -33,6 +33,8 @@
 {
   CFTimeInterval _animationDuration;
   CAMediaTimingFunction *_animationTimingFunction;
+  
+  NSMutableArray *_implicitAnimations;
 }
 
 + (void) begin;

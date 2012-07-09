@@ -54,6 +54,9 @@
 		7F8CC66E15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F8CC66C15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h */; };
 		7F8CC66F15A0A964003AEB38 /* CALayer+FrameworkPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F8CC66D15A0A964003AEB38 /* CALayer+FrameworkPrivate.h */; };
 		7FCE5C5415964BC4009557DC /* CAMediaTiming.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FCE5C5315964BC4009557DC /* CAMediaTiming.m */; };
+		7FFBC86615AB4F58004B0E68 /* CAImplicitAnimationObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 7FFBC86415AB4F58004B0E68 /* CAImplicitAnimationObserver.h */; };
+		7FFBC86715AB4F58004B0E68 /* CAImplicitAnimationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FFBC86515AB4F58004B0E68 /* CAImplicitAnimationObserver.m */; };
+		7FFBC86915AB6391004B0E68 /* CATransaction+FrameworkPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 7FFBC86815AB6390004B0E68 /* CATransaction+FrameworkPrivate.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -135,6 +138,9 @@
 		7F8CC66C15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CAAnimation+FrameworkPrivate.h"; sourceTree = "<group>"; };
 		7F8CC66D15A0A964003AEB38 /* CALayer+FrameworkPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CALayer+FrameworkPrivate.h"; sourceTree = "<group>"; };
 		7FCE5C5315964BC4009557DC /* CAMediaTiming.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAMediaTiming.m; sourceTree = "<group>"; };
+		7FFBC86415AB4F58004B0E68 /* CAImplicitAnimationObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAImplicitAnimationObserver.h; sourceTree = "<group>"; };
+		7FFBC86515AB4F58004B0E68 /* CAImplicitAnimationObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAImplicitAnimationObserver.m; sourceTree = "<group>"; };
+		7FFBC86815AB6390004B0E68 /* CATransaction+FrameworkPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CATransaction+FrameworkPrivate.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -230,6 +236,8 @@
 				7F77517E1594AF2900F56E92 /* CADisplayLink.m */,
 				7F77517F1594AF2900F56E92 /* CAEAGLLayer.m */,
 				7F7751801594AF2900F56E92 /* CAGradientLayer.m */,
+				7FFBC86415AB4F58004B0E68 /* CAImplicitAnimationObserver.h */,
+				7FFBC86515AB4F58004B0E68 /* CAImplicitAnimationObserver.m */,
 				7F7751811594AF2900F56E92 /* CALayer.m */,
 				7F8CC66D15A0A964003AEB38 /* CALayer+FrameworkPrivate.h */,
 				7FCE5C5315964BC4009557DC /* CAMediaTiming.m */,
@@ -241,6 +249,7 @@
 				7F7751871594AF2900F56E92 /* CATextLayer.m */,
 				7F7751881594AF2900F56E92 /* CATiledLayer.m */,
 				7F7751891594AF2900F56E92 /* CATransaction.m */,
+				7FFBC86815AB6390004B0E68 /* CATransaction+FrameworkPrivate.h */,
 				7F77518A1594AF2900F56E92 /* CATransform3D.m */,
 				7F77518B1594AF2900F56E92 /* CATransformLayer.m */,
 				7F77518C1594AF2900F56E92 /* CAValueFunction.m */,
@@ -317,6 +326,8 @@
 				7F43F22E1594ECD800F1C5EB /* CABackingStore.h in Headers */,
 				7F8CC66E15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h in Headers */,
 				7F8CC66F15A0A964003AEB38 /* CALayer+FrameworkPrivate.h in Headers */,
+				7FFBC86615AB4F58004B0E68 /* CAImplicitAnimationObserver.h in Headers */,
+				7FFBC86915AB6391004B0E68 /* CATransaction+FrameworkPrivate.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -432,6 +443,7 @@
 				7F77519F1594AF2900F56E92 /* CAValueFunction.m in Sources */,
 				7F43F22F1594ECD800F1C5EB /* CABackingStore.m in Sources */,
 				7FCE5C5415964BC4009557DC /* CAMediaTiming.m in Sources */,
+				7FFBC86715AB4F58004B0E68 /* CAImplicitAnimationObserver.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -27,11 +27,12 @@
 #import "QuartzCore/CATransaction.h"
 #import "QuartzCore/CAMediaTimingFunction.h"
 #import <Foundation/Foundation.h>
+#import "CATransaction+FrameworkPrivate.h"
+#import "CALayer+FrameworkPrivate.h"
+
 static NSMutableArray *transactionStack = nil;
 
 @interface CATransaction ()
-
-+ (CATransaction *) topTransaction;
 
 - (void) commit;
 - (id) valueForKey: (NSString *)key;
@@ -39,9 +40,11 @@ static NSMutableArray *transactionStack = nil;
 
 @property (assign) CFTimeInterval animationDuration;
 @property (retain) CAMediaTimingFunction *animationTimingFunction;
+@property (retain) NSMutableArray *implicitAnimations;
 @end
 
 @implementation CATransaction
+@synthesize  implicitAnimations = _implicitAnimations;
 
 + (void) begin
 {
@@ -64,11 +67,10 @@ static NSMutableArray *transactionStack = nil;
 
 + (void) flush
 {
-  /* TODO: should flush an implicit transaction, if it exists.
-     this means committing it, but apparently not until nested explicit
-     transactions have completed.
+  /* TODO: flushing transaction means committing the implicit
+     animation immediately after all nested explicit transaction
+     are committed.
      */
-
 }
 
 + (void) lock
@@ -126,25 +128,84 @@ static NSMutableArray *transactionStack = nil;
   if (!self)
     return nil;
 
-  // TODO
+  _implicitAnimations = [[NSMutableArray alloc] init];
+  _animationDuration = 0.25;
+  _animationTimingFunction = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault];
 
   return self;
 }
 
+- (void) dealloc
+{
+  [_implicitAnimations release];
+  
+  [super dealloc];
+}
+
 - (void) commit
 {
-  // TODO
+  for(NSDictionary * animationDescription in _implicitAnimations)
+    {
+      /* TODO: we currently don't use CAAnimation */
+      NSLog(@"Ani desc %@", animationDescription);
+      /* note that we don't really use the "from" value, since we're
+         actually interested in animated object's presentationLayer value
+         for the specified keypath. */
+         
+      id object = [animationDescription valueForKey: @"object"]; /* probably a CALayer */
+      NSString * keyPath = [animationDescription valueForKey: @"keyPath"];
+      id from = [animationDescription valueForKey: @"from"];
+      id to = [animationDescription valueForKey: @"to"];
+      
+      /* as described, 'from' value is ignored since it derives from model
+         layer. */
+      /* actual 'from' value is collected from the presentation layer */
+      if (([object respondsToSelector: @selector(isPresentationLayer)] &&
+           [object isPresentationLayer]) ||
+          ![object respondsToSelector: @selector(presentationLayer)])
+        {
+          from = [object valueForKeyPath: keyPath];
+        }
+      else if ([object respondsToSelector: @selector(presentationLayer)])
+        {
+          from = [[object presentationLayer] valueForKeyPath: keyPath];
+        }
+      
+      /* construct new animation */
+      CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath: keyPath];
+      [animation setDuration: [self animationDuration]];
+      [animation setTimingFunction: [self animationTimingFunction]];
+      [animation setFromValue: from];
+      [animation setToValue: to];
+      
+      /* add the animation to animations list into the object */
+      NSString *sanitizedKeyPath = [keyPath stringByReplacingOccurrencesOfString:@"." withString:@"__"];
+      NSString *implicitAnimationKey = [NSString stringWithFormat:@"_implicit_%@", sanitizedKeyPath];
+      
+      [object addAnimation: animation forKey: implicitAnimationKey];
+    }
+    
+    [_implicitAnimations removeAllObjects];
 }
 
-- (id) valueForKey: (NSString *)key
+- (void)registerImplicitAnimationOnObject: (id)object
+                                  keyPath: (NSString *)keyPath
+                                     from: (id)from
+                                       to: (id)to
 {
-  // TODO
-  return nil;
-}
-
-- (void) setValue: (id)value forKey: (NSString *)key
-{
-  // TODO
+  /* eliminate any earlier implicit animations with same object and keypath */
+  NSPredicate * sameAnimationsPredicate = [NSPredicate predicateWithFormat: @"object = %@ and keyPath = %@", object, keyPath];
+  NSArray * duplicates = [_implicitAnimations filteredArrayUsingPredicate: sameAnimationsPredicate];
+  [_implicitAnimations removeObjectsInArray: duplicates];
+  
+  /* now add the new animation */
+  NSDictionary * animationDescription = [NSDictionary dictionaryWithObjectsAndKeys:
+    object, @"object",
+    keyPath, @"keyPath",
+    from, @"from",
+    to, @"to",
+    nil];
+  [_implicitAnimations addObject: animationDescription];
 }
 
 @synthesize animationDuration=_animationDuration;

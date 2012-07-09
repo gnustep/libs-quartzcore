@@ -108,7 +108,6 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @property (nonatomic, retain) NSMutableDictionary *animations;
 
 - (void)setModelLayer: (id)modelLayer;
-- (BOOL)isPresentationLayer;
 @end
 
 @implementation CALayer
@@ -257,9 +256,11 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 #if 1
       // REMOVE THIS
       for(id i in _observedKeyPaths)
-	{
-	  [self removeObserver: [CAImplicitAnimationObserver sharedObserver] forKeyPath: i];
-	}
+        {
+          [self removeObserver: [CAImplicitAnimationObserver sharedObserver] forKeyPath: i];
+        }
+      [_observedKeyPaths release];
+      _observedKeyPaths = nil;
 #endif
 
       [self setDelegate: [layer delegate]];

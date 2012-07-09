@@ -1,4 +1,52 @@
 2012-07-08  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/CATransaction.h:
+	* Source/CATransaction.m:
+	* Source/CATransaction+FrameworkPrivate.h:
+	* Source/CAImplicitAnimationObserver.m:
+	Added support for implicit animations. Implicit animation
+	observer class gets notified by KVO that a value has changed.
+	It then registers animations into the transaction that is on
+	top of the transaction stack. Once these animations are
+	registered, they are actually processed and added to objects
+	only when the transaction they belong to is committed. 
+
+	* Source/CAAnimation.m:
+	Added support for interpolating CGRect and transforming NSRect
+	into CGRect. Removed dead code in interpolation of CATransform3D.
+	Gracefully handling of interpolated value that's nil by simply
+	not applying it. Temporarily handling activeTime that's less
+	than 0 by setting it to 0; in fact, it should never come to
+	this situation.
+	
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	Added implicit animation observer to the project.
+	Added header for framework-private methods for CATransaction to 
+	the project.
+
+	* Headers/QuartzCore/AppleSupport.h:
+	* Headers/QuartzCore/AppleSupportRevert.h:
+	Added implicit animation observer and default media timing
+	function string constant.
+
+	* Headers/QuartzCore/CAMediaTimingFunction.h:
+	* Source/CAMediaTimingFunction.m:
+	Added default media timing function string constant. Made
+	use of extern and actually defined values for the constants.
+
+	* Mac/GSQuartzCore-Prefix.pch:
+	Added <Foundation/Foundation.h> since it's used in 
+	QuartzCore/QuartzCore.h (e.g. BOOL).
+
+	* Source/CALayer+FrameworkPrivate.h:
+	* Source/CALayer.m:
+	Moved -isPresentationLayer from private to framework-private
+	methods. 
+	
+	* Tests/hello_animation.m:
+	Temporarily added manual creation of implicit transaction.
+
+2012-07-08  Ivan Vučica  <ivan@vucica.net>
 	
 	* Source/CALayer.m:
 	Support for +defaultValueForKey:.

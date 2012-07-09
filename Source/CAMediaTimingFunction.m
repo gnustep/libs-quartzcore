@@ -2,6 +2,9 @@
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: July 2012
+   
    Author: Amr Aboelela <amraboelela@gmail.com>
 
    This file is part of QuartzCore.
@@ -25,7 +28,17 @@
 
 #import "QuartzCore/CAMediaTimingFunction.h"
 
+NSString *const kCAMediaTimingFunctionDefault = @"kCAMediaTimingFunctionDefault";
+NSString *const kCAMediaTimingFunctionEaseInEaseOut = @"kCAMediaTimingFunctionEaseInEaseOut";
+NSString *const kCAMediaTimingFunctionEaseIn = @"kCAMediaTimingFunctionEaseIn";
+NSString *const kCAMediaTimingFunctionEaseOut = @"kCAMediaTimingFunctionEaseOut";
+NSString *const kCAMediaTimingFunctionLinear = @"kCAMediaTimingFunctionLinear";
+
 @implementation CAMediaTimingFunction
-
++ (id)functionWithName:(NSString *)name
+{
+  /* TODO */
+  return nil;
+}
 @end
-
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

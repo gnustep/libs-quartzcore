@@ -126,7 +126,11 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 {
   /* Slides */
   CFTimeInterval activeTime = (timeAuthorityLocalTime - [self beginTime]) * [self speed] + [self timeOffset];
-
+  
+  /* FIXME: should not be necessary */
+  if (activeTime < 0)
+    activeTime = 0;
+  
   return activeTime;
 }
 
@@ -225,6 +229,12 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   id modelValue = [[layer modelLayer] valueForKeyPath: [self keyPath]];
   id calculatedValue = [self calculatedAnimationValueAtTime: theTime];
 
+  if (!calculatedValue)
+    {
+      /* We can't apply nil value! */
+      return;
+    }
+    
   /* TODO: support additive and cumulative modes using modelValue */
   [layer setValue: calculatedValue forKeyPath: [self keyPath]];
 }
@@ -458,30 +468,49 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           return [NSValue valueWithBytes:&valuePt objCType:@encode(CGPoint)];
         }
         
-        //////////////////////////////////
+      //////////////////////////////////
+      if (!strcmp([from objCType], @encode(NSRect)))
+        {
+          /* Just convert to CGPoint. Core Animation doesn't deal with NSPoints! */
+          /* After that, don't return; instead let the CGPoint branch deal with the values. */
+          
+          CGRect fromRect = CGRectMake([from rectValue].origin.x, [from rectValue].origin.y,
+                                       [from rectValue].size.width, [from rectValue].size.height);
+          CGRect toRect = CGRectMake([to rectValue].origin.x, [to rectValue].origin.y,
+                                     [to rectValue].size.width, [to rectValue].size.height);
+          
+          from = [NSValue valueWithBytes:&fromRect objCType:@encode(CGRect)];
+          to = [NSValue valueWithBytes:&toRect objCType:@encode(CGRect)];
+        }
         
-        if (!strcmp([from objCType], @encode(CATransform3D)))
+      if (!strcmp([from objCType], @encode(CGRect)))
+        {
+          /* NSValue doesn't come with CGRect support.
+             Opal and Core Graphics don't provide it either.
+             This support is an extension provided by UIKit. */
+          /* Note: this branch CASCADES from NSPoint branch and
+             should come immediately after it. */
+          CGRect fromRect; [from getValue:&fromRect];
+          CGRect toRect; [to getValue:&toRect];
+          
+          CGRect valueRect = CGRectMake(linearInterpolation(fromRect.origin.x, toRect.origin.x, fraction),
+                                        linearInterpolation(fromRect.origin.y, toRect.origin.y, fraction),
+                                        linearInterpolation(fromRect.size.width, toRect.size.width, fraction),
+                                        linearInterpolation(fromRect.size.height, toRect.size.height, fraction));
+          
+          return [NSValue valueWithBytes:&valueRect objCType:@encode(CGRect)];
+        }
+        
+
+      //////////////////////////////////
+        
+      if (!strcmp([from objCType], @encode(CATransform3D)))
         {
           CATransform3D fromTf = [from CATransform3DValue];
           CATransform3D toTf = [to CATransform3DValue];
           CATransform3D valueTf;
           memcpy(&valueTf, &CATransform3DIdentity, sizeof(valueTf));
 
-#if 0
-          /* Simplistic interpolation of each matrix cell.
-             Completely incorrect. */
-          CGFloat *fromFl = (CGFloat *)&fromTf;
-          CGFloat *toFl = (CGFloat *)&toTf;
-          CGFloat *valueFl = (CGFloat *)&valueTf;
-          printf("FRAC: %g\n", fraction);
-          for(int i = 0; i < 16; i++)
-            {
-              valueFl[i] = linearInterpolation(fromFl[i], toFl[i], fraction);
-              printf("%g->%g=%g ", fromFl[i], toFl[i], valueFl[i]);
-              if(i % 4 == 3) printf("\n");
-            }
-          printf("\n");
-#else
           /* A simple implementation of matrix decomposition based on:
              http://www.gamedev.net/topic/441695-transform-matrix-decomposition/
              Also incorrect; on the other hand, it's simple, and can later be
@@ -611,11 +640,8 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           valueTf.m34 = valueTZ;
 
 
-          //NSLog(@"scales %g %g %g", valueSX, valueSY, valueSZ);
-          //NSLog(@"tf %g %g %g", valueTX, valueTY, valueTZ);
           valueTf = transpose(valueTf);
           
-#endif
           return [NSValue valueWithCATransform3D: valueTf];
         }
 

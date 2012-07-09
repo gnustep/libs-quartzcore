@@ -57,6 +57,9 @@
 
 /* CAGradientLayer.h */
 
+/* CAImplicitAnimationObserver.h */
+#undef CAImplicitAnimationObserver
+
 /* CALayer.h */
 #undef kCAGravityResize
 #undef kCAGravityResizeAspect
@@ -83,6 +86,7 @@
 #undef kCAFillModeFrozen
 
 /* CAMediaTimingFunction.h */
+#undef kCAMediaTimingFunctionDefault
 #undef kCAMediaTimingFunctionEaseInEaseOut
 #undef kCAMediaTimingFunctionEaseIn
 #undef kCAMediaTimingFunctionEaseOut

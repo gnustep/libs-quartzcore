@@ -2,6 +2,9 @@
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: July 2012
+   
    Author: Amr Aboelela <amraboelela@gmail.com>
    Date: January 2012
 
@@ -26,10 +29,11 @@
 
 #import <Foundation/NSObject.h> 
 
-NSString *const kCAMediaTimingFunctionEaseInEaseOut;
-NSString *const kCAMediaTimingFunctionEaseIn;
-NSString *const kCAMediaTimingFunctionEaseOut;
-NSString *const kCAMediaTimingFunctionLinear;
+extern NSString *const kCAMediaTimingFunctionDefault;
+extern NSString *const kCAMediaTimingFunctionEaseInEaseOut;
+extern NSString *const kCAMediaTimingFunctionEaseIn;
+extern NSString *const kCAMediaTimingFunctionEaseOut;
+extern NSString *const kCAMediaTimingFunctionLinear;
 
 @interface CAMediaTimingFunction : NSObject
 {
@@ -38,4 +42,5 @@ NSString *const kCAMediaTimingFunctionLinear;
 +(id) functionWithName:(NSString *)name;
 
 @end
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
 

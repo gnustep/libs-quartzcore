@@ -24,23 +24,16 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "QuartzCore/CALayer.h"
+#import "QuartzCore/CATransaction.h"
 
-@interface CALayer (FrameworkPrivate)
-/* sets value passed into -[CARenderer beginFrameAtTime:...]
-   used as "time of object superior to root layer" (that is,
-   CARenderer) */
-+ (void) setCurrentFrameBeginTime: (CFTimeInterval)frameTime;
+@interface CATransaction (FrameworkPrivate)
 
-- (CALayer *) rootLayer;
-- (NSArray *) allAncestorLayers;
-- (CALayer *) nextAncestorOf: (CALayer *)layer;
++ (CATransaction *) topTransaction;
+- (void) registerImplicitAnimationOnObject: (id)object
+                                   keyPath: (NSString *)keyPath
+                                      from: (id)from
+                                        to: (id)to;
 
-- (BOOL)isPresentationLayer;
-
-- (void) discardPresentationLayer;
-- (void) applyAnimationsAtTime: (CFTimeInterval)time;
-
-- (CFTimeInterval) activeTime;
-- (CFTimeInterval) localTime;
 @end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

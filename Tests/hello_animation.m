@@ -139,7 +139,17 @@ Class classOfTestOpenGLView()
 
 - (void) animation1:sender
 {
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
   [[_renderer layer] setPosition: CGPointZero];
+
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
 }
 
 - (void) animation2:sender
@@ -182,6 +192,13 @@ Class classOfTestOpenGLView()
 
 - (void) animation5:sender
 {
+
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
+
   static BOOL toggle = NO;
   CALayer * layer = [_renderer layer];
   if (!toggle)
@@ -189,13 +206,31 @@ Class classOfTestOpenGLView()
   else
     [layer setTransform: CATransform3DIdentity];
   
+  
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
+
+  
   toggle = !toggle;
 }
 
 - (void) animation6:sender
 {
+
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
   CALayer * layer = [_renderer layer];
   [layer setBounds:CGRectMake([layer bounds].origin.x, [layer bounds].origin.y, [layer bounds].size.width + rand() % 50 - 25, [layer bounds].size.height + rand() % 50 - 25)];
+  
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
 }
 
 - (void) animation7:sender
@@ -302,6 +337,12 @@ Class classOfTestOpenGLView()
 
 - (void) timerAnimation: (NSTimer *)aTimer
 {
+
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
@@ -337,6 +378,12 @@ Class classOfTestOpenGLView()
   glFlush();
 
   [[self openGLContext] flushBuffer];
+  
+  
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
 }
 
 
