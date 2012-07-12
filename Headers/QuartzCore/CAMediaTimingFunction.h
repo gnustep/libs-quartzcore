@@ -37,9 +37,22 @@ extern NSString *const kCAMediaTimingFunctionLinear;
 
 @interface CAMediaTimingFunction : NSObject
 {
+  float _c1x, _c1y;
+  float _c2x, _c2y;
+  
+  float _coefficientsX[4];
+  float _coefficientsY[4];
 }
 
-+(id) functionWithName:(NSString *)name;
++ (id) functionWithName:(NSString *)name;
++ (id) functionWithControlPoints: (float)c1x
+                                : (float)c1y
+                                : (float)c2x
+                                : (float)c2y;
+- (id) initWithControlPoints: (float)c1x
+                            : (float)c1y
+                            : (float)c2x
+                            : (float)c2y;
 
 @end
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

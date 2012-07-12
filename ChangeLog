@@ -1,3 +1,18 @@
+2012-07-12  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Source/CAMediaTimingFunction+FrameworkPrivate.h:
+	Added framework-private category for CAMediaTimingFunction.
+
+	* Headers/QuartzCore/CAMediaTimingFunction.h:
+	* Source/CAMediaTimingFunction.m:
+	Added initialization methods. Added basic calculation of
+	coordinates of cubic Bezier curve, based on parametric form
+	of the equation. Still not calculating exact value since we
+	need to take "x" as input, solve it into the parameter, and
+	then use this to feed the parametric form of equation, with
+	"y" as the result. This is not done yet.
+
 2012-07-09  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CATransaction.h:

@@ -53,6 +53,7 @@
 		7F7751CB1594AF3A00F56E92 /* QuartzCore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F7751B71594AF3A00F56E92 /* QuartzCore.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7F8CC66E15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F8CC66C15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h */; };
 		7F8CC66F15A0A964003AEB38 /* CALayer+FrameworkPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F8CC66D15A0A964003AEB38 /* CALayer+FrameworkPrivate.h */; };
+		7FA9CFD315AC3CBC00F12B76 /* CAMediaTimingFunction+FrameworkPrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 7FA9CFD215AC3CBC00F12B76 /* CAMediaTimingFunction+FrameworkPrivate.h */; };
 		7FCE5C5415964BC4009557DC /* CAMediaTiming.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FCE5C5315964BC4009557DC /* CAMediaTiming.m */; };
 		7FFBC86615AB4F58004B0E68 /* CAImplicitAnimationObserver.h in Headers */ = {isa = PBXBuildFile; fileRef = 7FFBC86415AB4F58004B0E68 /* CAImplicitAnimationObserver.h */; };
 		7FFBC86715AB4F58004B0E68 /* CAImplicitAnimationObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FFBC86515AB4F58004B0E68 /* CAImplicitAnimationObserver.m */; };
@@ -137,6 +138,7 @@
 		7F7751B71594AF3A00F56E92 /* QuartzCore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuartzCore.h; sourceTree = "<group>"; };
 		7F8CC66C15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CAAnimation+FrameworkPrivate.h"; sourceTree = "<group>"; };
 		7F8CC66D15A0A964003AEB38 /* CALayer+FrameworkPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CALayer+FrameworkPrivate.h"; sourceTree = "<group>"; };
+		7FA9CFD215AC3CBC00F12B76 /* CAMediaTimingFunction+FrameworkPrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CAMediaTimingFunction+FrameworkPrivate.h"; sourceTree = "<group>"; };
 		7FCE5C5315964BC4009557DC /* CAMediaTiming.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAMediaTiming.m; sourceTree = "<group>"; };
 		7FFBC86415AB4F58004B0E68 /* CAImplicitAnimationObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAImplicitAnimationObserver.h; sourceTree = "<group>"; };
 		7FFBC86515AB4F58004B0E68 /* CAImplicitAnimationObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAImplicitAnimationObserver.m; sourceTree = "<group>"; };
@@ -241,6 +243,7 @@
 				7F7751811594AF2900F56E92 /* CALayer.m */,
 				7F8CC66D15A0A964003AEB38 /* CALayer+FrameworkPrivate.h */,
 				7FCE5C5315964BC4009557DC /* CAMediaTiming.m */,
+				7FA9CFD215AC3CBC00F12B76 /* CAMediaTimingFunction+FrameworkPrivate.h */,
 				7F7751821594AF2900F56E92 /* CAMediaTimingFunction.m */,
 				7F7751831594AF2900F56E92 /* CARenderer.m */,
 				7F7751841594AF2900F56E92 /* CAReplicatorLayer.m */,
@@ -328,6 +331,7 @@
 				7F8CC66F15A0A964003AEB38 /* CALayer+FrameworkPrivate.h in Headers */,
 				7FFBC86615AB4F58004B0E68 /* CAImplicitAnimationObserver.h in Headers */,
 				7FFBC86915AB6391004B0E68 /* CATransaction+FrameworkPrivate.h in Headers */,
+				7FA9CFD315AC3CBC00F12B76 /* CAMediaTimingFunction+FrameworkPrivate.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
