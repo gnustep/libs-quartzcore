@@ -127,8 +127,7 @@ static const float _c3y = 1.0;
   _coefficientsY[0] = _c0y; // t^0
   _coefficientsY[1] = -3.0*_c0y + 3.0*_c1y; // t^1
   _coefficientsY[2] = 3.0*_c0y - 6.0*_c1y + 3.0*_c2y;  // t^2
-  _coefficientsY[3] = -_c0x + 3.0*_c1y - 3.0*c2y + _c3y; // t^3
-  
+  _coefficientsY[3] = -_c0y + 3.0*_c1y - 3.0*_c2y + _c3y; // t^3
   
   return self;
 }
@@ -142,12 +141,86 @@ static const float _c3y = 1.0;
   return _coefficientsY[0] + t*_coefficientsY[1] + t*t*_coefficientsY[2] + t*t*t*_coefficientsY[3];
 }
 
-- (CGFloat) evaluateXDerivationAtParameter: (CGFloat)t
+- (CGFloat) evaluateDerivationForXAtParameter: (CGFloat)t
 {
   return _coefficientsX[1] + 2*t*_coefficientsX[2] + 3*t*t*_coefficientsX[3];
 }
 
+- (CGFloat) evaluateDerivationForYAtParameter: (CGFloat)t
+{
+  return _coefficientsY[1] + 2*t*_coefficientsY[2] + 3*t*t*_coefficientsY[3];
+}
 
+- (CGFloat) calcParameterViaNewtonRaphsonUsingX: (CGFloat)x
+{
+  // see http://en.wikipedia.org/wiki/Newton's_method
+    
+  // start with X being the correct value
+  CGFloat t = x;
+    
+  // iterate several times
+  const CGFloat epsilon = 0.00001;
+  for(int i = 0; i < 10; i++)
+    {
+      CGFloat x2 = [self evaluateXAtParameter: t] - x;
+      CGFloat d = [self evaluateDerivationForXAtParameter: t];
+      
+      CGFloat dt = x2/d;
+      
+      t = t - dt;
+      
+      //NSLog(@"x: %f x2: %f d: %f dt: %f t: %f", x, x2, d, dt, t);
+    }
+    
+  return t;
+}
+
+- (CGFloat) calcParameterUsingX: (CGFloat)x
+{
+  // for the time being, we'll guess Newton-Raphson always
+  // returns the correct value.
+  
+  // if we find it doesn't find the solution often enough,
+  // we can add additional calculation methods.
+    
+  CGFloat t = [self calcParameterViaNewtonRaphsonUsingX: x];
+    
+  return t;
+}
+
+- (CGFloat) evaluateYAtX: (CGFloat)x
+{
+  CGFloat t = [self calcParameterUsingX: x];
+  CGFloat y = [self evaluateYAtParameter: t];
+  //NSLog(@"X: %g T: %g Y: %g", x, t, y);
+  
+  return y;
+}
+
+- (void) graph
+{
+  printf("--------\n");
+  for (int i = 0; i < 20; i++)
+    {
+      for (int j = 0; j < 40; j++)
+        {
+          float x = j / 40.;
+          float y = 1.-(i / 20.);
+          
+          if ([self evaluateYAtX: x] > y)
+            {
+              printf("*");
+            }
+          else
+            {
+              printf(" ");
+            }
+        }
+      printf("\n");
+    }
+  printf("==========\n");
+
+}
 /*
 - (CGPoint) valueForParameter: (CGFloat)t
 {

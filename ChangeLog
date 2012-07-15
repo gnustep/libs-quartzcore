@@ -1,3 +1,26 @@
+2012-07-15  Ivan Vučica  <ivan@vucica.net>
+	
+	* Source/CAAnimation.m:
+	Making use of media timing functions.
+
+	* Source/CAMediaTimingFunction+FrameworkPrivate.h:
+	Added methods for calculating derivations, parameter,
+	parameter via Newton-Raphson, and finally, 'y' using
+	'x'.
+
+	* Source/CAMediaTimingFunction.m:
+	Fixed a misspelling in calculating coefficients that
+	used 'x' instead of 'y' when calculating coefficients
+	for 'y'. Added calculation of derivation from 'y', for
+	completeness sake. Added calculation of 't' parameter
+	via Newton-Raphson from 'x'. Added calculation of 'y'
+	from 'x' by first calculating 't'. Added small debug
+	function for graphing the media timing func into stdout.
+
+	* Tests/hello_animation.m:
+	In animation4, we now test timing functions on explicit
+	animations that repeat and autoreverse.
+	
 2012-07-12  Ivan Vučica  <ivan@vucica.net>
 
 	* GSQuartzCore.xcodeproj/project.pbxproj:

@@ -48,6 +48,7 @@
 #import <QuartzCore/CABase.h>
 #import <QuartzCore/CATransaction.h>
 #import <QuartzCore/CAAnimation.h>
+#import <QuartzCore/CAMediaTimingFunction.h>
 #else
 #import <GSQuartzCore/AppleSupport.h>
 #import <GSQuartzCore/CARenderer.h>
@@ -55,6 +56,7 @@
 #import <GSQuartzCore/CABase.h>
 #import <GSQuartzCore/CATransaction.h>
 #import <GSQuartzCore/CAAnimation.h>
+#import <GSQuartzCore/CAMediaTimingFunction.h>
 #endif
 
 #import "QCTestOpenGLView.h"
@@ -184,6 +186,7 @@ Class classOfTestOpenGLView()
   [animation setToValue: [NSValue valueWithPoint: NSMakePoint(50, 50)]];
   [animation setDuration: 0.5];
   [animation setAutoreverses: YES];
+  [animation setTimingFunction: [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault]];
   [animation setRepeatCount: 3]; //__builtin_inf()];
   
   [_theSublayer addAnimation: animation forKey:@"repeatingAnimation"];

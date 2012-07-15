@@ -32,6 +32,8 @@
 #import "QuartzCore/CALayer.h"
 #import "CAAnimation+FrameworkPrivate.h"
 #import "QuartzCore/CATransform3D.h"
+#import "QuartzCore/CAMediaTimingFunction.h"
+#import "CAMediaTimingFunction+FrameworkPrivate.h"
 
 NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
@@ -419,6 +421,12 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
    */
   
   float fraction = theTime / _duration;
+
+  /* apply media timing function, if set */
+  if ([self timingFunction])
+    {
+      fraction = [[self timingFunction] evaluateYAtX: fraction];
+    }
 
   if ([_fromValue isKindOfClass: [NSNumber class]] &&
       [_toValue isKindOfClass: [NSNumber class]])
