@@ -31,6 +31,7 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import <Foundation/Foundation.h>
 #import "QuartzCore/CAMediaTimingFunction.h"
 #import "CAMediaTimingFunction+FrameworkPrivate.h"
 
@@ -132,26 +133,18 @@ static const float _c3y = 1.0;
   return self;
 }
 
-- (CGFloat) evaluateXAtParameter: (CGFloat)t
+static inline CGFloat evaluateAtParameterWithCoefficients(CGFloat t, CGFloat coefficients[])
 {
-  return _coefficientsX[0] + t*_coefficientsX[1] + t*t*_coefficientsX[2] + t*t*t*_coefficientsX[3];
-}
-- (CGFloat) evaluateYAtParameter: (CGFloat)t
-{
-  return _coefficientsY[0] + t*_coefficientsY[1] + t*t*_coefficientsY[2] + t*t*t*_coefficientsY[3];
+  return coefficients[0] + t*coefficients[1] + t*t*coefficients[2] + t*t*t*coefficients[3];
 }
 
-- (CGFloat) evaluateDerivationForXAtParameter: (CGFloat)t
+static inline CGFloat evaluateDerivationAtParameterWithCoefficients(CGFloat t, CGFloat coefficients[])
 {
-  return _coefficientsX[1] + 2*t*_coefficientsX[2] + 3*t*t*_coefficientsX[3];
+  return coefficients[1] + 2*t*coefficients[2] + 3*t*t*coefficients[3];
 }
 
-- (CGFloat) evaluateDerivationForYAtParameter: (CGFloat)t
-{
-  return _coefficientsY[1] + 2*t*_coefficientsY[2] + 3*t*t*_coefficientsY[3];
-}
 
-- (CGFloat) calcParameterViaNewtonRaphsonUsingX: (CGFloat)x
+static inline CGFloat calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(CGFloat x, CGFloat coefficientsX[])
 {
   // see http://en.wikipedia.org/wiki/Newton's_method
     
@@ -162,8 +155,8 @@ static const float _c3y = 1.0;
   const CGFloat epsilon = 0.00001;
   for(int i = 0; i < 10; i++)
     {
-      CGFloat x2 = [self evaluateXAtParameter: t] - x;
-      CGFloat d = [self evaluateDerivationForXAtParameter: t];
+      CGFloat x2 = evaluateAtParameterWithCoefficients(t, coefficientsX) - x;
+      CGFloat d = evaluateDerivationAtParameterWithCoefficients(t, coefficientsX);
       
       CGFloat dt = x2/d;
       
@@ -175,7 +168,7 @@ static const float _c3y = 1.0;
   return t;
 }
 
-- (CGFloat) calcParameterUsingX: (CGFloat)x
+static inline CGFloat calcParameterUsingXAndCoefficientsForX (CGFloat x, CGFloat coefficientsX[])
 {
   // for the time being, we'll guess Newton-Raphson always
   // returns the correct value.
@@ -183,15 +176,15 @@ static const float _c3y = 1.0;
   // if we find it doesn't find the solution often enough,
   // we can add additional calculation methods.
     
-  CGFloat t = [self calcParameterViaNewtonRaphsonUsingX: x];
+  CGFloat t = calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(x, coefficientsX);
     
   return t;
 }
 
 - (CGFloat) evaluateYAtX: (CGFloat)x
 {
-  CGFloat t = [self calcParameterUsingX: x];
-  CGFloat y = [self evaluateYAtParameter: t];
+  CGFloat t = calcParameterUsingXAndCoefficientsForX(x, _coefficientsX);
+  CGFloat y = evaluateAtParameterWithCoefficients(t, _coefficientsY);
   //NSLog(@"X: %g T: %g Y: %g", x, t, y);
   
   return y;

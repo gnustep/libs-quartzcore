@@ -1,4 +1,10 @@
 2012-07-19  Ivan Vučica  <ivan@vucica.net>
+	
+	* Source/CAMediaTimingFunction+FrameworkPrivate.h:
+	* Source/CAMediaTimingFunction.m:
+	Replaced Bezier-math-related Objective-C methods with C functions.
+
+2012-07-19  Ivan Vučica  <ivan@vucica.net>
 
 	* Source/CALayer.m:
 	Opal context is cleared under GNUstep since it isn't served

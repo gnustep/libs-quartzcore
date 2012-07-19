@@ -28,12 +28,6 @@
 
 @interface CAMediaTimingFunction (FrameworkPrivate)
 
-- (CGFloat) evaluateXAtParameter: (CGFloat)t;
-- (CGFloat) evaluateYAtParameter: (CGFloat)t;
-- (CGFloat) evaluateDerivationForXAtParameter: (CGFloat)t;
-- (CGFloat) evaluateDerivationForYAtParameter: (CGFloat)t;
-- (CGFloat) calcParameterViaNewtonRaphsonUsingX: (CGFloat)x;
-- (CGFloat) calcParameterUsingX: (CGFloat)x;
 - (CGFloat) evaluateYAtX: (CGFloat)x;
 
 /*
