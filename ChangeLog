@@ -1,3 +1,33 @@
+2012-07-19  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CALayer.m:
+	Opal context is cleared under GNUstep since it isn't served
+	already cleared - a bug in Opal.
+
+	To support KVO under GNUstep, we need custom setters for
+	struct types of properties. This has been added as a macro
+	GSCA_OBSERVABLE_SETTER() which 'synthesizes' such KVO-compliant
+	setters. This shouldn't be needed and fixes a bug in gnustep-base.
+
+	* Headers/QuartzCore/CALayer.h:
+	To support KVO, we need to generate custom setters as described
+	above. To be able to do so, under GNUstep we need nonatomic
+	properties. Under Cocoa, we can leave the properties as atomic.
+
+	* Headers/QuartzCore/QuartzCore.h:
+	Cosmetic change: deletion of an empty line.
+
+	* Source/CATransaction.m:
+	Reordered includes since BOOL didn't get defined without
+	inclusion of Foundation/Foundation.h
+
+	* Source/CARenderer.m:
+	Removed enabling GL_ALPHA_TEST incorrectly.
+
+	* Tests/hello_animation.m:
+	Added test for implicit animation of non-struct type, i.e.
+	opacity.
+
 2012-07-15  Ivan Vučica  <ivan@vucica.net>
 	
 	* Source/CAAnimation.m:

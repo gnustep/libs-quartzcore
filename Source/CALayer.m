@@ -98,7 +98,18 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       return NULL;
     }
   CGColorSpaceRelease(colorSpace);
-  
+
+#if GNUSTEP
+#warning Opal bug: context should be cleared automatically
+
+#if 0
+  CGContextClearRect (context, CGRectInfinite);
+#else
+#warning Opal bug: CGContextClearRect() permanently whacks the context
+  memset (CGBitmapContextGetData (context), 
+          0, bitmapBytesPerRow * pixelsHigh);
+#endif
+#endif  
   return context;
 }
 
@@ -336,12 +347,41 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 }
 
 /* *** properties *** */
+#if GNUSTEP
+#warning KVO under GNUstep doesn't work without custom setters for any struct type!
+/* For more info, refer to NSKeyValueObserving.m. */
+/* Once we implement @dynamic generation, this won't be important, but
+   it's still a GNUstep bug. */
+#define GSCA_OBSERVABLE_SETTER(settername, type, prop, comparator) \
+  - (void) settername: (type)prop \
+  { \
+    if (comparator(prop, _ ## prop)) \
+      return; \
+    \
+    [self willChangeValueForKey: @ #prop]; \
+    _ ## prop = prop; \
+    [self didChangeValueForKey: @ #prop]; \
+  }
+
+GSCA_OBSERVABLE_SETTER(setPosition, CGPoint, position, CGPointEqualToPoint)
+GSCA_OBSERVABLE_SETTER(setAnchorPoint, CGPoint, anchorPoint, CGPointEqualToPoint)
+GSCA_OBSERVABLE_SETTER(setTransform, CATransform3D, transform, CATransform3DEqualToTransform)
+GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, CATransform3DEqualToTransform)
+
+#endif
 - (void) setBounds: (CGRect)bounds
 {
   if (CGRectEqualToRect(bounds, _bounds))
     return;
   
+#if !GNUSTEP
   _bounds = bounds;
+#else
+#warning KVO under GNUstep doesn't work without custom setters for any struct type!
+  [self willChangeValueForKey: @"bounds"];
+  _bounds = bounds;
+  [self didChangeValueForKey: @"bounds"];
+#endif
 
   if ([self needsDisplayOnBoundsChange])
     {
@@ -354,9 +394,15 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   if (backgroundColor == _backgroundColor)
     return;
   
+#if GNUSTEP
+  [self willChangeValueForKey: @"backgroundColor"];
+#endif
   CGColorRetain(backgroundColor);
   CGColorRelease(_backgroundColor);
   _backgroundColor = backgroundColor;
+#if GNUSTEP
+  [self didChangeValueForKey: @"backgroundColor"];
+#endif
 }
 
 /* *** display methods *** */

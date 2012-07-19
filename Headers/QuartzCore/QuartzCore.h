@@ -1,4 +1,3 @@
-
 /* 
    QuartzCore.h
 

@@ -128,6 +128,7 @@ Class classOfTestOpenGLView()
     [testsMenu addItemWithTitle:@"Animation 5" action:@selector(animation5:) keyEquivalent:@"5"];
     [testsMenu addItemWithTitle:@"Animation 6" action:@selector(animation6:) keyEquivalent:@"6"];
     [testsMenu addItemWithTitle:@"Animation 7" action:@selector(animation7:) keyEquivalent:@"7"];
+    [testsMenu addItemWithTitle:@"Animation 8" action:@selector(animation8:) keyEquivalent:@"8"];
     [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
   
@@ -158,7 +159,7 @@ Class classOfTestOpenGLView()
 {
   [CATransaction begin];
   [CATransaction setAnimationDuration:1];
-  [[_renderer layer] setPosition: CGPointMake(50, 50)];
+  [[_renderer layer] setPosition: CGPointMake([self frame].size.width/2, [self frame].size.height/2)];
   [self printPos: [_renderer layer]];
   [self performSelector:@selector(printPos:) withObject: [_renderer layer] afterDelay:0.5];
   [CATransaction commit];
@@ -253,6 +254,29 @@ Class classOfTestOpenGLView()
   [opacity setAutoreverses: YES];
   
   [_theSublayer addAnimation: opacity forKey: @"pulse"];
+}
+
+- (void) animation8:sender
+{
+
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
+  static BOOL toggle = NO;
+  CALayer * layer = [_renderer layer];
+  if (!toggle)
+    [layer setOpacity: 0.2];
+  else
+    [layer setOpacity: 1.0];
+  
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
+  
+  toggle = !toggle;
 }
 
 - (void) layerSetNeedsDisplay:sender

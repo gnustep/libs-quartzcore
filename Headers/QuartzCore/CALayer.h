@@ -52,6 +52,12 @@ NSString *const kCATransition;
 
 #import "QuartzCore/CAAction.h"
 
+#if GNUSTEP
+#define NONATOMIC_GSONLY nonatomic
+#else
+#define NONATOMIC_GSONLY atomic
+#endif
+
 @interface CALayer : NSObject<CAMediaTiming>
 {
   /* property-backing i-vars */
@@ -108,14 +114,14 @@ NSString *const kCATransition;
 @property (nonatomic,copy)           NSArray *sublayers;
 @property (assign)                   CGRect frame;
 @property (nonatomic,assign)         CGRect bounds;
-@property (assign)                   CGPoint anchorPoint;
-@property (assign)                   CGPoint position;
-@property (assign)                   CATransform3D transform;
-@property (assign)                   CATransform3D sublayerTransform;
+@property (NONATOMIC_GSONLY,assign)  CGPoint anchorPoint;
+@property (NONATOMIC_GSONLY,assign)  CGPoint position;
+@property (NONATOMIC_GSONLY,assign)  CATransform3D transform;
+@property (NONATOMIC_GSONLY,assign)  CATransform3D sublayerTransform;
 @property (assign)                   float opacity;
 @property (getter=isOpaque)          BOOL opaque;
 @property (getter=isGeometryFlipped) BOOL geometryFlipped;
-@property /* retained */ (nonatomic) CGColorRef backgroundColor;
+@property (nonatomic, assign)        CGColorRef backgroundColor; /* retained by CG */
 @property (assign)                   BOOL masksToBounds;
 @property (assign)                   CGRect contentsRect;
 @property (getter=isHidden)          BOOL hidden;
