@@ -60,28 +60,6 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return [[[self alloc] init] autorelease];
 }
 
-- (id) init
-{
-  self = [super init];
-  if (!self)
-    return nil;
-  
-  static NSString * keys[] = {
-    @"delegate", @"removedOnCompletion", @"timingFunction", 
-    @"duration", @"speed", @"autoreverses", @"repeatCount"};
-  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
-    {
-      id defaultValue = [[self class] defaultValueForKey: keys[i]];
-      if (defaultValue)
-        {
-          [self setValue:defaultValue
-                  forKey:keys[i]];
-        }
-    }
-  
-  return self;
-}
-
 + (id) defaultValueForKey: (NSString *)key
 {
   if ([key isEqualToString:@"delegate"])
@@ -122,6 +100,63 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 {
   /* default implementation returns YES */
   return YES;
+}
+
+- (id) init
+{
+  self = [super init];
+  if (!self)
+    return nil;
+  
+  static NSString * keys[] = {
+    @"delegate", @"removedOnCompletion", @"timingFunction", 
+    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id defaultValue = [[self class] defaultValueForKey: keys[i]];
+      if (defaultValue)
+        {
+          [self setValue:defaultValue
+                  forKey:keys[i]];
+        }
+    }
+  
+  return self;
+}
+
+- (id) initWithCoder:(NSCoder *)aDecoder
+{
+  self = [self init];
+  if (!self)
+    return nil;
+    
+  static NSString * keys[] = {
+    @"delegate", @"removedOnCompletion", @"timingFunction", 
+    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([aDecoder containsValueForKey: keys[i]])
+        {
+          [self setValue: [aDecoder decodeObjectForKey: keys[i]]
+                  forKey: keys[i]];
+        }
+    }
+  
+  return self;
+}
+
+- (void) encodeWithCoder: (NSCoder *)aCoder
+{
+  static NSString * keys[] = {
+    @"delegate", @"removedOnCompletion", @"timingFunction", 
+    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([[self class] shouldArchiveValueForKey: keys[i]])
+        {
+          [self encodeWithCoder: aCoder];
+        }
+    }
 }
 
 - (CFTimeInterval) activeTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
@@ -173,26 +208,18 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return [[[self alloc] initWithKeyPath: (NSString *)path] autorelease];
 }
 
-- (id)initWithKeyPath:(NSString *)keyPath
+- (void) encodeWithCoder: (NSCoder *)aCoder
 {
-  self = [super init];
-  if (!self)
-    return nil;
-  
-  [self setKeyPath: keyPath];
-  
-  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  static NSString * keys[] = {
+    @"delegate", @"removedOnCompletion", @"timingFunction", 
+    @"duration", @"speed", @"autoreverses", @"repeatCount"};
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
-      id defaultValue = [[self class] defaultValueForKey: keys[i]];
-      if (defaultValue)
+      if ([[self class] shouldArchiveValueForKey: keys[i]])
         {
-          [self setValue:defaultValue
-                  forKey:keys[i]];
+          [self encodeWithCoder: aCoder];
         }
     }
-  
-  return self;
 }
 
 + (id)defaultValueForKey: (NSString *)key
@@ -216,6 +243,49 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   
   return [super defaultValueForKey: key];
 }
+
+
+- (id)initWithKeyPath:(NSString *)keyPath
+{
+  self = [super init];
+  if (!self)
+    return nil;
+  
+  [self setKeyPath: keyPath];
+  
+  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id defaultValue = [[self class] defaultValueForKey: keys[i]];
+      if (defaultValue)
+        {
+          [self setValue:defaultValue
+                  forKey:keys[i]];
+        }
+    }
+  
+  return self;
+}
+
+- (id) initWithCoder:(NSCoder *)aDecoder
+{
+  self = [self init];
+  if (!self)
+    return nil;
+    
+  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([aDecoder containsValueForKey: keys[i]])
+        {
+          [self setValue: [aDecoder decodeObjectForKey: keys[i]]
+                  forKey: keys[i]];
+        }
+    }
+  
+  return self;
+}
+
 
 - (void) applyToLayer: (CALayer *)layer
 {

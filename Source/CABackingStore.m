@@ -50,6 +50,7 @@
 
 - (void) dealloc
 {
+  [_texture release];
   CGContextRelease (_context);
   
   [super dealloc];
@@ -65,16 +66,39 @@
   if (context == _context)
     return;
   
+  /* We must invalidate the texture data, in case
+     we use client storage extension. */
+  [_texture loadEmptyImageWithWidth: 0
+                             height: 0];
+  
+  /* Now replace data... */
   CGContextRetain(context);
   CGContextRelease(_context);
   _context = context;
+  
+  /* Refresh */
+  [self refresh];
 }
 
 - (void) refresh
 {
+  if (!_context)
+    return;
+  
+#if __APPLE__
+  /* Since we retain contents in the CGContext, we can use the
+     client storage extension to avoid a copy. */
+  glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
+#endif
+
   [_texture loadRGBATexImage: CGBitmapContextGetData(_context)
                        width: (GLuint)CGBitmapContextGetWidth(_context)
                       height: (GLuint)CGBitmapContextGetHeight(_context)];
+                      
+#if __APPLE__
+  glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
+#endif
+
 }
 
 @end

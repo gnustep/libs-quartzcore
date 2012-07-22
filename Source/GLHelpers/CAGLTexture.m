@@ -26,13 +26,13 @@
 
 #import "CAGLTexture.h"
 
-#define USE_RECT 0
+#define USE_RECT 1
 #if USE_RECT
 /* FIXME: Use of rectangle textures is broken */
 #define TEXTURE_TARGET GL_TEXTURE_RECTANGLE_ARB
 #define qcLoadTexImage(channels, width, height, format, type, data) \
         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, channels, \
-                     width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE\
+                     width, height, 0, format, type, \
                      data)
 
 #else
@@ -81,14 +81,43 @@
                     width: (GLuint)width
                    height: (GLuint)height
 {
+  _width = width;
+  _height = height;
+
   glBindTexture(TEXTURE_TARGET, _textureID);
 
+#if !(__APPLE__)
   qcLoadTexImage(GL_RGBA,
     width,
     height,
     GL_RGBA,
     GL_UNSIGNED_BYTE,
     data);
+#else
+
+  #if !USE_RECT
+  /* On Apple, and not using rectangular textures?
+     Client extension can' be used due to use of gluBuild2DMipmaps(), so
+     ensure it's off. */
+  glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
+  #endif
+
+/* TODO: This Apple-specific section of code refers "Best practices for
+   working with texture data" in Apple docs, except that the 'format' 
+   argument (the second argument specifying GL_RGBA) should be, according 
+   to their docs, BGRA. 
+   Explore if we should use this everywhere, and if we can somehow make 
+   use of BGRA (probably not due to CGImageRefs and other uses that may
+   presume RGBA ordering). */
+
+  
+  qcLoadTexImage(GL_RGBA,
+    width,
+    height,
+    GL_RGBA,
+    GL_UNSIGNED_INT_8_8_8_8_REV,
+    data);
+#endif
 }
 
 - (void) bind

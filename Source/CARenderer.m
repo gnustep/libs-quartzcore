@@ -171,8 +171,8 @@
     glLoadMatrixd((GLdouble*)&transform);
   else
     glLoadMatrixf((GLfloat*)&transform);
- 
-  // fill vertex arrays 
+
+  // fill vertex arrays
   GLfloat vertices[] = {
     0.0, 0.0,
     [layer bounds].size.width, 0.0,
@@ -182,14 +182,15 @@
     0.0, [layer bounds].size.height,
     0.0, 0.0,
   };
+  CGRect cr = [layer contentsRect];
   GLfloat texCoords[] = {
-    0.0, 1.0,
-    1.0, 1.0,
-    1.0, 0.0,
+    cr.origin.x,                 1.0 - (cr.origin.y),
+    cr.origin.x + cr.size.width, 1.0 - (cr.origin.y),
+    cr.origin.x + cr.size.width, 1.0 - (cr.origin.y + cr.size.height),
     
-    1.0, 0.0,
-    0.0, 0.0,
-    0.0, 1.0
+    cr.origin.x + cr.size.width, 1.0 - (cr.origin.y + cr.size.height),
+    cr.origin.x,                 1.0 - (cr.origin.y + cr.size.height),
+    cr.origin.x,                 1.0 - (cr.origin.y),
   };
   GLfloat whiteColor[] = {
     1.0, 1.0, 1.0, 1.0,
@@ -270,6 +271,17 @@
           // TODO
         }
 #endif
+      
+      if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+        {
+          /* Rectangle textures use non-normalized coordinates. */
+          
+          for (int i = 0; i < 6; i++)
+            {
+              texCoords[i*2 + 0] *= [texture width];
+              texCoords[i*2 + 1] *= [texture height];
+            }
+        }
       
       [texture bind];
       glColorPointer(4, GL_FLOAT, 0, whiteColor);

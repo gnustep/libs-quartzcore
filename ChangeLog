@@ -1,6 +1,33 @@
 2012-07-22  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CALayer.h:
+	Added _offscreenFramebuffer ivar in preparation for adding
+	offscreen rendering.
+
+	* Source/CAAnimation.m:
+	Added NSCoding functions.
+
+	* Source/CABackingStore.h:
+	* Source/CABackingStore.m:
+	Using Apple's client storage extension while under Cocoa, to
+	avoid memory copy. Alternatives probably exist for other platforms,
+	too, and need to be explored.
+	
+	* Source/CALayer.m:
+	Added support for contentsRect. Added code section markers.
+
+	* Source/CARenderer.m:
+	Added support for contentsRect. Added support for rectangular
+	textures.
+	
+
+	* Source/GLHelpers/CAGLTexture.m:
+	Rectangular textures. Small OS X-specific optimizations that may
+	be applicable elsewhere too.
+
+2012-07-22  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/CALayer.h:
 	* Source/CALayer.m:
 	Animations must be applied in exact order, so we no longer use
 	the [_animations allKeys] to supply our need for animation keys

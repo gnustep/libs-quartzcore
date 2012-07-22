@@ -189,6 +189,11 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
     {
       return [NSNumber numberWithFloat: 1.0];
     }
+  if ([key isEqualToString:@"contentsRect"])
+    {
+      CGRect rect = CGRectMake(0.0, 0.0, 1.0, 1.0);
+      return [NSValue valueWithBytes: &rect objCType: @encode(CGRect)];
+    }
     
   /* CAMediaTiming */
   if ([key isEqualToString:@"duration"])
@@ -228,7 +233,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       /* TODO: list all properties below */
       static NSString * keys[] = {
         @"anchorPoint", @"transform", @"sublayerTransform",
-        @"opacity", @"delegate", 
+        @"opacity", @"delegate", @"contentsRect",
         
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
@@ -410,7 +415,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
 #endif
 }
 
-/* *** display methods *** */
+/* ***************** */
+/* MARK: - Redisplay */
 
 - (void) display
 {
@@ -486,7 +492,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
     }
 }
 
-/* layout methods */
+/* ********************** */
+/* MARK: - Layout methods */
 - (void) layoutIfNeeded
 { 
 }
@@ -500,6 +507,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
   _needsLayout = YES;
 }
 
+/* ************************************* */
+/* MARK: - Model and presentation layers */
 - (id) presentationLayer
 {
   if (!_modelLayer && !_presentationLayer)
@@ -564,7 +573,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
     }
 }
 
-/* ********************************** */
+/* **************** */
+/* MARK: Animations */
 - (void) addAnimation: (CAAnimation *)anim forKey: (NSString *)key
 {
   [_animations setValue: anim
@@ -640,8 +650,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
     [animationKeysToRemove release];
 }
 
-/* ******************************** */
-
+/* ***************** */
+/* MARK: - Sublayers */
 - (void) addSublayer: (CALayer *)layer
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
@@ -725,6 +735,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
   return nil;
 }
 
+/* ************ */
+/* MARK: - Time */
 + (void) setCurrentFrameBeginTime: (CFTimeInterval)frameTime
 {
   currentFrameBeginTime = frameTime;
@@ -831,6 +843,16 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
   
   return theTime;
 }
+
+/* *************** */
+/* MARK: - Actions */
+
+#if 0
++ (id<CAAction>) defaultActionForKey: (NSString *)key;
+{
+  
+}
+#endif
 
 /* Unimplemented functions: */
 #if 0

@@ -56,6 +56,7 @@
 
 - (id) initWithContext: (CGContextRef) context;
 - (void) refresh;
+
 @property /* (retain) */ CGContextRef context;
 @property (retain) CAGLTexture * texture;
 

@@ -102,6 +102,7 @@ NSString *const kCATransition;
   NSMutableDictionary *_animations;
   NSMutableArray *_animationKeys;
   NSMutableArray *_observedKeyPaths;
+  id _offscreenFramebuffer;
 }
 
 + (id) layer;
