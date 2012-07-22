@@ -1,3 +1,17 @@
+2012-07-23  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/CALayer.h:
+	* Source/CALayer.m:
+	Added shouldRasterize property.
+	
+	* Headers/QuartzCore/CARenderer.h:
+	* Source/CARenderer.m:
+	Added code for determining if a layer needs to be rasterized,
+	scheduling rasterization, and going through the schedule. Actual
+	rasterization code is still to be written.
+
+	Memory leak cleanup.
+
 2012-07-22  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CALayer.h:

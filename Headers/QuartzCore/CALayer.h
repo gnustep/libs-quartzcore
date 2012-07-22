@@ -73,6 +73,7 @@ NSString *const kCATransition;
   CATransform3D _transform;
   CATransform3D _sublayerTransform;
   float _opacity;
+  BOOL _shouldRasterize;
   BOOL _opaque;
   BOOL _geometryFlipped;
   CGColorRef _backgroundColor;
@@ -122,6 +123,7 @@ NSString *const kCATransition;
 @property (NONATOMIC_GSONLY,assign)  CATransform3D sublayerTransform;
 @property (assign)                   float opacity;
 @property (getter=isOpaque)          BOOL opaque;
+@property (assign)                   BOOL shouldRasterize;
 @property (getter=isGeometryFlipped) BOOL geometryFlipped;
 @property (nonatomic, assign)        CGColorRef backgroundColor; /* retained by CG */
 @property (assign)                   BOOL masksToBounds;

@@ -57,6 +57,8 @@ typedef struct _CVTimeStamp
   
   CFTimeInterval _firstRender;
   CFTimeInterval _currentTime;
+  
+  NSMutableArray * _rasterizationSchedule;
 }
 
 + (CARenderer*)rendererWithNSOpenGLContext: (NSOpenGLContext *)context

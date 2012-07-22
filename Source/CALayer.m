@@ -136,6 +136,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @synthesize opacity=_opacity;
 @synthesize transform=_transform;
 @synthesize sublayerTransform=_sublayerTransform;
+@synthesize shouldRasterize=_shouldRasterize;
 @synthesize opaque=_opaque;
 @synthesize geometryFlipped=_geometryFlipped;
 @synthesize backgroundColor=_backgroundColor;
@@ -185,6 +186,10 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
     {
       return [NSValue valueWithCATransform3D: CATransform3DIdentity];
     }
+  if ([key isEqualToString:@"shouldRasterize"])
+    {
+      return [NSNumber numberWithBool: NO];
+    }
   if ([key isEqualToString:@"opacity"])
     {
       return [NSNumber numberWithFloat: 1.0];
@@ -233,7 +238,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       /* TODO: list all properties below */
       static NSString * keys[] = {
         @"anchorPoint", @"transform", @"sublayerTransform",
-        @"opacity", @"delegate", @"contentsRect",
+        @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
         
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
@@ -293,6 +298,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       [self setOpacity: [layer opacity]];
       [self setTransform: [layer transform]];
       [self setSublayerTransform: [layer sublayerTransform]];
+      [self setShouldRasterize: [layer shouldRasterize]];
       [self setOpaque: [layer isOpaque]];
       [self setGeometryFlipped: [layer isGeometryFlipped]];
       [self setBackgroundColor: [layer backgroundColor]];

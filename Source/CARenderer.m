@@ -46,6 +46,8 @@
 
 @interface CARenderer()
 @property (assign) NSOpenGLContext *GLContext;
+- (void) _determineAndScheduleRasterizationForLayer: (CALayer *) layer;
+- (void) _scheduleRasterization: (CALayer *) layer;
 @end
 
 @implementation CARenderer
@@ -77,6 +79,8 @@
 
 - (void) dealloc
 {
+  [_layer release];
+  [_rasterizationSchedule release];
   [super dealloc];
 }
 
@@ -95,7 +99,23 @@
       _firstRender = timeInterval;
       return;
     }
+  
+  /* Prepare for rasterization */
+  [_rasterizationSchedule release];
+  _rasterizationSchedule = [[NSMutableArray alloc] init];
+  
+  /* Update layers (including determining and scheduling rasterization) */
   [self _updateLayer: _layer atTime: timeInterval];
+  
+  /* Rasterize */
+  for (NSDictionary * rasterizationSpec in _rasterizationSchedule)
+  {
+    [self _rasterize: rasterizationSpec];
+  }
+  
+  /* Release rasterization schedule */
+  [_rasterizationSchedule release];
+  _rasterizationSchedule = nil;
 }
 
 /* Ends rendering the frame, releasing any temporary data. */
@@ -130,6 +150,17 @@
        withTransform: CATransform3DIdentity];
 }
 
+
+/* Returns rectangle containing all pixels that should be updated. */
+- (CGRect) updateBounds
+{
+  // TODO update bounds are currently unused
+  return CGRectZero;
+}
+
+/* *********************** */
+/* MARK: - Private methods */
+
 /* Internal method that updates a single presentation layer and then proceeds by recursing, updating its children. */
 - (void) _updateLayer: (CALayer *)layer
                atTime: (CFTimeInterval)theTime
@@ -153,6 +184,22 @@
       [self _updateLayer: sublayer
                   atTime: theTime];
     }
+
+  /* Now that children have had a chance to suffer determining
+     whether they need to be rendered offscreen, the layer itself
+     can suffer it, too. */
+  /* (Order is important, because the deeper the layer is, earlier
+     it needs to be offscreen-rendered.) */
+     
+  /* TODO: */
+  /* First, allow mask layer to determine this, since it's deeper than
+     the current layer. */
+  #if 0
+  [self _determineAndScheduleRasterizationForLayer: [layer mask]];
+  #endif
+  
+  /* Then determine current layer to determine rasterization */
+  [self _determineAndScheduleRasterizationForLayer: layer];
 }
 /* Internal method that renders a single layer and then proceeds by recursing, rendering its children. */
 - (void) _renderLayer: (CALayer *)layer
@@ -298,11 +345,32 @@
     }
 }
 
-/* Returns rectangle containing all pixels that should be updated. */
-- (CGRect) updateBounds
+- (void) _determineAndScheduleRasterizationForLayer: (CALayer*)layer
 {
-  // TODO update bounds are currently unused
-  return CGRectZero;
+  /* Whether a layer needs to be rasterized is complex to determine,
+     but the first thing to check is user-specifiable property
+     'shouldRasterize'. */
+  if ([[layer presentationLayer] shouldRasterize])
+    {
+      [self _scheduleRasterization: layer];
+      return;
+    }
+}
+
+- (void) _scheduleRasterization: (CALayer *)layer
+{
+  NSMutableDictionary * rasterizationSpec = [NSMutableDictionary new];
+  
+  [rasterizationSpec setValue: layer forKey: @"layer"];
+  
+  [_rasterizationSchedule addObject: rasterizationSpec];
+  
+  [rasterizationSpec release];
+}
+
+- (void) _rasterize: (NSDictionary*) rasterizationSpec
+{
+  // TODO
 }
 
 @end
