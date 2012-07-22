@@ -1,0 +1,111 @@
+/* CAGLFramebuffer.m
+
+   Copyright (C) 2012 Free Software Foundation, Inc.
+
+   Author: Ivan Vučica <ivan@vucica.net>
+   Date: July 2012
+
+   This file is part of QuartzCore.
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; see the file COPYING.LIB.
+   If not, see <http://www.gnu.org/licenses/> or write to the
+   Free Software Foundation, 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.
+*/
+
+#import "CAGLSimpleFramebuffer.h"
+#import "CAGLTexture.h"
+
+@interface CAGLSimpleFramebuffer ()
+@property (nonatomic, retain) CAGLTexture * texture;
+@end
+
+@implementation CAGLSimpleFramebuffer
+@synthesize texture=_texture;
+@synthesize depthBufferEnabled=_depthBufferEnabled;
+
+- (id)initWithWidth: (CGFloat) width
+             height: (CGFloat) height
+{
+  self = [super init];
+  if (!self)
+    return nil;
+
+  glGenFramebuffersEXT(1, &_framebufferID);
+  
+  /* Build a texture and assign it to the framebuffer */
+  _texture = [CAGLTexture new];
+  [_texture loadEmptyImageWithWidth: width
+                             height: height];
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, [_texture textureID], 0);
+  
+  return self;
+}
+
+- (void) dealloc
+{
+  glDeleteFramebuffersEXT(1, &_framebufferID);
+
+  [super dealloc];
+}
+
+- (void) setDepthBufferEnabled: (BOOL)depthBufferEnabled
+{
+  if (_depthBufferEnabled == depthBufferEnabled)
+    return;
+  
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+  
+  if (_depthBufferEnabled)
+  {
+
+    glGenRenderbuffersEXT(1, &_depthRenderbufferID);
+    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthRenderbufferID);
+    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, [_texture width], [_texture height]);
+
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthRenderbufferID);
+  }
+  else
+  {
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0);
+    
+    glDeleteRenderbuffers(1, &_depthRenderbufferID);
+  }
+}
+
+- (void) bind
+{
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+}
+
+- (void) unbind
+{
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+
+/*
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, surface->texture, 0);
+  if (depth)
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, surface->depth);
+
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  */
+
+
+
+@end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

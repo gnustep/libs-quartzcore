@@ -1,10 +1,9 @@
-/* 
-   CABackingStore.m
+/* CAGLTexture.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Ivan Vučica <ivan@vucica.net>
-   Date: June 2012
+   Date: July 2012
 
    This file is part of QuartzCore.
 
@@ -25,16 +24,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-/*
- * This class is a simple wrapper around CGContextRef and GL textures.
- * Use of GL textures is TBD.
- * In the future, this class will probably also wrap CGImageRefs. 
- */
-
-
-#if GNUSTEP
-#import <CoreGraphics/CoreGraphics.h>
-#endif
+#import <Foundation/Foundation.h>
 #if (__APPLE__)
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
@@ -44,20 +34,27 @@
 #import <GL/glu.h>
 #endif
 
-@class CAGLTexture;
-
-@interface CABackingStore : NSObject
+@interface CAGLTexture : NSObject
 {
-  CGContextRef _context;
-  CAGLTexture * _texture;
+  GLuint _textureID;
+  GLuint _width;
+  GLuint _height;
 }
 
-+ (CABackingStore *) backingStoreWithContext: (CGContextRef) context;
+@property (readonly) GLuint textureID;
+@property (readonly) GLuint width;
+@property (readonly) GLuint height;
 
-- (id) initWithContext: (CGContextRef) context;
-- (void) refresh;
-@property /* (retain) */ CGContextRef context;
-@property (retain) CAGLTexture * texture;
++ (CAGLTexture *) texture;
 
+- (void) loadEmptyImageWithWidth: (GLuint)width
+                          height: (GLuint)height;
+- (void) loadRGBATexImage: (void *)data
+                    width: (GLuint)width
+                   height: (GLuint)height;
+
+- (void) bind;
+- (void) unbind;
+
+- (GLenum) textureTarget;
 @end
-/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

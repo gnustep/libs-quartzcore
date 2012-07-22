@@ -1,3 +1,39 @@
+2012-07-22  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Source/GLHelpers/CAGLSimpleFramebuffer.h:
+	* Source/GLHelpers/CAGLSimpleFramebuffer.m:
+	* Source/GLHelpers/CAGLTexture.h:
+	* Source/GLHelpers/CAGLTexture.m:
+	* Source/GNUmakefile:
+	Added new wrappers for OpenGL objects: textures and framebuffers.
+
+	This allows proper retaining of texture and framebuffer objects on
+	Objecitve-C level. It'll also be useful in working with OpenGL
+	features at slightly higher level, or at least via Objective-C
+	syntax. At the very least, we'll also have wrappers for various
+	shader objects (vertex and fragment programs, as well as linked
+	programs).
+
+	Current framebuffer class is intended for simple use of framebuffers
+	in render-to-texture scenarios, but intentionally does not expose
+	majority of what framebuffers can do.
+	
+	Modification to GNUmakefile in this commit is untested.
+
+	* Headers/QuartzCore/CAMediaTimingFunction.h:
+	Changed type of _coefficients[] to match how we use them.
+
+	* Source/CABackingStore.h:
+	* Source/CABackingStore.m:
+	Making use of CAGLTexture. Style fixes.
+
+	* Source/CARenderer.m:
+	Switched to use of CAGLTexture in backing store. Transferred some
+	responsibility to CABackingStore, making it easier to, in the future,
+	cache texture contents instead of refilling it in GPU with layer
+	contents in every frame.
+
 2012-07-19  Ivan Vučica  <ivan@vucica.net>
 	
 	* Source/CAMediaTimingFunction+FrameworkPrivate.h:

@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		7F43F22E1594ECD800F1C5EB /* CABackingStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F43F22C1594ECD800F1C5EB /* CABackingStore.h */; };
 		7F43F22F1594ECD800F1C5EB /* CABackingStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F43F22D1594ECD800F1C5EB /* CABackingStore.m */; };
+		7F5026AD15BC63FB00184772 /* CAGLSimpleFramebuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5026AB15BC63FB00184772 /* CAGLSimpleFramebuffer.h */; };
+		7F5026AE15BC63FB00184772 /* CAGLSimpleFramebuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F5026AC15BC63FB00184772 /* CAGLSimpleFramebuffer.m */; };
+		7F5026B115BC685900184772 /* CAGLTexture.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5026AF15BC685900184772 /* CAGLTexture.h */; };
+		7F5026B215BC685900184772 /* CAGLTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F5026B015BC685900184772 /* CAGLTexture.m */; };
 		7F5CF3DE1594B35B00A5D114 /* AppleSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5CF3DD1594B35B00A5D114 /* AppleSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7F74229E1594C2A400AEB117 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F74229D1594C2A400AEB117 /* OpenGL.framework */; };
 		7F7422B61594C75E00AEB117 /* AppleSupportRevert.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5909751594B7ED00AF49AF /* AppleSupportRevert.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -87,6 +91,10 @@
 /* Begin PBXFileReference section */
 		7F43F22C1594ECD800F1C5EB /* CABackingStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CABackingStore.h; sourceTree = "<group>"; };
 		7F43F22D1594ECD800F1C5EB /* CABackingStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CABackingStore.m; sourceTree = "<group>"; };
+		7F5026AB15BC63FB00184772 /* CAGLSimpleFramebuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGLSimpleFramebuffer.h; sourceTree = "<group>"; };
+		7F5026AC15BC63FB00184772 /* CAGLSimpleFramebuffer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAGLSimpleFramebuffer.m; sourceTree = "<group>"; };
+		7F5026AF15BC685900184772 /* CAGLTexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGLTexture.h; sourceTree = "<group>"; };
+		7F5026B015BC685900184772 /* CAGLTexture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAGLTexture.m; sourceTree = "<group>"; };
 		7F5909751594B7ED00AF49AF /* AppleSupportRevert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppleSupportRevert.h; sourceTree = "<group>"; };
 		7F5CF3DD1594B35B00A5D114 /* AppleSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppleSupport.h; sourceTree = "<group>"; };
 		7F74229D1594C2A400AEB117 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -158,6 +166,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7F5026AA15BC62D000184772 /* GLHelpers */ = {
+			isa = PBXGroup;
+			children = (
+				7F5026AB15BC63FB00184772 /* CAGLSimpleFramebuffer.h */,
+				7F5026AC15BC63FB00184772 /* CAGLSimpleFramebuffer.m */,
+				7F5026AF15BC685900184772 /* CAGLTexture.h */,
+				7F5026B015BC685900184772 /* CAGLTexture.m */,
+			);
+			path = GLHelpers;
+			sourceTree = "<group>";
+		};
 		7F7422A31594C32000AEB117 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -230,6 +249,7 @@
 		7F77517B1594AF2900F56E92 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				7F5026AA15BC62D000184772 /* GLHelpers */,
 				7F77517C1594AF2900F56E92 /* CAAnimation.m */,
 				7F8CC66C15A0A964003AEB38 /* CAAnimation+FrameworkPrivate.h */,
 				7F43F22C1594ECD800F1C5EB /* CABackingStore.h */,
@@ -332,6 +352,8 @@
 				7FFBC86615AB4F58004B0E68 /* CAImplicitAnimationObserver.h in Headers */,
 				7FFBC86915AB6391004B0E68 /* CATransaction+FrameworkPrivate.h in Headers */,
 				7FA9CFD315AC3CBC00F12B76 /* CAMediaTimingFunction+FrameworkPrivate.h in Headers */,
+				7F5026AD15BC63FB00184772 /* CAGLSimpleFramebuffer.h in Headers */,
+				7F5026B115BC685900184772 /* CAGLTexture.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -448,6 +470,8 @@
 				7F43F22F1594ECD800F1C5EB /* CABackingStore.m in Sources */,
 				7FCE5C5415964BC4009557DC /* CAMediaTiming.m in Sources */,
 				7FFBC86715AB4F58004B0E68 /* CAImplicitAnimationObserver.m in Sources */,
+				7F5026AE15BC63FB00184772 /* CAGLSimpleFramebuffer.m in Sources */,
+				7F5026B215BC685900184772 /* CAGLTexture.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

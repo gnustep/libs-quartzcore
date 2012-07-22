@@ -6,3 +6,4 @@ syntax: glob
 *.xcuserdatad/*
 */*.xcworkspace/*
 Tests/CATransform3D/catransform3d*
+_notes/*

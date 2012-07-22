@@ -38,24 +38,10 @@
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
 #endif
+#import "GLHelpers/CAGLTexture.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
-#endif
-
-#define USE_RECT 0
-#if USE_RECT
-/* FIXME: Use of rectangle textures is broken */
-#define TEXTURE_TARGET GL_TEXTURE_RECTANGLE_ARB
-#define qcLoadTexImage(channels, width, height, format, type, data) \
-        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, channels, \
-                     width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE\
-                     data)
-
-#else
-#define TEXTURE_TARGET GL_TEXTURE_2D
-#define qcLoadTexImage(channels, width, height, format, type, data) \
-        gluBuild2DMipmaps(GL_TEXTURE_2D, channels, width, height, format, type, data)
 #endif
 
 @interface CARenderer()
@@ -264,31 +250,23 @@
       memcpy(backgroundColor + 5*4, components, sizeof(GLfloat)*4);
       glColorPointer(4, GL_FLOAT, 0, backgroundColor);
       
-      glDisable(TEXTURE_TARGET);
       glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
   // if there are some contents, draw them
   if ([layer contents])
     {
-      /* FIXME: should cache textures of layers, and update them
-         only if needed */
-      GLuint texture;
-      glGenTextures(1, &texture);
-      glBindTexture(TEXTURE_TARGET, texture);
+      CAGLTexture * texture = nil;
+      
       if ([[layer contents] isKindOfClass: [CABackingStore class]])
         {
-          CABackingStore * layerContents = ((CABackingStore *)[layer contents]);
-          CGContextRef layerContext = [layerContents context];
+          /* FIXME: should cache textures of layers, and update them
+             only if needed */
 
-          glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-          qcLoadTexImage(GL_RGBA,
-                         CGBitmapContextGetWidth(layerContext),
-                         CGBitmapContextGetHeight(layerContext),
-                         GL_RGBA,
-                         GL_UNSIGNED_BYTE,
-                         CGBitmapContextGetData(layerContext));
- 
+          CABackingStore * layerContents = ((CABackingStore *)[layer contents]);
+
+          [layerContents refresh];
+          texture = [layerContents texture];
         }
 #if !(GSIMPL_UNDER_COCOA)
       else if ([[layer contents] isKindOfClass: [CGImage class]])
@@ -297,11 +275,10 @@
         }
 #endif
       
-      glEnable(TEXTURE_TARGET);
+      [texture bind];
       glColorPointer(4, GL_FLOAT, 0, whiteColor);
       glDrawArrays(GL_TRIANGLES, 0, 6);
-
-      glDeleteTextures(1, &texture);
+      [texture unbind];
 
     }
 

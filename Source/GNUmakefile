@@ -43,7 +43,7 @@ QuartzCore_HEADER_FILES = \
 	CoreAnimation.h \
 	QuartzCore.h
 
-QuartzCore_OBJC_FILES = $(wildcard *.m) 
+QuartzCore_OBJC_FILES = $(wildcard *.m) $(wildcard GLHelpers/*.m)
 
 QuartzCore_OBJCFLAGS += $(WARN_FLAGS) 
 # Treat warnings as errors unless someone chooses to ignore them.

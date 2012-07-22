@@ -26,6 +26,7 @@
 */
 
 #import "CABackingStore.h"
+#import "GLHelpers/CAGLTexture.h"
 
 @implementation CABackingStore
 @synthesize texture=_texture;
@@ -42,6 +43,7 @@
     return nil;
 
   [self setContext: context];
+  [self setTexture: [CAGLTexture texture]];
 
   return self;
 }
@@ -66,6 +68,13 @@
   CGContextRetain(context);
   CGContextRelease(_context);
   _context = context;
+}
+
+- (void) refresh
+{
+  [_texture loadRGBATexImage: CGBitmapContextGetData(_context)
+                       width: (GLuint)CGBitmapContextGetWidth(_context)
+                      height: (GLuint)CGBitmapContextGetHeight(_context)];
 }
 
 @end

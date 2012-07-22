@@ -40,8 +40,8 @@ extern NSString *const kCAMediaTimingFunctionLinear;
   float _c1x, _c1y;
   float _c2x, _c2y;
   
-  float _coefficientsX[4];
-  float _coefficientsY[4];
+  CGFloat _coefficientsX[4];
+  CGFloat _coefficientsY[4];
 }
 
 + (id) functionWithName:(NSString *)name;

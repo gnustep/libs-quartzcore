@@ -1,10 +1,9 @@
-/* 
-   CABackingStore.m
+/* CAGLFramebuffer.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Ivan Vučica <ivan@vucica.net>
-   Date: June 2012
+   Date: July 2012
 
    This file is part of QuartzCore.
 
@@ -25,39 +24,42 @@
    Boston, MA 02110-1301, USA.
 */
 
-/*
- * This class is a simple wrapper around CGContextRef and GL textures.
- * Use of GL textures is TBD.
- * In the future, this class will probably also wrap CGImageRefs. 
- */
+/* This object is called a simple framebuffer because all it allows
+   is a texture serving as a color attachment point and a renderbuffer
+   serving as a depth attachment. It also isn't too nice that it
+   directly manages the renderbuffer for depth.
+   
+   It'd be more powerful if we also wrapped framebuffer in a way
+   that allows more finetuned manipulation of attachment points.
+   However, for the time being, we don't need that.
+*/
 
-
-#if GNUSTEP
-#import <CoreGraphics/CoreGraphics.h>
-#endif
-#if (__APPLE__)
+#import <Foundation/Foundation.h>
+#if !(__APPLE__)
+#import <GL/gl.h>
+#import <GL/glu.h>
+#else
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
-#else
-#import <GL/gl.h>
-#import <GL/glu.h>
 #endif
 
 @class CAGLTexture;
 
-@interface CABackingStore : NSObject
+@interface CAGLSimpleFramebuffer : NSObject
 {
-  CGContextRef _context;
+  GLuint _framebufferID;
+  GLuint _depthRenderbufferID;
   CAGLTexture * _texture;
+  BOOL _depthBufferEnabled;
 }
 
-+ (CABackingStore *) backingStoreWithContext: (CGContextRef) context;
+@property (nonatomic, retain, readonly) CAGLTexture * texture;
+@property (nonatomic, getter=hasDepthBuffer) BOOL depthBufferEnabled;
 
-- (id) initWithContext: (CGContextRef) context;
-- (void) refresh;
-@property /* (retain) */ CGContextRef context;
-@property (retain) CAGLTexture * texture;
+- (id)initWithWidth: (CGFloat) width
+             height: (CGFloat) height;
 
 @end
+
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
