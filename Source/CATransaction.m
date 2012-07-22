@@ -181,7 +181,7 @@ static NSMutableArray *transactionStack = nil;
       
       /* add the animation to animations list into the object */
       NSString *sanitizedKeyPath = [keyPath stringByReplacingOccurrencesOfString:@"." withString:@"__"];
-      NSString *implicitAnimationKey = [NSString stringWithFormat:@"_implicit_%@", sanitizedKeyPath];
+      NSString *implicitAnimationKey = [NSString stringWithFormat:@"%@", sanitizedKeyPath];
       
       [object addAnimation: animation forKey: implicitAnimationKey];
     }

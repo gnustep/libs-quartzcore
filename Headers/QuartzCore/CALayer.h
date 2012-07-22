@@ -100,6 +100,7 @@ NSString *const kCATransition;
   BOOL _needsDisplay;
   BOOL _needsLayout;
   NSMutableDictionary *_animations;
+  NSMutableArray *_animationKeys;
   NSMutableArray *_observedKeyPaths;
 }
 
@@ -128,6 +129,7 @@ NSString *const kCATransition;
 @property (copy)                     NSString *contentsGravity;
 @property (assign)                   BOOL needsDisplayOnBoundsChange;
 @property (assign)                   CGFloat zPosition;
+@property (retain, readonly)         NSArray *animationKeys;
 
 - (id) init;
 - (id) initWithLayer: (CALayer *)layer;
@@ -165,8 +167,6 @@ NSString *const kCATransition;
 
 - (CGAffineTransform) affineTransform;
 - (void) setAffineTransform: (CGAffineTransform)affineTransform;
-
-- (NSArray *) animationKeys;
 
 @end
 

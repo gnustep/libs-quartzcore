@@ -117,6 +117,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @interface CALayer()
 @property (nonatomic, assign) CALayer *superlayer;
 @property (nonatomic, retain) NSMutableDictionary *animations;
+@property (retain) NSMutableArray *animationKeys;
 
 - (void)setModelLayer: (id)modelLayer;
 @end
@@ -155,8 +156,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @synthesize duration=_duration;
 @synthesize speed=_speed;
 
-/* private properties */
+/* private or publicly read-only properties */
 @synthesize animations=_animations;
+@synthesize animationKeys=_animationKeys;
 
 /* *** class methods *** */
 + (id) layer
@@ -219,6 +221,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   if ((self = [super init]) != nil)
     {
       _animations = [[NSMutableDictionary alloc] init];
+      _animationKeys = [[NSMutableArray alloc] init];
       _sublayers = [[NSMutableArray alloc] init];
       _observedKeyPaths = [[NSMutableArray alloc] init];
 
@@ -310,8 +313,9 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       [self setDuration: [layer duration]];
       [self setSpeed: [layer speed]];
       
-      /* private properties */
+      /* private or publicly read-only properties */
       [self setAnimations: [layer animations]];
+      [self setAnimationKeys: [layer animationKeys]];
     }
   return self;
 }
@@ -334,6 +338,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   CGContextRelease(_opalContext);
   
   [_animations release];
+  [_animationKeys release];
   
   [super dealloc];
 }
@@ -426,6 +431,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
         CGContextRelease(_opalContext);
 
         _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
+        
+        self.contents = [CABackingStore backingStoreWithContext: _opalContext];
       }
       
       CGContextSaveGState (_opalContext);
@@ -433,7 +440,15 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
       [self drawInContext: _opalContext];
       CGContextRestoreGState (_opalContext);
 
-      self.contents = [CABackingStore backingStoreWithContext: _opalContext];
+      /* TODO: does Cocoa CALayer restore 'contents' if it was manually set
+         to an, e.g., CGImageRef? */
+      if (![self.contents isKindOfClass: [CABackingStore class]])
+        {
+          self.contents = [CABackingStore backingStoreWithContext: _opalContext];
+        }
+      
+      /* Since now we're dealing with CABackingStore, we can call -refresh */
+      [self.contents refresh];
     }
 }
 
@@ -554,21 +569,21 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
 {
   [_animations setValue: anim
                  forKey: key];
+  [key retain];
+  [_animationKeys removeObject: key];
+  [_animationKeys addObject: key];
+  [key release];
 }
 
 - (void) removeAnimationForKey: (NSString *)key
 {
   [_animations removeObjectForKey: key];
+  [_animationKeys removeObject: key];
 }
 
 - (CAAnimation *)animationForKey: (NSString *)key
 {
   return [_animations valueForKey: key];
-}
-
-- (NSArray *) animationKeys
-{
-  return [_animations allKeys];
 }
 
 - (void) applyAnimationsAtTime: (CFTimeInterval)theTime
@@ -586,9 +601,11 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
     }
     
     NSMutableArray * animationKeysToRemove = [NSMutableArray new];
-    for (NSString * animationKey in _animations)
+
+    for (NSString * animationKey in [self animationKeys])
       {
         CAAnimation * animation = [_animations objectForKey: animationKey];
+
         if ([animation beginTime] == 0)
           {
             // FIXME: this MUST be grabbed from CATransaction, and
@@ -618,7 +635,8 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
           }
       }
     
-    [_animations removeObjectsForKeys:animationKeysToRemove];
+    [_animations removeObjectsForKeys: animationKeysToRemove];
+    [_animationKeys removeObjectsInArray: animationKeysToRemove];
     [animationKeysToRemove release];
 }
 

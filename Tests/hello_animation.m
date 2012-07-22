@@ -282,7 +282,9 @@ Class classOfTestOpenGLView()
 - (void) layerSetNeedsDisplay:sender
 {
   CALayer * layer = [_renderer layer];
-  [layer setNeedsDisplay];  
+  [layer setNeedsDisplay];
+  
+  [self printPos: layer];
 }
 
 

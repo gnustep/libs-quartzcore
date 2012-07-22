@@ -64,8 +64,6 @@ static CAImplicitAnimationObserver * sharedObserver;
     {
       return;
     }
-
-  NSLog(@"- Creation of implicit animation for %p for %@", object, keyPath);
   
   id from = [change valueForKey: NSKeyValueChangeOldKey];
   id to = [change valueForKey: NSKeyValueChangeNewKey];
@@ -74,6 +72,12 @@ static CAImplicitAnimationObserver * sharedObserver;
     from = [object valueForKeyPath: keyPath];
   if (!to)
     to = [object valueForKeyPath: keyPath];
+  
+  /* Implicit animation must not be launched if model tree value
+     is equal to the new value, even if the presentation tree value
+     is not equal. */
+  if ([to isEqualTo: from])
+    return;
   
   [[CATransaction topTransaction] registerImplicitAnimationOnObject: object
                                                             keyPath: keyPath

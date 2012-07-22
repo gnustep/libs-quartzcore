@@ -260,12 +260,8 @@
       
       if ([[layer contents] isKindOfClass: [CABackingStore class]])
         {
-          /* FIXME: should cache textures of layers, and update them
-             only if needed */
-
           CABackingStore * layerContents = ((CABackingStore *)[layer contents]);
 
-          [layerContents refresh];
           texture = [layerContents texture];
         }
 #if !(GSIMPL_UNDER_COCOA)
