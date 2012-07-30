@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F622BDD15C5AFED00115026 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FA8CCFB15891D46009C3B19 /* main.m */; };
+		7F622BDE15C5AFED00115026 /* QCTestOpenGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FA8CCFD15891D46009C3B19 /* QCTestOpenGLView.m */; };
+		7F622BE115C5AFED00115026 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA8CD0515891DCC009C3B19 /* OpenGL.framework */; };
+		7F622BE215C5AFED00115026 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA8CD0315891DC3009C3B19 /* QuartzCore.framework */; };
+		7F622BE315C5AFED00115026 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA8CCDF15891CE7009C3B19 /* Cocoa.framework */; };
+		7F622BE515C5AFED00115026 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7FA8CD0715891E93009C3B19 /* MainMenu.xib */; };
+		7F622BF015C5B07300115026 /* offscreen_render.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F622BEF15C5B07300115026 /* offscreen_render.m */; };
 		7F6586D7159517AF006467A7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FA8CCFB15891D46009C3B19 /* main.m */; };
 		7F6586D8159517AF006467A7 /* QCTestOpenGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FA8CCFD15891D46009C3B19 /* QCTestOpenGLView.m */; };
 		7F6586DB159517AF006467A7 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA8CD0515891DCC009C3B19 /* OpenGL.framework */; };
@@ -31,6 +38,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		7F622BEA15C5AFED00115026 /* offscreen_render.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = offscreen_render.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F622BEC15C5AFED00115026 /* offscreen_render-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "offscreen_render-Info.plist"; path = "/Users/ivucica/projects/RANDOM/gnustep-quartzcore/Tests/offscreen_render-Info.plist"; sourceTree = "<absolute>"; };
+		7F622BEF15C5B07300115026 /* offscreen_render.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = offscreen_render.m; sourceTree = "<group>"; };
 		7F6586E4159517AF006467A7 /* hello_animation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hello_animation.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7F6586E6159517AF006467A7 /* hello_animation-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "hello_animation-Info.plist"; path = "/Users/ivucica/projects/RANDOM/gnustep-quartzcore/Tests/hello_animation-Info.plist"; sourceTree = "<absolute>"; };
 		7F6586E815951879006467A7 /* hello_animation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = hello_animation.m; sourceTree = "<group>"; };
@@ -54,6 +64,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7F622BE015C5AFED00115026 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F622BE115C5AFED00115026 /* OpenGL.framework in Frameworks */,
+				7F622BE215C5AFED00115026 /* QuartzCore.framework in Frameworks */,
+				7F622BE315C5AFED00115026 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7F6586DA159517AF006467A7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -87,6 +107,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7F622BEE15C5B05B00115026 /* offscreen_render */ = {
+			isa = PBXGroup;
+			children = (
+				7F622BEC15C5AFED00115026 /* offscreen_render-Info.plist */,
+				7F622BEF15C5B07300115026 /* offscreen_render.m */,
+			);
+			name = offscreen_render;
+			sourceTree = "<group>";
+		};
 		7F6586EB15951888006467A7 /* hello_animation */ = {
 			isa = PBXGroup;
 			children = (
@@ -106,6 +135,7 @@
 				7FA8CD1B1589232E009C3B19 /* hello */,
 				7FA8CCE515891CE7009C3B19 /* hello_carenderer */,
 				7F6586EB15951888006467A7 /* hello_animation */,
+				7F622BEE15C5B05B00115026 /* offscreen_render */,
 				7FA8CCDE15891CE7009C3B19 /* Frameworks */,
 				7FA8CCDC15891CE7009C3B19 /* Products */,
 			);
@@ -117,6 +147,7 @@
 				7FA8CCDB15891CE7009C3B19 /* hello_carenderer.app */,
 				7FA8CD1815892303009C3B19 /* hello.app */,
 				7F6586E4159517AF006467A7 /* hello_animation.app */,
+				7F622BEA15C5AFED00115026 /* offscreen_render.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -172,6 +203,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		7F622BDB15C5AFED00115026 /* offscreen_render */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7F622BE615C5AFED00115026 /* Build configuration list for PBXNativeTarget "offscreen_render" */;
+			buildPhases = (
+				7F622BDC15C5AFED00115026 /* Sources */,
+				7F622BE015C5AFED00115026 /* Frameworks */,
+				7F622BE415C5AFED00115026 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = offscreen_render;
+			productName = hello_carenderer;
+			productReference = 7F622BEA15C5AFED00115026 /* offscreen_render.app */;
+			productType = "com.apple.product-type.application";
+		};
 		7F6586D5159517AF006467A7 /* hello_animation */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7F6586E0159517AF006467A7 /* Build configuration list for PBXNativeTarget "hello_animation" */;
@@ -247,11 +295,20 @@
 				7FA8CD0A15892302009C3B19 /* hello */,
 				7FA8CCDA15891CE7009C3B19 /* hello_carenderer */,
 				7F6586D5159517AF006467A7 /* hello_animation */,
+				7F622BDB15C5AFED00115026 /* offscreen_render */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7F622BE415C5AFED00115026 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F622BE515C5AFED00115026 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7F6586DE159517AF006467A7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -279,6 +336,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7F622BDC15C5AFED00115026 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F622BDD15C5AFED00115026 /* main.m in Sources */,
+				7F622BDE15C5AFED00115026 /* QCTestOpenGLView.m in Sources */,
+				7F622BF015C5B07300115026 /* offscreen_render.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7F6586D6159517AF006467A7 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -312,6 +379,92 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		7F622BE715C5AFED00115026 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "offscreen_render-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = offscreen_render;
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		7F622BE815C5AFED00115026 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = /Library/Frameworks;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../Headers";
+				INFOPLIST_FILE = "offscreen_render-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = offscreen_render;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../Headers";
+				WRAPPER_EXTENSION = app;
+			};
+			name = UsingGNUstepImpl;
+		};
+		7F622BE915C5AFED00115026 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "offscreen_render-Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRODUCT_NAME = offscreen_render;
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
 		7F6586E1159517AF006467A7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -593,6 +746,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7F622BE615C5AFED00115026 /* Build configuration list for PBXNativeTarget "offscreen_render" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F622BE715C5AFED00115026 /* Debug */,
+				7F622BE815C5AFED00115026 /* UsingGNUstepImpl */,
+				7F622BE915C5AFED00115026 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		7F6586E0159517AF006467A7 /* Build configuration list for PBXNativeTarget "hello_animation" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -46,18 +46,38 @@
   
   /* Build a texture and assign it to the framebuffer */
   _texture = [CAGLTexture new];
+ 
+
+  [_texture bind];
+  /* Ogre3d sets these parameters to ensure functionality under nVidia cards */
+  glTexParameteri([_texture textureTarget], GL_TEXTURE_MAX_LEVEL, 0);
+  glTexParameteri([_texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri([_texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri([_texture textureTarget], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri([_texture textureTarget], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
   [_texture loadEmptyImageWithWidth: width
                              height: height];
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, [_texture textureID], 0);
   
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, [_texture textureTarget], [_texture textureID], 0);
+    
   return self;
 }
 
 - (void) dealloc
 {
+  /* clean up renderbuffer storage */
+  [self bind];
+  if (_depthBufferEnabled)
+    [self setDepthBufferEnabled: NO];
+  
+  /* delete framebuffer itself */
   glDeleteFramebuffersEXT(1, &_framebufferID);
-
+  
+  /* release the texture */
+  [_texture release];
+  
   [super dealloc];
 }
 
@@ -66,11 +86,11 @@
   if (_depthBufferEnabled == depthBufferEnabled)
     return;
   
+  _depthBufferEnabled = depthBufferEnabled;
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
   
   if (_depthBufferEnabled)
   {
-
     glGenRenderbuffersEXT(1, &_depthRenderbufferID);
     glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthRenderbufferID);
     glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, [_texture width], [_texture height]);

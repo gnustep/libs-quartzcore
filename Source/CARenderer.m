@@ -39,6 +39,7 @@
 #import <OpenGL/glu.h>
 #endif
 #import "GLHelpers/CAGLTexture.h"
+#import "GLHelpers/CAGLSimpleFramebuffer.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
@@ -205,11 +206,48 @@
 - (void) _renderLayer: (CALayer *)layer
         withTransform: (CATransform3D)transform
 {
-  if ([layer presentationLayer])
+  if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
   
-  [layer displayIfNeeded];
+      
+  // if the layer was offscreen-rendered, render just the texture
+  // TODO Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
+  if ([[layer contents] isKindOfClass:[CABackingStore class]])
+    {
+      CAGLTexture * texture = [[layer contents] offscreenRenderTexture];
+      if (texture)
+        {
+          transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
+          if (sizeof(transform.m11) == sizeof(GLdouble))
+            glLoadMatrixd((GLdouble*)&transform);
+          else
+            glLoadMatrixf((GLfloat*)&transform);
 
+          #warning Intentionally coloring offscreen-rendered layer
+          glColor3f(0.4, 1.0, 1.0);
+          
+          // TODO: replace use of glBegin()/glEnd()
+          [texture bind];
+          glBegin(GL_QUADS);
+          glTexCoord2f(0, 0);
+          glVertex2f(-256, -256);
+          glTexCoord2f(0, 512);
+          glVertex2f(-256, 256);
+          glTexCoord2f(512, 512);
+          glVertex2f(256, 256);
+          glTexCoord2f(512, 0);
+          glVertex2f(256, -256);
+          glEnd();
+          glDisable([texture textureTarget]);
+          
+          #warning Intentionally coloring offscreen-rendered layer
+          glColor3f(1.0, 1.0, 1.0);
+
+          return;
+        }
+    }
+
+  
   // apply transform and translate to position
   transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
   transform = CATransform3DConcat([layer transform], transform);
@@ -218,6 +256,8 @@
     glLoadMatrixd((GLdouble*)&transform);
   else
     glLoadMatrixf((GLfloat*)&transform);
+
+  [layer displayIfNeeded];
 
   // fill vertex arrays
   GLfloat vertices[] = {
@@ -310,7 +350,7 @@
         {
           CABackingStore * layerContents = ((CABackingStore *)[layer contents]);
 
-          texture = [layerContents texture];
+          texture = [layerContents contentsTexture];
         }
 #if !(GSIMPL_UNDER_COCOA)
       else if ([[layer contents] isKindOfClass: [CGImage class]])
@@ -347,14 +387,29 @@
 
 - (void) _determineAndScheduleRasterizationForLayer: (CALayer*)layer
 {
+  BOOL shouldRasterize = NO;
   /* Whether a layer needs to be rasterized is complex to determine,
      but the first thing to check is user-specifiable property
      'shouldRasterize'. */
-  if ([[layer presentationLayer] shouldRasterize])
+  if (!shouldRasterize && [[layer presentationLayer] shouldRasterize])
     {
-      [self _scheduleRasterization: layer];
-      return;
+      shouldRasterize = YES;
     }
+  
+  
+  /* Now, based on results, either rasterize or invalidate rasterization */
+  if (shouldRasterize)
+    [self _scheduleRasterization: layer];
+  else
+    {
+      // TODO
+      #warning Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
+      if ([[layer contents] isKindOfClass:[CABackingStore class]])
+        {
+          [[layer contents] setOffscreenRenderTexture: nil];
+        }
+    }
+  
 }
 
 - (void) _scheduleRasterization: (CALayer *)layer
@@ -362,15 +417,48 @@
   NSMutableDictionary * rasterizationSpec = [NSMutableDictionary new];
   
   [rasterizationSpec setValue: layer forKey: @"layer"];
-  
   [_rasterizationSchedule addObject: rasterizationSpec];
-  
   [rasterizationSpec release];
 }
 
 - (void) _rasterize: (NSDictionary*) rasterizationSpec
 {
-  // TODO
+  CALayer * layer = [rasterizationSpec valueForKey: @"layer"];
+
+  /* we need to render the presentationLayer */
+  if (![layer isPresentationLayer])
+    layer = [layer presentationLayer];
+
+  // TODO Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
+  if ([[layer contents] isKindOfClass:[CABackingStore class]])
+    {
+      /* Empty the cache so redraw gets performed in -[CARenderer _renderLayer:withTransform:] */
+      [[layer contents] setOffscreenRenderTexture: nil];
+    }
+
+  // TODO: 512x512 is NOT correct, we need to determine the actual layer size together with sublayers
+  const GLuint rasterize_w = 512, rasterize_h = 512;
+  CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: rasterize_w height: rasterize_h];
+  [framebuffer setDepthBufferEnabled: YES];
+  [framebuffer bind];
+  
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  
+  glDisable([[framebuffer texture] textureTarget]);
+  
+  [self _renderLayer: layer withTransform: CATransform3DMakeTranslation(rasterize_w/2.0 - [layer position].x, rasterize_h/2.0 - [layer position].y, 0)];
+  
+  [framebuffer unbind];
+  
+  // TODO Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
+  if ([[layer contents] isKindOfClass:[CABackingStore class]])
+    {
+      [[layer contents] setOffscreenRenderTexture: [framebuffer texture]];
+    }
+    
+  glPopMatrix();
+  
+  [framebuffer release];
 }
 
 @end

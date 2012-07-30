@@ -29,7 +29,8 @@
 #import "GLHelpers/CAGLTexture.h"
 
 @implementation CABackingStore
-@synthesize texture=_texture;
+@synthesize contentsTexture=_contentsTexture;
+@synthesize offscreenRenderTexture=_offscreenRenderTexture;
 
 + (id)backingStoreWithContext: (CGContextRef)context
 {
@@ -43,14 +44,16 @@
     return nil;
 
   [self setContext: context];
-  [self setTexture: [CAGLTexture texture]];
+  [self setContentsTexture: [CAGLTexture texture]];
+  [self setOffscreenRenderTexture: nil]; /* set at a later time by layer */
 
   return self;
 }
 
 - (void) dealloc
 {
-  [_texture release];
+  [_offscreenRenderTexture release];
+  [_contentsTexture release];
   CGContextRelease (_context);
   
   [super dealloc];
@@ -68,8 +71,8 @@
   
   /* We must invalidate the texture data, in case
      we use client storage extension. */
-  [_texture loadEmptyImageWithWidth: 0
-                             height: 0];
+  [_contentsTexture loadEmptyImageWithWidth: 0
+                                     height: 0];
   
   /* Now replace data... */
   CGContextRetain(context);
@@ -91,9 +94,9 @@
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
 #endif
 
-  [_texture loadRGBATexImage: CGBitmapContextGetData(_context)
-                       width: (GLuint)CGBitmapContextGetWidth(_context)
-                      height: (GLuint)CGBitmapContextGetHeight(_context)];
+  [_contentsTexture loadRGBATexImage: CGBitmapContextGetData(_context)
+                               width: (GLuint)CGBitmapContextGetWidth(_context)
+                              height: (GLuint)CGBitmapContextGetHeight(_context)];
                       
 #if __APPLE__
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);

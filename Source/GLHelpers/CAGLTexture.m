@@ -63,6 +63,13 @@
   return self;
 }
 
+- (void) dealloc
+{
+  glDeleteTextures(1, &_textureID);
+  
+  [super dealloc];
+}
+
 - (void) loadEmptyImageWithWidth: (GLuint)width
                           height: (GLuint)height
 {

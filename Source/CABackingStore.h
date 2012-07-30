@@ -26,8 +26,11 @@
 */
 
 /*
- * This class is a simple wrapper around CGContextRef and GL textures.
- * Use of GL textures is TBD.
+ * This class serves to store graphics related to a layer:
+ * - CGBitmapContextRef for drawing contents
+ * - OpenGL texture containing drawn contents
+ * - OpenGL texture containing offscreen-rendered cache of contents
+ *   and sublayers
  * In the future, this class will probably also wrap CGImageRefs. 
  */
 
@@ -49,7 +52,8 @@
 @interface CABackingStore : NSObject
 {
   CGContextRef _context;
-  CAGLTexture * _texture;
+  CAGLTexture * _contentsTexture;
+  CAGLTexture * _offscreenRenderTexture;
 }
 
 + (CABackingStore *) backingStoreWithContext: (CGContextRef) context;
@@ -58,7 +62,8 @@
 - (void) refresh;
 
 @property /* (retain) */ CGContextRef context;
-@property (retain) CAGLTexture * texture;
+@property (retain) CAGLTexture * contentsTexture;
+@property (retain) CAGLTexture * offscreenRenderTexture;
 
 @end
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

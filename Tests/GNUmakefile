@@ -1,6 +1,6 @@
 include $(GNUSTEP_MAKEFILES)/common.make
 
-TOOL_NAME = hello hello_opal hello_carenderer hello_animation
+TOOL_NAME = hello hello_opal hello_carenderer hello_animation offscreen_render
 main_files = main.m QCTestOpenGLView.m
 
 # OpenGL ES:
@@ -11,6 +11,7 @@ hello_OBJC_FILES = $(main_files) hello.m
 hello_opal_OBJC_FILES = $(main_files) hello_opal.m
 hello_carenderer_OBJC_FILES = $(main_files) hello_carenderer.m
 hello_animation_OBJC_FILES = $(main_files) hello_animation.m
+offscreen_render_OBJC_FILES = $(main_files) offscreen_render.m
 
 # Some examples from opal:
 #TOOL_NAME = test1 test2 test3

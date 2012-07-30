@@ -1,3 +1,44 @@
+2012-07-29  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CABackingStore.h:
+	* Source/CABackingStore.m:
+	Added _offscreenRenderTexture, for storing the texture of a render
+	of a layer that's performed offscreen. Renamed _texture into
+	_contentsTexture.
+
+	* Source/CARenderer.m:
+	Added offscreen rendering. Currently renders only into 512x512
+	texture, since we need to figure out the actual required dimenstions.
+	This needs to be done using currently-unimplemented 'frame' property
+	and transformations from individual layer's coordinate system to
+	the layer that needs to be rasterized, figuring out coordinates of
+	individual sides of the rectangle (left, top, bottom, right) and
+	getting the required size of the rendering texture.
+
+	* Source/GLHelpers/CAGLSimpleFramebuffer.h:
+	Added -bind and -unbind methods to the header.
+
+	* Source/GLHelpers/CAGLSimpleFramebuffer.m:
+	Corrected bugs with creation of framebuffers: nVidia cards seem to
+	require setting of several parameters for textures before framebuffers
+	work, and the code did not refer to texture's textureTarget, instead
+	always referring to GL_TEXTURE_2D.
+
+	Cleaned up a massive memory leak concerning depth buffer's
+	renderbuffer storage not getting cleaned up.
+
+	Fixed a bug with depth buffer's renderbuffer storage never getting
+	created.
+
+	* Source/GLHelpers/CAGLTexture.m:
+	Fixed a memory leak with the GL texture never getting deleted.
+
+	* Tests/GNUmakefile:
+	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:
+	* Tests/offscreen_render-Info.plist:
+	* Tests/offscreen_render.m:
+	Added a new example specialized in testing offscreen rendering.
+
 2012-07-23  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CALayer.h:
