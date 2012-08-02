@@ -25,6 +25,7 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import <Foundation/Foundation.h>
 #import "QuartzCore/CARenderer.h"
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CALayer.h"

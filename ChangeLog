@@ -1,3 +1,8 @@
+2012-08-02  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CARenderer.m:
+	Fixed a compile problem under GNUstep.
+
 2012-07-29  Ivan Vučica  <ivan@vucica.net>
 
 	* Source/CABackingStore.h:
