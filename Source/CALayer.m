@@ -34,6 +34,8 @@
 #import "CALayer+FrameworkPrivate.h"
 #import "CAAnimation+FrameworkPrivate.h"
 #import "CAImplicitAnimationObserver.h"
+#import <objc/runtime.h>
+#import "CALayer+DynamicProperties.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
@@ -160,6 +162,35 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 /* private or publicly read-only properties */
 @synthesize animations=_animations;
 @synthesize animationKeys=_animationKeys;
+
+/* *** dynamic synthesis of properties *** */
++ (void) initialize
+{
+        
+    unsigned int count;
+    objc_property_t * properties = class_copyPropertyList([self class], &count);
+    
+    for (unsigned int i = 0; i < count; i++) {
+        
+        objc_property_t property = properties[i];
+        
+        const char * attributesC = property_getAttributes(property);
+        NSString * attributes = [NSString stringWithCString: attributesC
+                                                   encoding: NSASCIIStringEncoding];
+        
+        NSArray* components = [attributes componentsSeparatedByString: @","];
+        
+        for (NSString* component in components)
+          {
+            if ([component isEqualToString:@"D"])
+              {
+                [self _dynamicallyCreateProperty:property];
+              }
+          }
+    }
+    
+    free(properties);
+}
 
 /* *** class methods *** */
 + (id) layer

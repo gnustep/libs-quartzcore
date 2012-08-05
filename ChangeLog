@@ -1,5 +1,17 @@
 2012-08-05  Ivan Vučica  <ivan@vucica.net>
 
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Source/CALayer.m:
+	* Source/CALayer+DynamicProperties.h:
+	* Source/CALayer+DynamicProperties.m:
+	Incomplete work on dynamic property synthesis at runtime. Properties
+	are examined, finding if they are supposed to be synthesized at
+	runtime. Accessor names are taken into account.
+
+	However, properties don't yet actually get synthesized nor stored.
+
+2012-08-05  Ivan Vučica  <ivan@vucica.net>
+
 	* Tests/CAMediaTimingFunction/Makefile.gs.mac:
 	Fixed a compiling error.
 
