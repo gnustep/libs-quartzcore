@@ -61,6 +61,22 @@
 
 #import "QCTestOpenGLView.h"
 
+@interface HelloAnimationCustomBasicAnimation : CABasicAnimation
+@end
+@implementation HelloAnimationCustomBasicAnimation
+@end
+
+@interface HelloAnimationCustomAction : NSObject<CAAction>
+@end
+@implementation HelloAnimationCustomAction
+- (void)runActionForKey:(NSString *)key object:(id)anObject arguments:(NSDictionary *)dict
+{
+  NSLog(@"running action for key %@ on object %@ with arguments %@", key, anObject, dict);
+  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath: key];
+  [(CALayer *)anObject addAnimation: animation forKey: key];
+}
+@end
+
 @interface HelloAnimationLayerDelegate : NSObject
 {
   CGSize _size;
@@ -82,6 +98,19 @@
   CGContextSetLineWidth(context, 4.0);
   CGContextStrokeRect(context, rect);
   CGContextFillRect(context, rect);
+}
+
+- (id<CAAction>) actionForLayer: (CALayer *)layer
+                         forKey: (NSString *)event
+{
+  if ([event isEqualToString: @"position"])
+    {
+      //return [HelloAnimationCustomBasicAnimation animationWithKeyPath: event];
+
+      return [[[HelloAnimationCustomAction alloc] init] autorelease];
+    }
+
+  return nil;
 }
 @end
 
@@ -168,6 +197,11 @@ Class classOfTestOpenGLView()
 
 - (void) animation3:sender
 {
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
   CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
   [animation setDuration: 1];
   [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(400, 150)]];
@@ -177,11 +211,20 @@ Class classOfTestOpenGLView()
   
   [self printPos: [_renderer layer]];
   [self performSelector:@selector(printPos:) withObject: [_renderer layer] afterDelay:0.5];
-  
+
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
 }
 
 - (void) animation4:sender
 {
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
   CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
   [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(0, 0)]];
   [animation setToValue: [NSValue valueWithPoint: NSMakePoint(50, 50)]];
@@ -192,6 +235,10 @@ Class classOfTestOpenGLView()
   
   [_theSublayer addAnimation: animation forKey:@"repeatingAnimation"];
   
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
 }
 
 - (void) animation5:sender

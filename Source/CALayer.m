@@ -36,6 +36,7 @@
 #import "CAImplicitAnimationObserver.h"
 #import <objc/runtime.h>
 #import "CALayer+DynamicProperties.h"
+#import "QuartzCore/CATransaction.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
@@ -622,6 +623,27 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
   [_animationKeys removeObject: key];
   [_animationKeys addObject: key];
   [key release];
+  
+  if (![anim duration])
+    [anim setDuration: [CATransaction animationDuration]];
+  /* Timing function intentionally set ONLY within transaction. */
+    
+  if ([anim isKindOfClass: [CABasicAnimation class]])
+    {
+      CABasicAnimation * basicAnimation = (id)anim;
+      CALayer * layer = self;
+      if (![layer isPresentationLayer])
+        layer = [layer presentationLayer];
+      
+      if (![basicAnimation fromValue])
+        {
+          /* Should not be using setFromValue: since this method is not
+             triggered under Cocoa either when we offer it a CABasicAnimation
+             subclass. */
+          
+          [basicAnimation setFromValue: [layer valueForKeyPath: [basicAnimation keyPath]]];
+        }
+    }
 }
 
 - (void) removeAnimationForKey: (NSString *)key
@@ -666,7 +688,9 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
             currentFrameBeginTime = CACurrentMediaTime();
             [animation setBeginTime: [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]]];
             currentFrameBeginTime = oldFrameBeginTime;
-          }
+          }        
+
+
         if ([animation isKindOfClass: [CAPropertyAnimation class]])
           {
             CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);

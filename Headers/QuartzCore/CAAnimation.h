@@ -80,8 +80,7 @@
 @property (assign,getter=isAdditive) BOOL additive;
 @property (assign,getter=isCumulative) BOOL cumulative;
 @property (retain) NSString *keyPath;
-@property (retain) CAValueFunction *valueFunction;
-
+@property (retain) CAValueFunction *valueFunction; // Currently unimplemented!
 @end
 
 

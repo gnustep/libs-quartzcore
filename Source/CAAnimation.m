@@ -34,6 +34,7 @@
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CAMediaTimingFunction.h"
 #import "CAMediaTimingFunction+FrameworkPrivate.h"
+#import "CALayer+FrameworkPrivate.h"
 
 NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
@@ -110,7 +111,8 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   
   static NSString * keys[] = {
     @"delegate", @"removedOnCompletion", @"timingFunction", 
-    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+    /*@"duration", */@"speed", @"autoreverses", @"repeatCount"};
+    /* Duration intentionally skipped so it gets picked up from transaction */
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       id defaultValue = [[self class] defaultValueForKey: keys[i]];
@@ -179,6 +181,14 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     }
 
   return theCopy;
+}
+
+- (void) dealloc
+{
+  [_timingFunction release];
+  [_fillMode release];
+  
+  [super dealloc];
 }
 
 - (CFTimeInterval) activeTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
@@ -332,6 +342,13 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     }
 
   return theCopy;
+}
+
+- (void) dealloc
+{
+  [_keyPath release];
+  [_valueFunction release];
+  [super dealloc];
 }
 
 - (void) applyToLayer: (CALayer *)layer
@@ -528,17 +545,34 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize byValue=_byValue;
 @synthesize toValue=_toValue;
 
+- (void) dealloc
+{
+  [_fromValue release];
+  [_byValue release];
+  [_toValue release];
+  
+  [super dealloc];
+}
+
 - (id) calculatedAnimationValueAtTime: (CFTimeInterval)theTime
                               onLayer: (CALayer *)layer
 {
   /*
-    Currently supporting only the scenarios with:
+    Currently supporting scenarios with:
      - fromValue != nil
      - toValue != nil
      - byValue == nil
     and
      - fromValue != nil
      - toValue == nil
+     - byValue == nil
+    and
+     - fromValue == nil
+     - toValue == nil
+     - byValue == nil
+    and
+     - fromValue == nil
+     - toValue != nil
      - byValue == nil
      
     All supplied values need to be of same data type.
@@ -603,7 +637,6 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           
           CGPoint valuePt = CGPointMake(linearInterpolation(fromPt.x, toPt.x, fraction),
                                       linearInterpolation(fromPt.y, toPt.y, fraction));
-          
           return [NSValue valueWithBytes:&valuePt objCType:@encode(CGPoint)];
         }
         

@@ -158,6 +158,20 @@ static NSMutableArray *transactionStack = nil;
           NSLog(@"Attempt at adding action to a presentation layer");
           continue;
         }
+      
+      if ([action conformsToProtocol:@protocol(CAMediaTiming)])
+        {
+          NSObject<CAAction, CAMediaTiming>* timedAction = (id)action;
+          if(![timedAction duration])
+            [timedAction setDuration: [CATransaction animationDuration]];
+        }
+      if ([action isKindOfClass: [CAAnimation class]])
+        {
+          CAAnimation * animation = (id)action;
+          if(![animation timingFunction])
+            [animation setTimingFunction: [CATransaction animationTimingFunction]];
+        }
+      
       [action runActionForKey: keyPath
                        object: object
                     arguments: arguments];
@@ -180,16 +194,6 @@ static NSMutableArray *transactionStack = nil;
     object, @"object",
     keyPath, @"keyPath",
     nil];
-  if ([action conformsToProtocol: @protocol(CAMediaTiming)])
-    {
-      NSObject<CAAction, CAMediaTiming> *timedAction = (id)action;
-      [timedAction setDuration: [self animationDuration]];
-    }
-  if ([action respondsToSelector: @selector(setTimingFunction:)])
-    {
-      id timedAction = (id)action;
-      [timedAction setTimingFunction: [self animationTimingFunction]];
-    }
   
   [_actions addObject: actionDescription];
 }

@@ -593,6 +593,50 @@
 			};
 			name = Release;
 		};
+		7F88F46C15CF05F2002F25F0 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Headers";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Headers";
+			};
+			name = UsingGNUstepImpl;
+		};
+		7F88F46D15CF05F2002F25F0 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DSTROOT = /;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				FRAMEWORK_VERSION = A;
+				GCC_PREFIX_HEADER = "Mac/GSQuartzCore-Prefix.pch";
+				INFOPLIST_FILE = "Mac/GSQuartzCore-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = framework;
+			};
+			name = UsingGNUstepImpl;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -600,6 +644,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F7751721594AE2A00F56E92 /* Debug */,
+				7F88F46C15CF05F2002F25F0 /* UsingGNUstepImpl */,
 				7F7751731594AE2A00F56E92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -609,6 +654,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7F7751751594AE2A00F56E92 /* Debug */,
+				7F88F46D15CF05F2002F25F0 /* UsingGNUstepImpl */,
 				7F7751761594AE2A00F56E92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
