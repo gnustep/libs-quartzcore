@@ -1,4 +1,4 @@
-/* Tests/catransform3d.m
+/* Tests/CATransform3D/catransform3d.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 

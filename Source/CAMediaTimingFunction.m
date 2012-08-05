@@ -133,6 +133,29 @@ static const float _c3y = 1.0;
   return self;
 }
 
+- (void)getControlPointAtIndex: (size_t)index values: (float*)ptr
+{
+  switch (index)
+    {
+      case 0:
+        ptr[0] = _c0x;
+        ptr[1] = _c0y;
+        break;
+      case 1:
+        ptr[0] = _c1x;
+        ptr[1] = _c1y;
+        break;
+      case 2:
+        ptr[0] = _c2x;
+        ptr[1] = _c2y;
+        break;
+      case 3:
+        ptr[0] = _c3x;
+        ptr[1] = _c3y;
+        break;
+    }
+}
+
 static inline CGFloat evaluateAtParameterWithCoefficients(CGFloat t, CGFloat coefficients[])
 {
   return coefficients[0] + t*coefficients[1] + t*t*coefficients[2] + t*t*t*coefficients[3];
@@ -142,7 +165,6 @@ static inline CGFloat evaluateDerivationAtParameterWithCoefficients(CGFloat t, C
 {
   return coefficients[1] + 2*t*coefficients[2] + 3*t*t*coefficients[3];
 }
-
 
 static inline CGFloat calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(CGFloat x, CGFloat coefficientsX[])
 {
@@ -160,9 +182,7 @@ static inline CGFloat calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(CGF
       
       CGFloat dt = x2/d;
       
-      t = t - dt;
-      
-      //NSLog(@"x: %f x2: %f d: %f dt: %f t: %f", x, x2, d, dt, t);
+      t = t - dt;      
     }
     
   return t;
@@ -185,35 +205,17 @@ static inline CGFloat calcParameterUsingXAndCoefficientsForX (CGFloat x, CGFloat
 {
   CGFloat t = calcParameterUsingXAndCoefficientsForX(x, _coefficientsX);
   CGFloat y = evaluateAtParameterWithCoefficients(t, _coefficientsY);
-  //NSLog(@"X: %g T: %g Y: %g", x, t, y);
   
   return y;
 }
 
-- (void) graph
+- (float) _solveForInput: (float)x
 {
-  printf("--------\n");
-  for (int i = 0; i < 20; i++)
-    {
-      for (int j = 0; j < 40; j++)
-        {
-          float x = j / 40.;
-          float y = 1.-(i / 20.);
-          
-          if ([self evaluateYAtX: x] > y)
-            {
-              printf("*");
-            }
-          else
-            {
-              printf(" ");
-            }
-        }
-      printf("\n");
-    }
-  printf("==========\n");
-
+  /* Private method in Cocoa. Implemented so our tests
+     can call and use a single method. */
+  return (float)[self evaluateYAtX: (float)x];
 }
+
 /*
 - (CGPoint) valueForParameter: (CGFloat)t
 {

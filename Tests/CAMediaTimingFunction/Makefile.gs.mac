@@ -1,0 +1,14 @@
+
+CFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+CXXFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+OBJCFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+
+all: camediatimingfunction
+
+camediatimingfunction.o: ../Testing.h
+
+camediatimingfunction: camediatimingfunction.o ../Testing.h
+	$(CC) -arch i386 camediatimingfunction.o -o camediatimingfunction -framework GSQuartzCore && ./camediatimingfunction
+
+clean:
+	-rm camediatimingfunction.o camediatimingfunction

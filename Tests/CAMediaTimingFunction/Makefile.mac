@@ -1,0 +1,10 @@
+
+all: camediatimingfunction
+
+camediatimingfunction.o: ../Testing.h
+
+camediatimingfunction: camediatimingfunction.o ../Testing.h
+	$(CC) camediatimingfunction.o -o camediatimingfunction -framework QuartzCore && ./camediatimingfunction
+
+clean:
+	-rm camediatimingfunction.o camediatimingfunction

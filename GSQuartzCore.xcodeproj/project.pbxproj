@@ -79,6 +79,13 @@
 			remoteGlobalIDString = 7FA8CCDB15891CE7009C3B19;
 			remoteInfo = hello_carenderer;
 		};
+		7F88F43A15CE774A002F25F0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7F622BEA15C5AFED00115026;
+			remoteInfo = offscreen_render;
+		};
 		7FE775CA15953AE800135BCB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
@@ -183,6 +190,7 @@
 				7F7422AD1594C32000AEB117 /* hello.app */,
 				7F7422AF1594C32000AEB117 /* hello_carenderer.app */,
 				7FE775CB15953AE800135BCB /* hello_animation.app */,
+				7F88F43B15CE774A002F25F0 /* offscreen_render.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -423,6 +431,13 @@
 			fileType = wrapper.application;
 			path = hello_carenderer.app;
 			remoteRef = 7F7422AE1594C32000AEB117 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		7F88F43B15CE774A002F25F0 /* offscreen_render.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = offscreen_render.app;
+			remoteRef = 7F88F43A15CE774A002F25F0 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		7FE775CB15953AE800135BCB /* hello_animation.app */ = {

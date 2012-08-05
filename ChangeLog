@@ -1,3 +1,23 @@
+2012-08-05  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	Automatic changes to project, caused by addition of offscreen_render
+	test.
+
+	* Headers/QuartzCore/CAMediaTimingFunction.h:
+	* Source/CAMediaTimingFunction.m:
+	Removed graph debug function. Added getControlPointAtIndex:values:.
+
+	* Tests/CATransform3D/catransform3d.m:
+	Small change to header.
+	
+	* Tests/CAMediaTimingFunction/GNUmakefile:
+	* Tests/CAMediaTimingFunction/Makefile.gs.mac:
+	* Tests/CAMediaTimingFunction/Makefile.mac:
+	* Tests/CAMediaTimingFunction/camediatimingfunction.m:
+	* Tests/CAMediaTimingFunction/run_tests.sh:
+	Added media timing tests.
+
 2012-08-02  Ivan Vučica  <ivan@vucica.net>
 
 	* Source/CARenderer.m:

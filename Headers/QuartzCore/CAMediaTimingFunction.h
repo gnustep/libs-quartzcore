@@ -53,7 +53,7 @@ extern NSString *const kCAMediaTimingFunctionLinear;
                             : (float)c1y
                             : (float)c2x
                             : (float)c2y;
-
+- (void)getControlPointAtIndex: (size_t)index values: (float*)ptr;
 @end
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
 
