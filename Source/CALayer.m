@@ -148,6 +148,8 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @synthesize contentsGravity=_contentsGravity;
 @synthesize needsDisplayOnBoundsChange=_needsDisplayOnBoundsChange;
 @synthesize zPosition=_zPosition;
+@synthesize actions=_actions;
+@synthesize style=_style;
 
 /* properties in protocol CAMediaTiming */
 @synthesize beginTime=_beginTime;
@@ -884,12 +886,93 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
 /* *************** */
 /* MARK: - Actions */
 
-#if 0
 + (id<CAAction>) defaultActionForKey: (NSString *)key;
 {
-  
+  /* It appears that Cocoa implementation returns nil by default. */
+  return nil;
 }
-#endif
+
+- (id<CAAction>) actionForKey: (NSString *)key
+{
+  if ([[self delegate] respondsToSelector: @selector(actionForLayer:forKey:)])
+    {
+      NSObject<CAAction>* returnValue = (NSObject<CAAction>*)[[self delegate] actionForLayer: self forKey: key];
+      
+      if ([returnValue isKindOfClass: [NSNull class]])
+        {
+          /* Abort search */
+          return nil;
+        }
+      if (returnValue)
+        {
+          /* Return the value */
+          return returnValue;
+        }
+      
+      /* It's nil? Continue the search */
+    }
+  
+  NSObject<CAAction>* dictValue = [[self actions] objectForKey: key];
+  if ([dictValue isKindOfClass: [NSNull class]])
+    {
+      /* Abort search */
+      return nil;
+    }
+  if (dictValue)
+    {
+      /* Return the value */
+      return dictValue;
+    }
+  
+  /* It's nil? Continue the search */
+  
+  
+  NSDictionary* styleActions = [[self style] objectForKey: @"actions"];
+  if (styleActions)
+  {
+    NSObject<CAAction>* dictValue = [styleActions objectForKey: key];
+    
+    if ([dictValue isKindOfClass: [NSNull class]])
+      {
+        /* Abort search */
+      return nil;
+      }
+    if (dictValue)
+      {
+        /* Return the value */
+        return dictValue;
+      }
+  
+    /* It's nil? Continue the search */
+  }
+  
+  /* Before generating an action, let's also see if 
+     defaultActionForKey: has an offering to make to us. */
+  NSObject<CAAction>* action = (NSObject<CAAction>*)[[self class] defaultActionForKey: key];
+    
+  if ([action isKindOfClass: [NSNull class]])
+    {
+      /* Abort search */
+      return nil;
+    }
+  if (action)
+    {
+      /* Return the value */
+      return action;
+    }
+  /* It's nil? That's it. Now we can only generate our own animation. */
+
+  /***********************/
+  
+  /* construct new animation */
+  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath: key];
+  if ([self isPresentationLayer])
+    [animation setFromValue: [self valueForKeyPath: key]];
+  else
+    [animation setFromValue: [[self presentationLayer] valueForKeyPath: key]];
+  return animation;
+
+}
 
 /* Unimplemented functions: */
 #if 0

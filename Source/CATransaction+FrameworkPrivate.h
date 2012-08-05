@@ -29,10 +29,9 @@
 @interface CATransaction (FrameworkPrivate)
 
 + (CATransaction *) topTransaction;
-- (void) registerImplicitAnimationOnObject: (id)object
-                                   keyPath: (NSString *)keyPath
-                                      from: (id)from
-                                        to: (id)to;
+- (void)registerAction: (NSObject<CAAction> *)action
+              onObject: (id)object
+               keyPath: (NSString *)keyPath;
 
 @end
 

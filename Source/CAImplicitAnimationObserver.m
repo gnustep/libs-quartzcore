@@ -79,10 +79,10 @@ static CAImplicitAnimationObserver * sharedObserver;
   if ([to isEqualTo: from])
     return;
   
-  [[CATransaction topTransaction] registerImplicitAnimationOnObject: object
-                                                            keyPath: keyPath
-                                                               from: from
-                                                                 to: to];
+  NSObject<CAAction>* action = (id)[object actionForKey: keyPath];
+  [[CATransaction topTransaction] registerAction: action
+                                        onObject: object
+                                         keyPath: keyPath];
 }
 
 @end

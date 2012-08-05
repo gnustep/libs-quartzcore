@@ -83,9 +83,11 @@ NSString *const kCATransition;
   NSString * _contentsGravity;
   BOOL _needsDisplayOnBoundsChange;
   CGFloat _zPosition;
+  NSDictionary *_actions;
+  NSDictionary *_style;
   id _presentationLayer;
   id _modelLayer;
-
+  
   /* media timing i-vars */
   CFTimeInterval _beginTime;
   CFTimeInterval _timeOffset;
@@ -132,6 +134,9 @@ NSString *const kCATransition;
 @property (copy)                     NSString *contentsGravity;
 @property (assign)                   BOOL needsDisplayOnBoundsChange;
 @property (assign)                   CGFloat zPosition;
+@property (copy)                     NSDictionary *actions;
+/* TODO: Style property is unimplemented */
+@property (copy)                     NSDictionary *style;
 @property (retain, readonly)         NSArray *animationKeys;
 
 - (id) init;

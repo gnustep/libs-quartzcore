@@ -72,7 +72,7 @@
 @implementation OffscreenRenderCustomLayer
 @synthesize size=_size;
 
-- (void) drawInContext:(CGContextRef)context
+- (void) drawInContext: (CGContextRef)context
 {
   float width = [self size].width;
   float height = [self size].height;
@@ -163,7 +163,7 @@ Class classOfTestOpenGLView()
   #warning Manually creating transaction for implicit animations
   [CATransaction begin];
 #endif
-
+  
   static BOOL toggle = NO;
   if(!toggle)
     [[_renderer layer] setShouldRasterize: YES];

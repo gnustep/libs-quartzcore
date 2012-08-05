@@ -124,7 +124,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return self;
 }
 
-- (id) initWithCoder:(NSCoder *)aDecoder
+- (id) initWithCoder: (NSCoder *)aDecoder
 {
   self = [self init];
   if (!self)
@@ -159,6 +159,28 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     }
 }
 
+- (id) copyWithZone: (NSZone *)zone
+{
+  id theCopy = [[self class] allocWithZone: zone];
+  if (!theCopy)
+    return nil;
+    
+  static NSString * keys[] = {
+    @"delegate", @"removedOnCompletion", @"timingFunction", 
+    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id value = [self valueForKey: keys[i]];
+      if (value)
+        {
+          [theCopy setValue: value
+                     forKey: keys[i]];
+        }
+    }
+
+  return theCopy;
+}
+
 - (CFTimeInterval) activeTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
 {
   /* Slides */
@@ -189,12 +211,20 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return localTime;
 }
 
+- (void)runActionForKey: (NSString *)key
+                 object: (id)anObject
+              arguments: (NSDictionary *)dict
+{
+  [(CALayer *)anObject addAnimation: self forKey: key];
+}
+
 @end
 
 /* ********************************* */
 @interface CAPropertyAnimation ()
 - (id) initWithKeyPath: (NSString*)keyPath;
-- (id) calculatedAnimationValueAtTime: (CFTimeInterval)time;
+- (id) calculatedAnimationValueAtTime: (CFTimeInterval)theTime
+                              onLayer: (CALayer *)layer;
 @end
 
 @implementation CAPropertyAnimation
@@ -206,20 +236,6 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 + (id) animationWithKeyPath: (NSString *)path
 {
   return [[[self alloc] initWithKeyPath: (NSString *)path] autorelease];
-}
-
-- (void) encodeWithCoder: (NSCoder *)aCoder
-{
-  static NSString * keys[] = {
-    @"delegate", @"removedOnCompletion", @"timingFunction", 
-    @"duration", @"speed", @"autoreverses", @"repeatCount"};
-  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
-    {
-      if ([[self class] shouldArchiveValueForKey: keys[i]])
-        {
-          [self encodeWithCoder: aCoder];
-        }
-    }
 }
 
 + (id)defaultValueForKey: (NSString *)key
@@ -286,6 +302,37 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   return self;
 }
 
+- (void) encodeWithCoder: (NSCoder *)aCoder
+{
+  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([[self class] shouldArchiveValueForKey: keys[i]])
+        {
+          [self encodeWithCoder: aCoder];
+        }
+    }
+}
+
+- (id) copyWithZone: (NSZone *)zone
+{
+  id theCopy = [super copyWithZone: zone];
+  if (!theCopy)
+    return nil;
+    
+  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id value = [self valueForKey: keys[i]];
+      if (value)
+        {
+          [theCopy setValue: value
+                     forKey: keys[i]];
+        }
+    }
+
+  return theCopy;
+}
 
 - (void) applyToLayer: (CALayer *)layer
 {
@@ -299,7 +346,8 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     }
   
   id modelValue = [[layer modelLayer] valueForKeyPath: [self keyPath]];
-  id calculatedValue = [self calculatedAnimationValueAtTime: theTime];
+  id calculatedValue = [self calculatedAnimationValueAtTime: theTime
+                                                    onLayer: layer];
 
   if (!calculatedValue)
     {
@@ -312,6 +360,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 }
 
 - (id) calculatedAnimationValueAtTime: (CFTimeInterval)time
+                              onLayer: (CALayer *)layer
 {
   /* noop. */
   return nil;
@@ -480,11 +529,16 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize toValue=_toValue;
 
 - (id) calculatedAnimationValueAtTime: (CFTimeInterval)theTime
+                              onLayer: (CALayer *)layer
 {
   /*
-    Currently supporting only the scenario with:
+    Currently supporting only the scenarios with:
      - fromValue != nil
      - toValue != nil
+     - byValue == nil
+    and
+     - fromValue != nil
+     - toValue == nil
      - byValue == nil
      
     All supplied values need to be of same data type.
@@ -497,26 +551,33 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
     {
       fraction = [[self timingFunction] evaluateYAtX: fraction];
     }
+  
+  /* Calculate what will our actual from and to values be */
+  id fromValue = _fromValue;
+  id toValue = _toValue;
+  
+  if (!toValue)
+    toValue = [[layer modelLayer] valueForKeyPath: _keyPath];
 
-  if ([_fromValue isKindOfClass: [NSNumber class]] &&
-      [_toValue isKindOfClass: [NSNumber class]])
+  if ([fromValue isKindOfClass: [NSNumber class]] &&
+      [toValue isKindOfClass: [NSNumber class]])
     {
       /* It should be safe to presume that values can be
          represented as floats. */
-      float from = [_fromValue floatValue];
-      float to = [_toValue floatValue];
+      float from = [fromValue floatValue];
+      float to = [toValue floatValue];
       
       float value = linearInterpolation(from, to, fraction);
       
       return [NSNumber numberWithFloat: value];
     }
     
-  if ([_fromValue isKindOfClass: [NSValue class]] &&
-      [_toValue isKindOfClass: [NSValue class]] &&
-      !strcmp([_fromValue objCType], [_toValue objCType]))
+  if ([fromValue isKindOfClass: [NSValue class]] &&
+      [toValue isKindOfClass: [NSValue class]] &&
+      !strcmp([fromValue objCType], [toValue objCType]))
     {
-      NSValue *from = _fromValue;
-      NSValue *to = _toValue;
+      NSValue *from = fromValue;
+      NSValue *to = toValue;
 
       if (!strcmp([from objCType], @encode(NSPoint)))
         {
@@ -687,15 +748,7 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           toQuat.w /= toQuatLen;
           
           GSQuartzCoreQuaternion valueQuat;
-          #if 0
-          valueQuat.x = linearInterpolation(fromQuat.x, toQuat.x, fraction);
-          valueQuat.y = linearInterpolation(fromQuat.y, toQuat.y, fraction);
-          valueQuat.z = linearInterpolation(fromQuat.z, toQuat.z, fraction);
-          valueQuat.w = linearInterpolation(fromQuat.w, toQuat.w, fraction);
-          valueQuat.w = 1;
-          #else
           valueQuat = linearInterpolationQuaternion(fromQuat, toQuat, fraction);
-          #endif
           
           valueTf = quaternionToMatrix(valueQuat);
 
