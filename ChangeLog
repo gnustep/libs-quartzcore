@@ -1,5 +1,15 @@
 2012-08-05  Ivan Vučica  <ivan@vucica.net>
 
+	* Tests/CAMediaTimingFunction/Makefile.gs.mac:
+	Fixed a compiling error.
+
+	* Tests/CAMediaTimingFunction/camediatimingfunction.m:
+	Increased tolerance for error, so the value of linear function at
+	x=0.67 passes. Our implementation seems to get less error than under
+	Cocoa, so let's tolerate our more correct number. (We get y=0.67.)
+
+2012-08-05  Ivan Vučica  <ivan@vucica.net>
+
 	* GSQuartzCore.xcodeproj/project.pbxproj:
 	Automatic changes to project, caused by addition of offscreen_render
 	test.

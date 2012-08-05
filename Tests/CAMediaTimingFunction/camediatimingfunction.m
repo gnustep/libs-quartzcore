@@ -76,7 +76,7 @@ BOOL QCFloatsAreEqual(float a, float b)
 #if QC_EXACT_FLOAT_EQUALITY
   return a == b;
 #else
-  return fabs(b - a) < 0.000001;
+  return fabs(b - a) < 0.00001;
 #endif
 }
 

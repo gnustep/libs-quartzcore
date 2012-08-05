@@ -8,7 +8,7 @@ all: camediatimingfunction
 camediatimingfunction.o: ../Testing.h
 
 camediatimingfunction: camediatimingfunction.o ../Testing.h
-	$(CC) -arch i386 camediatimingfunction.o -o camediatimingfunction -framework GSQuartzCore && ./camediatimingfunction
+	$(CC) -arch i386 camediatimingfunction.o -lobjc -o camediatimingfunction -framework GSQuartzCore && ./camediatimingfunction
 
 clean:
 	-rm camediatimingfunction.o camediatimingfunction
