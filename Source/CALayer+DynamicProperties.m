@@ -27,6 +27,7 @@
 /* Based in part on work by Rich Warren:
    http://www.freelancemadscience.com/fmslabs_blog/2012/1/25/automatically-syncing-user-defaults.html
    */
+#import <Foundation/Foundation.h>
 #import "CALayer+DynamicProperties.h"
 #import <objc/runtime.h>
 

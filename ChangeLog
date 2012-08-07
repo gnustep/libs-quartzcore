@@ -1,3 +1,12 @@
+2012-08-06  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CALayer+DynamicProperties.m:
+	Fixed a compile problem.
+
+	* Source/CALayer.m:
+	No longer crashing in case there is a problem fetching attributes
+	of a property during +initialize. Fixed indentation.
+
 2012-08-05  Ivan Vučica  <ivan@vucica.net>
 
 	* GSQuartzCore.xcodeproj/project.pbxproj:

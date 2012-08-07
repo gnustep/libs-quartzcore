@@ -169,30 +169,36 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 /* *** dynamic synthesis of properties *** */
 + (void) initialize
 {
-        
-    unsigned int count;
-    objc_property_t * properties = class_copyPropertyList([self class], &count);
+     
+  unsigned int count;
+  objc_property_t * properties = class_copyPropertyList([self class], &count);
     
-    for (unsigned int i = 0; i < count; i++) {
+  for (unsigned int i = 0; i < count; i++)
+    {
         
-        objc_property_t property = properties[i];
+      objc_property_t property = properties[i];
+      
+      const char * attributesC = property_getAttributes(property);
+      if(!attributesC)
+	{
+	  NSLog(@"Property %s could not be examined", property_getName(property));
+	  continue;
+	}
+      NSString * attributes = [NSString stringWithCString: attributesC
+                                                 encoding: NSASCIIStringEncoding];
         
-        const char * attributesC = property_getAttributes(property);
-        NSString * attributes = [NSString stringWithCString: attributesC
-                                                   encoding: NSASCIIStringEncoding];
+      NSArray* components = [attributes componentsSeparatedByString: @","];
         
-        NSArray* components = [attributes componentsSeparatedByString: @","];
-        
-        for (NSString* component in components)
-          {
-            if ([component isEqualToString:@"D"])
-              {
-                [self _dynamicallyCreateProperty:property];
-              }
-          }
+      for (NSString* component in components)
+        {
+          if ([component isEqualToString:@"D"])
+            {
+              [self _dynamicallyCreateProperty:property];
+            }
+        }
     }
     
-    free(properties);
+  free(properties);
 }
 
 /* *** class methods *** */
