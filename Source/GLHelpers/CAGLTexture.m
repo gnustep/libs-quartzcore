@@ -28,7 +28,6 @@
 
 #define USE_RECT 1
 #if USE_RECT
-/* FIXME: Use of rectangle textures is broken */
 #define TEXTURE_TARGET GL_TEXTURE_RECTANGLE_ARB
 #define qcLoadTexImage(channels, width, height, format, type, data) \
         glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, channels, \

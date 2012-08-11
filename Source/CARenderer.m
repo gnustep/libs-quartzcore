@@ -39,8 +39,12 @@
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
 #endif
+#import <AppKit/NSOpenGL.h>
+
 #import "GLHelpers/CAGLTexture.h"
 #import "GLHelpers/CAGLSimpleFramebuffer.h"
+#import "GLHelpers/CAGLShader.h"
+#import "GLHelpers/CAGLProgram.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
@@ -75,6 +79,23 @@
   if ((self = [super init]) != nil)
     {
       [self setGLContext: ctx];
+      
+      /* Set up shaders */
+      [ctx makeCurrentContext];
+      CAGLVertexShader * simpleVS = [CAGLVertexShader alloc];
+      simpleVS = [simpleVS initWithFile: @"simple"
+                                 ofType: @"vsh"];
+      CAGLFragmentShader * simpleFS = [CAGLFragmentShader alloc];
+      simpleFS = [simpleFS initWithFile: @"simple"
+                                 ofType: @"fsh"];
+      NSArray * objectsForSimpleShader = [NSArray arrayWithObjects: simpleVS, simpleFS, nil];
+      [simpleVS release];
+      [simpleFS release];
+
+      CAGLProgram * simpleProgram = [CAGLProgram alloc];
+      simpleProgram = [simpleProgram initWithArrayOfShaders: objectsForSimpleShader];
+      [simpleProgram link];
+      _simpleProgram = simpleProgram;
     }
   return self;
 }
@@ -83,6 +104,10 @@
 {
   [_layer release];
   [_rasterizationSchedule release];
+  
+  /* Release all GL programs */
+  [_simpleProgram release];
+  
   [super dealloc];
 }
 
@@ -227,6 +252,14 @@
           #warning Intentionally coloring offscreen-rendered layer
           glColor3f(0.4, 1.0, 1.0);
           
+          #warning Intentionally applying shader to offscreen-rendered layer
+          [_simpleProgram use];
+          GLint loc = [_simpleProgram locationForUniform:@"texture_2drect"];
+          
+          [_simpleProgram bindUniformAtLocation: loc
+                                  toUnsignedInt: 0];//[texture textureID]];
+          
+          
           // TODO: replace use of glBegin()/glEnd()
           [texture bind];
           glBegin(GL_QUADS);
@@ -243,7 +276,9 @@
           
           #warning Intentionally coloring offscreen-rendered layer
           glColor3f(1.0, 1.0, 1.0);
-
+          #warning Intentionally applying shader to offscreen-rendered layer
+          glUseProgram(0);
+          
           return;
         }
     }
@@ -456,8 +491,6 @@
     {
       [[layer contents] setOffscreenRenderTexture: [framebuffer texture]];
     }
-    
-  glPopMatrix();
   
   [framebuffer release];
 }

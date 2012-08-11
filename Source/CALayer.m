@@ -94,13 +94,13 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   // do alpha blending using:
   //  GL_SRC_ALPHA, GL_ONE
 
+  CGColorSpaceRelease(colorSpace);
   if (context== NULL)
     {
       free (bitmapData);// 5
       fprintf (stderr, "Context not created!");
       return NULL;
     }
-  CGColorSpaceRelease(colorSpace);
 
 #if GNUSTEP
 #warning Opal bug: context should be cleared automatically

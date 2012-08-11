@@ -56,6 +56,7 @@ static NSMutableArray *transactionStack = nil;
 
   CATransaction *newTransaction = [CATransaction new];
   [transactionStack addObject: newTransaction];
+  [newTransaction release];
 }
 
 + (void) commit

@@ -48,7 +48,7 @@ typedef struct _CVTimeStamp
   uint64_t reserved;
 } CVTimeStamp;
 
-
+@class CAGLProgram;
 @interface CARenderer : NSObject
 {
   NSOpenGLContext * _GLContext;
@@ -59,6 +59,9 @@ typedef struct _CVTimeStamp
   CFTimeInterval _currentTime;
   
   NSMutableArray * _rasterizationSchedule;
+
+  /* GL programs */
+  CAGLProgram * _simpleProgram;
 }
 
 + (CARenderer*)rendererWithNSOpenGLContext: (NSOpenGLContext *)context

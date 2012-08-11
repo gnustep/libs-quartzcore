@@ -1,3 +1,37 @@
+2012-08-11  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	Apart from adding files for shaders, also turned on additional
+	warnings.
+
+	* Source/GLHelpers/CAGLProgram.h:
+	* Source/GLHelpers/CAGLProgram.m:
+	* Source/GLHelpers/CAGLShader.h:
+	* Source/GLHelpers/CAGLShader.m:
+	Wrote wrappers around OpenGL shader objects and OpenGL program
+	objects.
+	
+	* Source/Shaders/simple.fsh:
+	* Source/Shaders/simple.vsh:
+	Simple, almost-passthrough vertex+fragment shader. For testing
+	purposes, fragment shader is flipping the input texture.
+
+	* Source/GLHelpers/CAGLTexture.m:
+	Removed incorrect comment.
+
+	* Source/CALayer.m:
+	Moved CGColorSpaceRelease() based on clang analyzer warning.
+	
+	* Headers/QuartzCore/CARenderer.h:
+	* Source/CARenderer.m:
+	Made use of shaders; for testing purposes, every layer that
+	requested -shouldRasterize is being rendered using a shader.
+
+	Removed an extraneous glPopMatrix().
+
+	* Source/CATransaction.m:
+	Released newTransaction based on warning from clang analyzer.
+
 2012-08-06  Ivan Vučica  <ivan@vucica.net>
 
 	* Source/CALayer+DynamicProperties.m:

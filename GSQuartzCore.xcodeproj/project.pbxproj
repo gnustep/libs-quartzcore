@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F1DE5A415D6EBAC00C2AE2A /* CAGLShader.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F1DE5A215D6EBAC00C2AE2A /* CAGLShader.h */; };
+		7F1DE5A515D6EBAC00C2AE2A /* CAGLShader.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F1DE5A315D6EBAC00C2AE2A /* CAGLShader.m */; };
+		7F1DE5A815D6F35D00C2AE2A /* CAGLProgram.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F1DE5A615D6F35D00C2AE2A /* CAGLProgram.h */; };
+		7F1DE5A915D6F35D00C2AE2A /* CAGLProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F1DE5A715D6F35D00C2AE2A /* CAGLProgram.m */; };
+		7F1DE5AC15D6FD6200C2AE2A /* simple.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 7F1DE5AB15D6FD6200C2AE2A /* simple.fsh */; };
+		7F1DE5AE15D6FDC500C2AE2A /* simple.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 7F1DE5AD15D6FDC500C2AE2A /* simple.vsh */; };
 		7F43F22E1594ECD800F1C5EB /* CABackingStore.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F43F22C1594ECD800F1C5EB /* CABackingStore.h */; };
 		7F43F22F1594ECD800F1C5EB /* CABackingStore.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F43F22D1594ECD800F1C5EB /* CABackingStore.m */; };
 		7F5026AD15BC63FB00184772 /* CAGLSimpleFramebuffer.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5026AB15BC63FB00184772 /* CAGLSimpleFramebuffer.h */; };
@@ -98,6 +104,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7F1DE5A215D6EBAC00C2AE2A /* CAGLShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGLShader.h; sourceTree = "<group>"; };
+		7F1DE5A315D6EBAC00C2AE2A /* CAGLShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAGLShader.m; sourceTree = "<group>"; };
+		7F1DE5A615D6F35D00C2AE2A /* CAGLProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGLProgram.h; sourceTree = "<group>"; };
+		7F1DE5A715D6F35D00C2AE2A /* CAGLProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAGLProgram.m; sourceTree = "<group>"; };
+		7F1DE5AB15D6FD6200C2AE2A /* simple.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.fsh; sourceTree = "<group>"; };
+		7F1DE5AD15D6FDC500C2AE2A /* simple.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = simple.vsh; sourceTree = "<group>"; };
 		7F43F22C1594ECD800F1C5EB /* CABackingStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CABackingStore.h; sourceTree = "<group>"; };
 		7F43F22D1594ECD800F1C5EB /* CABackingStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CABackingStore.m; sourceTree = "<group>"; };
 		7F5026AB15BC63FB00184772 /* CAGLSimpleFramebuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGLSimpleFramebuffer.h; sourceTree = "<group>"; };
@@ -177,6 +189,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7F1DE5AA15D6FD4C00C2AE2A /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				7F1DE5AB15D6FD6200C2AE2A /* simple.fsh */,
+				7F1DE5AD15D6FDC500C2AE2A /* simple.vsh */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
 		7F5026AA15BC62D000184772 /* GLHelpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -184,6 +205,10 @@
 				7F5026AC15BC63FB00184772 /* CAGLSimpleFramebuffer.m */,
 				7F5026AF15BC685900184772 /* CAGLTexture.h */,
 				7F5026B015BC685900184772 /* CAGLTexture.m */,
+				7F1DE5A215D6EBAC00C2AE2A /* CAGLShader.h */,
+				7F1DE5A315D6EBAC00C2AE2A /* CAGLShader.m */,
+				7F1DE5A615D6F35D00C2AE2A /* CAGLProgram.h */,
+				7F1DE5A715D6F35D00C2AE2A /* CAGLProgram.m */,
 			);
 			path = GLHelpers;
 			sourceTree = "<group>";
@@ -290,6 +315,7 @@
 				7F77518A1594AF2900F56E92 /* CATransform3D.m */,
 				7F77518B1594AF2900F56E92 /* CATransformLayer.m */,
 				7F77518C1594AF2900F56E92 /* CAValueFunction.m */,
+				7F1DE5AA15D6FD4C00C2AE2A /* Shaders */,
 			);
 			path = Source;
 			sourceTree = SOURCE_ROOT;
@@ -369,6 +395,8 @@
 				7F5026AD15BC63FB00184772 /* CAGLSimpleFramebuffer.h in Headers */,
 				7F5026B115BC685900184772 /* CAGLTexture.h in Headers */,
 				7F88F46915CE9FD2002F25F0 /* CALayer+DynamicProperties.h in Headers */,
+				7F1DE5A415D6EBAC00C2AE2A /* CAGLShader.h in Headers */,
+				7F1DE5A815D6F35D00C2AE2A /* CAGLProgram.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -462,6 +490,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F77516D1594AE2A00F56E92 /* InfoPlist.strings in Resources */,
+				7F1DE5AC15D6FD6200C2AE2A /* simple.fsh in Resources */,
+				7F1DE5AE15D6FDC500C2AE2A /* simple.vsh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,6 +525,8 @@
 				7F5026AE15BC63FB00184772 /* CAGLSimpleFramebuffer.m in Sources */,
 				7F5026B215BC685900184772 /* CAGLTexture.m in Sources */,
 				7F88F46A15CE9FD2002F25F0 /* CALayer+DynamicProperties.m in Sources */,
+				7F1DE5A515D6EBAC00C2AE2A /* CAGLShader.m in Sources */,
+				7F1DE5A915D6F35D00C2AE2A /* CAGLProgram.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -518,6 +550,7 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -547,6 +580,7 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -599,6 +633,7 @@
 				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
