@@ -152,6 +152,12 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @synthesize actions=_actions;
 @synthesize style=_style;
 
+@synthesize shadowColor=_shadowColor;
+@synthesize shadowOffset=_shadowOffset;
+@synthesize shadowOpacity=_shadowOpacity;
+@synthesize shadowPath=_shadowPath;
+@synthesize shadowRadius=_shadowRadius;
+
 /* properties in protocol CAMediaTiming */
 @synthesize beginTime=_beginTime;
 @synthesize timeOffset=_timeOffset;
@@ -226,18 +232,35 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
     {
       return [NSValue valueWithCATransform3D: CATransform3DIdentity];
     }
-  if ([key isEqualToString:@"shouldRasterize"])
+  if ([key isEqualToString: @"shouldRasterize"])
     {
       return [NSNumber numberWithBool: NO];
     }
-  if ([key isEqualToString:@"opacity"])
+  if ([key isEqualToString: @"opacity"])
     {
       return [NSNumber numberWithFloat: 1.0];
     }
-  if ([key isEqualToString:@"contentsRect"])
+  if ([key isEqualToString: @"contentsRect"])
     {
       CGRect rect = CGRectMake(0.0, 0.0, 1.0, 1.0);
       return [NSValue valueWithBytes: &rect objCType: @encode(CGRect)];
+    }
+  if ([key isEqualToString: @"shadowColor"])
+    {
+      /* opaque black color */
+      /* note: under Cocoa this is an opaque Core Foundation type.
+         these types are nonetheless retainable, releasable, autoreleasable,
+         just like Opal's Objective-C class instances */
+      return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
+    }
+  if ([key isEqualToString: @"shadowOffset"])
+    {
+      CGSize offset = CGSizeMake(0.0, -3.0);
+      return [NSValue valueWithBytes: &offset objCType: @encode(CGSize)];
+    }
+  if ([key isEqualToString: @"shadowRadius"])
+    {
+      return [NSNumber numberWithFloat: 3.0];
     }
     
   /* CAMediaTiming */
@@ -279,10 +302,14 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       static NSString * keys[] = {
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
+        @"backgroundColor",
         
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
         
+        @"shadowColor", @"shadowOffset", @"shadowOpacity",
+        @"shadowPath", @"shadowRadius",
+
         @"bounds", @"position" };
       
       for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
@@ -290,6 +317,20 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
           id defaultValue = [[self class] defaultValueForKey: keys[i]];
           if (defaultValue)
             {
+            
+              #if 0
+              NSString * setter = [NSString stringWithFormat:@"set%@%@:", [[keys[i] substringToIndex: 1] uppercaseString], [keys[i] substringFromIndex: 1]];
+              
+              if (![self respondsToSelector: NSSelectorFromString(setter)])
+                {
+                  NSLog(@"Key %@ is missing setter", keys[i]);
+                }
+              else
+                {
+                  NSLog(@"setter %@ found", setter);
+                }
+              #endif
+              
               [self setValue: defaultValue
                       forKey: keys[i]];
             }
@@ -348,6 +389,12 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       [self setContentsGravity: [layer contentsGravity]];
       [self setNeedsDisplayOnBoundsChange: [layer needsDisplayOnBoundsChange]];
       [self setZPosition: [layer zPosition]];
+
+      [self setShadowColor: [layer shadowColor]];
+      [self setShadowOffset: [layer shadowOffset]];
+      [self setShadowOpacity: [layer shadowOpacity]];
+      [self setShadowPath: [layer shadowPath]];
+      [self setShadowRadius: [layer shadowRadius]];
       
       /* FIXME
          setting contents currently needs to be below setting bounds, 
@@ -378,6 +425,8 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
       [self removeObserver: [CAImplicitAnimationObserver sharedObserver]
                 forKeyPath: keyPath];
     }
+  CGColorRelease(_shadowColor);
+  CGPathRelease(_shadowPath);
   [_observedKeyPaths release];
   [_layoutManager release];
   [_contents release];
@@ -423,6 +472,8 @@ GSCA_OBSERVABLE_SETTER(setPosition, CGPoint, position, CGPointEqualToPoint)
 GSCA_OBSERVABLE_SETTER(setAnchorPoint, CGPoint, anchorPoint, CGPointEqualToPoint)
 GSCA_OBSERVABLE_SETTER(setTransform, CATransform3D, transform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, CATransform3DEqualToTransform)
+GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
+
 
 #endif
 - (void) setBounds: (CGRect)bounds
@@ -450,15 +501,35 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
   if (backgroundColor == _backgroundColor)
     return;
   
-#if GNUSTEP
   [self willChangeValueForKey: @"backgroundColor"];
-#endif
   CGColorRetain(backgroundColor);
   CGColorRelease(_backgroundColor);
   _backgroundColor = backgroundColor;
-#if GNUSTEP
   [self didChangeValueForKey: @"backgroundColor"];
-#endif
+}
+
+- (void)setShadowColor: (CGColorRef)shadowColor
+{
+  if (shadowColor == _shadowColor)
+    return;
+  
+  [self willChangeValueForKey: @"shadowColor"];
+  CGColorRetain(shadowColor);
+  CGColorRelease(_shadowColor);
+  _shadowColor = shadowColor;
+  [self didChangeValueForKey: @"shadowColor"];
+}
+
+- (void)setShadowPath: (CGPathRef)shadowPath
+{
+  if (shadowPath == _shadowPath)
+    return;
+  
+  [self willChangeValueForKey: @"shadowPath"];
+  CGPathRetain(shadowPath);
+  CGPathRelease(_shadowPath);
+  _shadowPath = shadowPath;
+  [self didChangeValueForKey: @"shadowPath"];
 }
 
 /* ***************** */
@@ -633,7 +704,7 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
   if (![anim duration])
     [anim setDuration: [CATransaction animationDuration]];
   /* Timing function intentionally set ONLY within transaction. */
-    
+  
   if ([anim isKindOfClass: [CABasicAnimation class]])
     {
       CABasicAnimation * basicAnimation = (id)anim;
@@ -1002,6 +1073,50 @@ GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, C
     [animation setFromValue: [[self presentationLayer] valueForKeyPath: key]];
   return animation;
 
+}
+
+- (id)valueForUndefinedKey: (NSString *)key
+{
+  /* Core Graphics types apparently are not KVC-compliant under Cocoa. */
+  
+  if ([key isEqualToString: @"backgroundColor"])
+    {
+      return (id)[self backgroundColor];
+    }
+  if ([key isEqualToString: @"shadowColor"])
+    {
+      return (id)[self shadowColor];
+    }
+  if ([key isEqualToString: @"shadowPath"])
+    {
+      return (id)[self shadowColor];
+    }
+  
+  return [super valueForUndefinedKey: key];
+}
+
+- (void)setValue: (id)value
+ forUndefinedKey: (NSString *)key
+{
+  /* Core Graphics types apparently are not KVC-compliant under Cocoa. */
+  
+  if ([key isEqualToString: @"backgroundColor"])
+    {
+      [self setBackgroundColor: (CGColorRef)value];
+      return;
+    }
+  if ([key isEqualToString: @"shadowColor"])
+    {
+      [self setShadowColor: (CGColorRef)value];
+      return;
+    }
+  if ([key isEqualToString: @"shadowPath"])
+    {
+      [self setShadowPath: (CGPathRef)value];
+      return;
+    }
+  
+  [super setValue: value forUndefinedKey: key];
 }
 
 /* Unimplemented functions: */

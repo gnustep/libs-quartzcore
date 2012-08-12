@@ -88,6 +88,12 @@ NSString *const kCATransition;
   id _presentationLayer;
   id _modelLayer;
   
+  CGColorRef _shadowColor;
+  CGSize _shadowOffset;
+  float _shadowOpacity;
+  CGPathRef _shadowPath;
+  CGFloat _shadowRadius;
+  
   /* media timing i-vars */
   CFTimeInterval _beginTime;
   CFTimeInterval _timeOffset;
@@ -124,13 +130,20 @@ NSString *const kCATransition;
 @property (NONATOMIC_GSONLY,assign)  CATransform3D transform;
 @property (NONATOMIC_GSONLY,assign)  CATransform3D sublayerTransform;
 @property (assign)                   float opacity;
-@property (getter=isOpaque)          BOOL opaque;
+@property (assign,getter=isOpaque)   BOOL opaque;
 @property (assign)                   BOOL shouldRasterize;
-@property (getter=isGeometryFlipped) BOOL geometryFlipped;
+
+@property (nonatomic, assign)        CGColorRef shadowColor; /* retained by CG */
+@property (NONATOMIC_GSONLY,assign)  CGSize shadowOffset;
+@property (assign)                   float shadowOpacity;
+@property (nonatomic, assign)        CGPathRef shadowPath; /* retained by CG; not supported yet; TODO: should not be implicitly animatable */
+@property (assign)                   CGFloat shadowRadius;
+
+@property (assign,getter=isGeometryFlipped) BOOL geometryFlipped; /* not supported yet */
 @property (nonatomic, assign)        CGColorRef backgroundColor; /* retained by CG */
 @property (assign)                   BOOL masksToBounds;
 @property (assign)                   CGRect contentsRect;
-@property (getter=isHidden)          BOOL hidden;
+@property (assign,getter=isHidden)   BOOL hidden;
 @property (copy)                     NSString *contentsGravity;
 @property (assign)                   BOOL needsDisplayOnBoundsChange;
 @property (assign)                   CGFloat zPosition;

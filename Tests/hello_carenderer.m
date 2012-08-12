@@ -99,6 +99,8 @@ Class classOfTestOpenGLView()
 {
   [super prepareOpenGL];
 
+  CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);
+
   _layerDelegate = [HelloCARendererLayerDelegate new];
   [_layerDelegate setSize: CGSizeMake([self frame].size.width, [self frame].size.height)];
 
@@ -106,7 +108,7 @@ Class classOfTestOpenGLView()
   [layer setBounds: CGRectMake(0, 0, [self frame].size.width*0.7, [self frame].size.height*0.7)];
   [layer setPosition: CGPointMake([self frame].size.width/2, [self frame].size.height/2)];
   [layer setTransform: CATransform3DMakeRotation(M_PI_4, 0, 0, 1)];
-  [layer setBackgroundColor: CGColorCreateGenericRGB(1, 1, 0, 1)];
+  [layer setBackgroundColor: yellowColor];
   [layer setDelegate: _layerDelegate];
   [layer setNeedsDisplay];
   
@@ -120,6 +122,8 @@ Class classOfTestOpenGLView()
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
+  
+  CGColorRelease(yellowColor);
 }
 
 - (void) dealloc

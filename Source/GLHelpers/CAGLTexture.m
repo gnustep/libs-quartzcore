@@ -143,4 +143,24 @@
   return TEXTURE_TARGET;
 }
 
+- (void) _writeToPNG:(NSString*)path
+{
+  char pixels[[self width]*[self height]*4];
+  [self bind];
+  glGetTexImage([self textureTarget], 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  
+  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  CGContextRef context = CGBitmapContextCreate(pixels, [self width], [self height], 8, [self width]*4, colorSpace, kCGImageAlphaPremultipliedLast);
+  CGImageRef image = CGBitmapContextCreateImage(context);
+  CGContextRelease(context);
+  CGColorSpaceRelease(colorSpace);
+  
+  NSMutableData * data = [NSMutableData data];
+  CGImageDestinationRef destination = CGImageDestinationCreateWithData((CFMutableDataRef)data, (CFStringRef)@"public.png", 1, NULL);
+  CGImageDestinationAddImage(destination, image, NULL);
+  CGImageDestinationFinalize(destination);
+  CGImageRelease(image);
+  
+  [data writeToFile:path atomically:YES];
+}
 @end

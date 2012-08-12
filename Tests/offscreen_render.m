@@ -94,6 +94,8 @@
 {
   CARenderer * _renderer;
   CALayer * _theSublayer;
+  CALayer * _theShadowedSublayer;
+  CALayer * _theShadowedSublayerChild;
 }
 
 - (void) timerAnimation: (NSTimer *)aTimer;
@@ -124,8 +126,9 @@ Class classOfTestOpenGLView()
   NSMenu * testsMenu = [[NSMenu alloc] initWithTitle: @"Tests"];
   {
     [testsMenu addItemWithTitle:@"Animation 1" action:@selector(animation1:) keyEquivalent:@"1"];
-    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer1" action:@selector(toggleOffscreenRenderLayer1:) keyEquivalent:@"2"];
-    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer2" action:@selector(toggleOffscreenRenderLayer2:) keyEquivalent:@"3"];
+    [testsMenu addItemWithTitle:@"Animation 2" action:@selector(animation2:) keyEquivalent:@"2"];
+    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer1" action:@selector(toggleOffscreenRenderLayer1:) keyEquivalent:@"3"];
+    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer2" action:@selector(toggleOffscreenRenderLayer2:) keyEquivalent:@"4"];
     [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
   
@@ -151,6 +154,29 @@ Class classOfTestOpenGLView()
     [[_renderer layer] setPosition: CGPointMake([self frame].size.width/2, [self frame].size.height/2)];
   toggle = !toggle;
   
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
+}
+
+- (void) animation2:sender
+{
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
+  CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
+  CGColorRef blueColor = CGColorCreateGenericRGB(0, 0, 1, 1);
+
+  static BOOL toggle = NO;
+  if(!toggle)
+    [_theShadowedSublayer setBackgroundColor: yellowColor];
+  else
+    [_theShadowedSublayer setBackgroundColor: blueColor];
+  toggle = !toggle;
+    
 #if GNUSTEP || GSIMPL_UNDER_COCOA
   #warning Manually committing transaction for implicit animations
   [CATransaction commit];
@@ -213,6 +239,7 @@ Class classOfTestOpenGLView()
 
   CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
   CGColorRef greenColor = CGColorCreateGenericRGB(0, 1, 0, 1);
+  CGColorRef blueColor = CGColorCreateGenericRGB(0, 0, 1, 1);
 
   OffscreenRenderCustomLayer * layer = [OffscreenRenderCustomLayer layer];
   [layer setBounds: CGRectMake(0, 0, [self frame].size.width*0.6, [self frame].size.height*0.6)];
@@ -240,11 +267,26 @@ Class classOfTestOpenGLView()
   [layer addSublayer: layer2];
   _theSublayer = [layer2 retain];
   
-  [layer setSublayerTransform: CATransform3DMakeRotation(M_PI_2 * 0.25 /* 45 deg */, 0, 0, 1)];
+  
+  OffscreenRenderCustomLayer * layer3 = [OffscreenRenderCustomLayer layer];
+  [layer3 setBounds: CGRectMake (0, 0, 100, 100)];
+  [layer3 setValue:(id)blueColor forKey:@"backgroundColor"]; // testing KVC for colors
+  [layer3 setSize: CGSizeMake([self frame].size.width, [self frame].size.height)];
+  [layer3 setNeedsDisplay];
+  [layer3 setPosition: CGPointMake ([layer bounds].size.width, [layer bounds].size.height)];
+  [layer3 setShadowOpacity: 1.0];
+  [layer addSublayer: layer3];
+  _theShadowedSublayer = [layer3 retain];
+  
+  CGColorRelease(yellowColor);
+  CGColorRelease(greenColor);
+  CGColorRelease(blueColor);
 }
 
 - (void) dealloc
 {
+  [_theShadowedSublayer removeFromSuperlayer];
+  [_theShadowedSublayer release];
   [_theSublayer removeFromSuperlayer];
   [_theSublayer release];
   [_renderer release];

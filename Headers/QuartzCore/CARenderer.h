@@ -62,6 +62,8 @@ typedef struct _CVTimeStamp
 
   /* GL programs */
   CAGLProgram * _simpleProgram;
+  CAGLProgram * _blurHorizProgram;
+  CAGLProgram * _blurVertProgram;
 }
 
 + (CARenderer*)rendererWithNSOpenGLContext: (NSOpenGLContext *)context

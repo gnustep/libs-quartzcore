@@ -44,8 +44,9 @@ void main()
   #ifdef GL_ES
     gl_FragColor = texture2D(texture_2d, fragmentTextureCoordinates);
   #else
-  //gl_FragColor = texture2DRect(texture_2drect, fragmentTextureCoordinates);
-  gl_FragColor = texture2DRect(texture_2drect, vec2(textureSize(texture_2drect, 0).x + fragmentTextureCoordinates.x * -1.0, fragmentTextureCoordinates.y));
+  gl_FragColor = texture2DRect(texture_2drect, fragmentTextureCoordinates);
+
+  //gl_FragColor = texture2DRect(texture_2drect, vec2(textureSize(texture_2drect, 0).x + fragmentTextureCoordinates.x * -1.0, fragmentTextureCoordinates.y));
   #endif
   
 }

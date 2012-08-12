@@ -54,6 +54,8 @@
 @property (assign) NSOpenGLContext *GLContext;
 - (void) _determineAndScheduleRasterizationForLayer: (CALayer *) layer;
 - (void) _scheduleRasterization: (CALayer *) layer;
+- (void) _rasterize: (NSDictionary *) rasterizationSpec;
+- (void) _rasterizeAll;
 @end
 
 @implementation CARenderer
@@ -80,8 +82,10 @@
     {
       [self setGLContext: ctx];
       
-      /* Set up shaders */
+      /* SHADER SETUP */
       [ctx makeCurrentContext];
+
+      /* Simple, passthrough shader */
       CAGLVertexShader * simpleVS = [CAGLVertexShader alloc];
       simpleVS = [simpleVS initWithFile: @"simple"
                                  ofType: @"vsh"];
@@ -96,6 +100,33 @@
       simpleProgram = [simpleProgram initWithArrayOfShaders: objectsForSimpleShader];
       [simpleProgram link];
       _simpleProgram = simpleProgram;
+      
+      /* Horizontal and vertical blur shader */
+      CAGLVertexShader * blurBaseVS = [CAGLVertexShader alloc];
+      blurBaseVS = [blurBaseVS initWithFile: @"blurbase"
+                                     ofType: @"vsh"];
+      CAGLFragmentShader * blurHorizFS = [CAGLFragmentShader alloc];
+      blurHorizFS = [blurHorizFS initWithFile: @"blurhoriz"
+                                       ofType: @"fsh"];
+      CAGLFragmentShader * blurVertFS = [CAGLFragmentShader alloc];
+      blurVertFS = [blurVertFS initWithFile: @"blurvert"
+                                     ofType: @"fsh"];
+      NSArray * objectsForBlurHorizShader = [NSArray arrayWithObjects: blurBaseVS, blurHorizFS, nil];
+      NSArray * objectsForBlurVertShader = [NSArray arrayWithObjects: blurBaseVS, blurVertFS, nil];
+      [blurBaseVS release];
+      [blurHorizFS release];
+      [blurVertFS release];
+      
+      CAGLProgram * blurHorizProgram = [CAGLProgram alloc];
+      blurHorizProgram = [blurHorizProgram initWithArrayOfShaders: objectsForBlurHorizShader];
+      [blurHorizProgram link];
+      _blurHorizProgram = blurHorizProgram;
+      
+      CAGLProgram * blurVertProgram = [CAGLProgram alloc];
+      blurVertProgram = [blurVertProgram initWithArrayOfShaders: objectsForBlurVertShader];
+      [blurVertProgram link];
+      _blurVertProgram = blurVertProgram;
+      
     }
   return self;
 }
@@ -107,6 +138,8 @@
   
   /* Release all GL programs */
   [_simpleProgram release];
+  [_blurHorizProgram release];
+  [_blurVertProgram release];
   
   [super dealloc];
 }
@@ -134,15 +167,6 @@
   /* Update layers (including determining and scheduling rasterization) */
   [self _updateLayer: _layer atTime: timeInterval];
   
-  /* Rasterize */
-  for (NSDictionary * rasterizationSpec in _rasterizationSchedule)
-  {
-    [self _rasterize: rasterizationSpec];
-  }
-  
-  /* Release rasterization schedule */
-  [_rasterizationSchedule release];
-  _rasterizationSchedule = nil;
 }
 
 /* Ends rendering the frame, releasing any temporary data. */
@@ -162,21 +186,33 @@
    should be rendering the update region only. */
 - (void) render
 {
-  // FIXME: [glcontext setcurrent]
+  [_GLContext makeCurrentContext];
 
   glMatrixMode(GL_MODELVIEW);
-
+  
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
   
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+  
+  [self _rasterizeAll];
+  
+  /* Perform render */
   [self _renderLayer: [[self layer] presentationLayer]
        withTransform: CATransform3DIdentity];
+       
+  /* Restore defaults */
+  glMatrixMode(GL_MODELVIEW);
+  glClearColor(0.0, 0.0, 0.0, 0.0);
+  glDisableClientState(GL_VERTEX_ARRAY);
+  glDisableClientState(GL_COLOR_ARRAY);
+  glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+  glDisable(GL_BLEND);
+  glBlendFunc(GL_ONE, GL_ZERO);
+  glLoadIdentity();
 }
-
 
 /* Returns rectangle containing all pixels that should be updated. */
 - (CGRect) updateBounds
@@ -249,6 +285,147 @@
           else
             glLoadMatrixf((GLfloat*)&transform);
 
+          /* have to paint shadow? */
+          if ([layer shadowOpacity] > 0.0)
+            {
+              
+              /* first paint shadow */
+              
+              /* TODO: we might be able to skip blurring in case radius == 1. */
+              /* TODO: shouldRasterize means that shadow should be included in
+                       rasterized bitmap. Currently, we still render shadow separately */
+              
+              /* here, we do blurring in two passes. first horizontal, then vertical. */
+              /* IDEA: perform blurring during offscreen-rendering, so we group all
+                       FBO operations in once place? */
+              
+              /* TODO: these not correct sizes for shadow rasterization */
+              const GLuint shadow_rasterize_w = 512, shadow_rasterize_h = 512;
+              
+              CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
+              CATransform3D rasterizedTextureTransform = CATransform3DMakeTranslation([texture width]/2.0, [texture height]/2.0, 0);
+              
+              
+              /* Setup transform for first pass */
+              if (sizeof(rasterizedTextureTransform.m11) == sizeof(GLdouble))
+                glLoadMatrixd((GLdouble*)&rasterizedTextureTransform);
+              else
+                glLoadMatrixf((GLfloat*)&rasterizedTextureTransform);
+
+              /* Setup FBO for first pass */
+              CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
+              [framebuffer bind];
+              
+              glClearColor(0.0, 0.0, 0.0, 0.0);
+              glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+              /* Render first pass */
+              [_blurHorizProgram use];
+              GLint loc = [_blurHorizProgram locationForUniform:@"RTScene"];
+              [_blurHorizProgram bindUniformAtLocation: loc
+                                         toUnsignedInt: 0];
+                
+              // TODO: replace use of glBegin()/glEnd()
+              [texture bind];
+              glBegin(GL_QUADS);
+              glTexCoord2f(0, 0);
+              glVertex2f(-[texture width]/2.0, -[texture height]/2.0);
+              glTexCoord2f(0, [texture height]);
+              glVertex2f(-[texture width]/2.0, [texture height]/2.0);
+              glTexCoord2f([texture width], [texture height]);
+              glVertex2f([texture width]/2.0, [texture height]/2.0);
+              glTexCoord2f([texture width], 0);
+              glVertex2f([texture width]/2.0, -[texture height]/2.0);
+              glEnd();
+              glDisable([texture textureTarget]);
+              
+              
+              glUseProgram(0);
+
+              [texture unbind];
+              [framebuffer unbind];
+              
+              /* Preserve the FBO texture and discard framebuffer */
+              CAGLTexture * firstPassTexture = [[framebuffer texture] retain];
+              [framebuffer release];
+              
+              /* Setup transform for second pass */
+              if (sizeof(shadowRasterizeTransform.m11) == sizeof(GLdouble))
+                glLoadMatrixd((GLdouble*)&shadowRasterizeTransform);
+              else
+                glLoadMatrixf((GLfloat*)&shadowRasterizeTransform);
+               
+              
+              /* Setup FBO for second pass */
+              framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
+              [framebuffer bind];
+              
+              glDisable([[framebuffer texture] textureTarget]);
+
+              glClearColor(0.0, 0.0, 0.0, 0.0);
+              glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+              /* Render second pass */
+              [_blurVertProgram use];
+              loc = [_blurVertProgram locationForUniform:@"RTBlurH"];
+              [_blurVertProgram bindUniformAtLocation: loc
+                                         toUnsignedInt: 0];
+              
+              // TODO: replace use of glBegin()/glEnd()
+              [firstPassTexture bind];
+              glBegin(GL_QUADS);
+              glTexCoord2f(0, 0);
+              glVertex2f(-[firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
+              glTexCoord2f(0, [firstPassTexture height]);
+              glVertex2f(-[firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
+              glTexCoord2f([firstPassTexture width], [firstPassTexture height]);
+              glVertex2f([firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
+              glTexCoord2f([firstPassTexture width], 0);
+              glVertex2f([firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
+              glEnd();
+              glDisable([firstPassTexture textureTarget]);
+              
+              glUseProgram(0);
+
+              [firstPassTexture unbind];
+              
+              /* Preserve the FBO texture and discard framebuffer */
+              CAGLTexture * secondPassTexture = [[framebuffer texture] retain];
+              [framebuffer release];
+              
+              /* Finally! Draw shadow into draw buffer */
+              if (sizeof(transform.m11) == sizeof(GLdouble))
+                glLoadMatrixd((GLdouble*)&transform);
+              else
+                glLoadMatrixf((GLfloat*)&transform);
+              glTranslatef([layer shadowOffset].width, [layer shadowOffset].height, 0);
+
+              [secondPassTexture bind];
+
+              glBegin(GL_QUADS);
+              glTexCoord2f(0, 0);
+              glVertex2f(-[secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
+              glTexCoord2f(0, [secondPassTexture height]);
+              glVertex2f(-[secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
+              glTexCoord2f([secondPassTexture width], [secondPassTexture height]);
+              glVertex2f([secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
+              glTexCoord2f([secondPassTexture width], 0);
+              glVertex2f([secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
+              glEnd();
+              glDisable([secondPassTexture textureTarget]);
+              
+              [firstPassTexture release];
+              [secondPassTexture release];
+              
+              /* Without shadow offset */
+              if (sizeof(transform.m11) == sizeof(GLdouble))
+                glLoadMatrixd((GLdouble*)&transform);
+              else
+                glLoadMatrixf((GLfloat*)&transform);
+
+            }
+
           #warning Intentionally coloring offscreen-rendered layer
           glColor3f(0.4, 1.0, 1.0);
           
@@ -257,7 +434,7 @@
           GLint loc = [_simpleProgram locationForUniform:@"texture_2drect"];
           
           [_simpleProgram bindUniformAtLocation: loc
-                                  toUnsignedInt: 0];//[texture textureID]];
+                                  toUnsignedInt: 0];
           
           
           // TODO: replace use of glBegin()/glEnd()
@@ -431,7 +608,11 @@
     {
       shouldRasterize = YES;
     }
-  
+    
+  if (!shouldRasterize && [[layer presentationLayer] shadowOpacity] > 0.0)
+    {
+      shouldRasterize = YES;
+    }
   
   /* Now, based on results, either rasterize or invalidate rasterization */
   if (shouldRasterize)
@@ -460,7 +641,7 @@
 - (void) _rasterize: (NSDictionary*) rasterizationSpec
 {
   CALayer * layer = [rasterizationSpec valueForKey: @"layer"];
-
+  
   /* we need to render the presentationLayer */
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
@@ -477,11 +658,12 @@
   CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: rasterize_w height: rasterize_h];
   [framebuffer setDepthBufferEnabled: YES];
   [framebuffer bind];
-  
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
+    
   glDisable([[framebuffer texture] textureTarget]);
-  
+
+  glClearColor(0.0, 0.0, 0.0, 0.0);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   [self _renderLayer: layer withTransform: CATransform3DMakeTranslation(rasterize_w/2.0 - [layer position].x, rasterize_h/2.0 - [layer position].y, 0)];
   
   [framebuffer unbind];
@@ -494,6 +676,22 @@
   
   [framebuffer release];
 }
+
+
+- (void) _rasterizeAll
+{
+  /* Rasterize */
+  for (NSDictionary * rasterizationSpec in _rasterizationSchedule)
+  {
+    [self _rasterize: rasterizationSpec];
+  }
+  
+  /* Release rasterization schedule */
+  [_rasterizationSchedule release];
+  _rasterizationSchedule = nil;
+}
+
+
 
 @end
 

@@ -400,6 +400,9 @@ Class classOfTestOpenGLView()
   _theSublayer = [layer2 retain];
   
   [layer setSublayerTransform: CATransform3DMakeRotation(M_PI_2 * 0.25 /* 45 deg */, 0, 0, 1)];
+
+  CGColorRelease(yellowColor);
+  CGColorRelease(greenColor);
 }
 
 - (void) dealloc

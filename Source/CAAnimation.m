@@ -605,7 +605,7 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
       
       return [NSNumber numberWithFloat: value];
     }
-    
+  
   if ([fromValue isKindOfClass: [NSValue class]] &&
       [toValue isKindOfClass: [NSValue class]] &&
       !strcmp([fromValue objCType], [toValue objCType]))
@@ -809,6 +809,38 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           return [NSValue valueWithCATransform3D: valueTf];
         }
 
+    }
+  
+  #if !GNUSTEP
+  // Core Graphics uses Core Foundation types internally
+  if ([fromValue isKindOfClass: NSClassFromString(@"__NSCFType")] &&
+      [toValue isKindOfClass: NSClassFromString(@"__NSCFType")] &&
+      CFGetTypeID(fromValue) == CGColorGetTypeID() &&
+      CFGetTypeID(toValue) == CGColorGetTypeID())
+  #else
+  // Opal uses Objective-C classes internally
+  if ([fromValue isKindOfClass: NSClassFromString(@"CGColor")] &&
+      [toValue isKindOfClass: NSClassFromString(@"CGColor")])
+  #endif
+    {
+      CGColorRef from = (CGColorRef)fromValue;
+      CGColorRef to = (CGColorRef)toValue;
+      
+      if (CGColorGetNumberOfComponents(from) == CGColorGetNumberOfComponents(to) &&
+          CGColorGetColorSpace(from) == CGColorGetColorSpace(to))
+        {
+          const CGFloat * fromComponents = CGColorGetComponents(from);
+          const CGFloat * toComponents = CGColorGetComponents(to);
+
+          int numberOfComponents = CGColorGetNumberOfComponents(from);
+          CGFloat valueComponents[numberOfComponents];
+          for (int i = 0; i < numberOfComponents; i++)
+            {
+              valueComponents[i] = linearInterpolation(fromComponents[i], toComponents[i], fraction);
+            }
+          
+          return [(id)CGColorCreate(CGColorGetColorSpace(from), valueComponents) autorelease];
+        }
     }
   return nil;
 }

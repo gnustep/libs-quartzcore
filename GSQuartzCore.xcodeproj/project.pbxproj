@@ -20,6 +20,9 @@
 		7F5026B115BC685900184772 /* CAGLTexture.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5026AF15BC685900184772 /* CAGLTexture.h */; };
 		7F5026B215BC685900184772 /* CAGLTexture.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F5026B015BC685900184772 /* CAGLTexture.m */; };
 		7F5CF3DE1594B35B00A5D114 /* AppleSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5CF3DD1594B35B00A5D114 /* AppleSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		7F639EFE15D7C5AF007DFA18 /* blurhoriz.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 7F639EFD15D7C5AF007DFA18 /* blurhoriz.fsh */; };
+		7F639F0015D7C6EB007DFA18 /* blurvert.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 7F639EFF15D7C6EB007DFA18 /* blurvert.fsh */; };
+		7F639F0215D80114007DFA18 /* blurbase.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 7F639F0115D80114007DFA18 /* blurbase.vsh */; };
 		7F74229E1594C2A400AEB117 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F74229D1594C2A400AEB117 /* OpenGL.framework */; };
 		7F7422B61594C75E00AEB117 /* AppleSupportRevert.h in Headers */ = {isa = PBXBuildFile; fileRef = 7F5909751594B7ED00AF49AF /* AppleSupportRevert.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		7F7751631594AE2A00F56E92 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F7751621594AE2A00F56E92 /* Cocoa.framework */; };
@@ -118,6 +121,9 @@
 		7F5026B015BC685900184772 /* CAGLTexture.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAGLTexture.m; sourceTree = "<group>"; };
 		7F5909751594B7ED00AF49AF /* AppleSupportRevert.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppleSupportRevert.h; sourceTree = "<group>"; };
 		7F5CF3DD1594B35B00A5D114 /* AppleSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppleSupport.h; sourceTree = "<group>"; };
+		7F639EFD15D7C5AF007DFA18 /* blurhoriz.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = blurhoriz.fsh; sourceTree = "<group>"; };
+		7F639EFF15D7C6EB007DFA18 /* blurvert.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = blurvert.fsh; sourceTree = "<group>"; };
+		7F639F0115D80114007DFA18 /* blurbase.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = blurbase.vsh; sourceTree = "<group>"; };
 		7F74229D1594C2A400AEB117 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GNUstepQuartzCoreTests.xcodeproj; path = Tests/GNUstepQuartzCoreTests.xcodeproj; sourceTree = "<group>"; };
 		7F77515F1594AE2A00F56E92 /* GSQuartzCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = GSQuartzCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -192,8 +198,11 @@
 		7F1DE5AA15D6FD4C00C2AE2A /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
-				7F1DE5AB15D6FD6200C2AE2A /* simple.fsh */,
 				7F1DE5AD15D6FDC500C2AE2A /* simple.vsh */,
+				7F1DE5AB15D6FD6200C2AE2A /* simple.fsh */,
+				7F639F0115D80114007DFA18 /* blurbase.vsh */,
+				7F639EFD15D7C5AF007DFA18 /* blurhoriz.fsh */,
+				7F639EFF15D7C6EB007DFA18 /* blurvert.fsh */,
 			);
 			path = Shaders;
 			sourceTree = "<group>";
@@ -492,6 +501,9 @@
 				7F77516D1594AE2A00F56E92 /* InfoPlist.strings in Resources */,
 				7F1DE5AC15D6FD6200C2AE2A /* simple.fsh in Resources */,
 				7F1DE5AE15D6FDC500C2AE2A /* simple.vsh in Resources */,
+				7F639F0215D80114007DFA18 /* blurbase.vsh in Resources */,
+				7F639EFE15D7C5AF007DFA18 /* blurhoriz.fsh in Resources */,
+				7F639F0015D7C6EB007DFA18 /* blurvert.fsh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

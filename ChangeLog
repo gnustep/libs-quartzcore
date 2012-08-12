@@ -1,3 +1,58 @@
+2012-08-12  Ivan Vučica  <ivan@vucica.net>
+
+	* GSQuartzCore.xcodeproj/project.pbxproj:
+	* Source/Shaders/blurbase.vsh:
+	* Source/Shaders/blurhoriz.fsh:
+	* Source/Shaders/blurvert.fsh:
+	* Headers/QuartzCore/CARenderer.h:
+	New shaders for blurring horizontally and vertically.
+
+	* Headers/QuartzCore/CALayer.h:
+	Added shadow-related properties. Explicitly defined 'assign'
+	properties.
+
+	* Source/CAAnimation.m:
+	Support for animating CGColorRef.
+
+	* Source/CALayer.m:
+	Added shadow-related properties. Added handling for Core Graphics
+	types, which apparently do not produce KVC-compliant setters
+	and getters under Cocoa.
+
+	* Source/CARenderer.m:
+	Better setting and restoring of GL defaults. Separated rasterization
+	of all layers into a separate method. Rasterization is now performed
+	as part of -render, and not during the update. Rasterization is also
+	performed in case a layer has a shadowOpacity > 0.0. 
+
+	Semi-complete shadow rendering. Currently, we just paint a quad that
+	is poorly-blurred, without actually applying color, and also without
+	making use of shadowOpacity and shadowColor.
+
+	It's also somewhat buggy: we get strange offsets in case a layer has
+	a shadow and is also being rasterized as part of another layer.
+
+	* Source/GLHelpers/CAGLProgram.m:
+	Error checking for invalid uniform location.
+
+	* Source/GLHelpers/CAGLTexture.h:
+	Texture width and height are now GLint, to avoid "minus-width"
+	unexpectedly resulting in a large unsigned integer.
+
+	* Source/GLHelpers/CAGLTexture.m:
+	Added debug method for writing a texture into a PNG.
+
+	* Source/Shaders/simple.fsh:
+	Switched to variant of shader without a side effect.
+
+	* Tests/hello_animation.m:
+	* Tests/hello_carenderer.m:
+	Properly releasing colors.
+	
+	* Tests/offscreen_render.m:
+	Added a layer with shadow. Added test of background color animation.
+	Proper release of colors.
+
 2012-08-11  Ivan Vučica  <ivan@vucica.net>
 
 	* GSQuartzCore.xcodeproj/project.pbxproj:

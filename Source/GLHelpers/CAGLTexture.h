@@ -37,13 +37,13 @@
 @interface CAGLTexture : NSObject
 {
   GLuint _textureID;
-  GLuint _width;
-  GLuint _height;
+  GLint _width;
+  GLint _height;
 }
 
 @property (readonly) GLuint textureID;
-@property (readonly) GLuint width;
-@property (readonly) GLuint height;
+@property (readonly) GLint width;
+@property (readonly) GLint height;
 
 + (CAGLTexture *) texture;
 

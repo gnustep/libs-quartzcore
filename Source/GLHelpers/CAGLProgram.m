@@ -173,7 +173,10 @@
 
 - (GLint) locationForUniform: (NSString *)uniform
 {
-  return glGetUniformLocation(_programID, [uniform UTF8String]);
+  GLint loc = glGetUniformLocation(_programID, [uniform UTF8String]);
+  if (loc == -1)
+    NSLog(@"CAGLProgram: Nonexistent uniform: %@", uniform);
+  return loc;
 }
 
 - (void) bindUniformAtLocation: (GLint)location
@@ -186,8 +189,9 @@
   //glProgramUniform4i(_programID, location, 1, value);
   
   [self use];
-  glUniform1i(location, value);
-  //glUniform1uiEXT(location, value);
+  if (location != -1)
+    glUniform1i(location, value);
+    //glUniform1uiEXT(location, value);
 }
 
 - (void) bindUniformAtLocation: (GLint)location
@@ -200,7 +204,8 @@
   //glProgramUniform4fv(_programID, location, 1, array);
   
   [self use];
-  glUniform4fv(location, 1, array);
+  if (location != -1)
+    glUniform4fv(location, 1, array);
 }
 
 
