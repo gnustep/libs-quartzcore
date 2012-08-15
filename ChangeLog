@@ -1,3 +1,31 @@
+2012-08-15  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CARenderer.m:
+	Shadow rendering can now accept non-rectangular textures.
+	For example, 2d textures or non-power-of-two 2d textures.
+
+	Added support for passing shadow color onward into the shadow
+	shader.
+
+	* Source/GLHelpers/CAGLTexture.m:
+	Added support for non-power-of-two 2d textures (although it
+	doesn't seem to work). Switched to gluBuild2DMipmaps()-built
+	2d textures. Fixed a bug with attempting to load a dummy
+	texture for use with FBO failing due to gluBuild2DMipmaps()
+	not handling NULL as the last argument correctly.
+
+	* Source/Shaders/blurhoriz.fsh:
+	* Source/Shaders/blurvert.fsh:
+	Fixed an incorrect value which resulted in sum not adding up to
+	1.0 but to 0.98. Added support for shadow color. Switched to
+	2d textures.
+
+	* Source/Shaders/simple.fsh:
+	Switched to 2d textures.
+	
+	* Tests/offscreen_render.m:
+	Test of switching of shadow color.
+
 2012-08-12  Ivan Vučica  <ivan@vucica.net>
 
 	* GSQuartzCore.xcodeproj/project.pbxproj:

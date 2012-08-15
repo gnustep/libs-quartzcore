@@ -26,7 +26,8 @@
 
 #import "CAGLTexture.h"
 
-#define USE_RECT 1
+#define USE_RECT 0
+#define USE_BUILDMIPMAPS 1
 #if USE_RECT
 #define TEXTURE_TARGET GL_TEXTURE_RECTANGLE_ARB
 #define qcLoadTexImage(channels, width, height, format, type, data) \
@@ -34,12 +35,17 @@
                      width, height, 0, format, type, \
                      data)
 
-#else
+#elif USE_BUILDMIPMAPS
 #define TEXTURE_TARGET GL_TEXTURE_2D
 #define qcLoadTexImage(channels, width, height, format, type, data) \
         gluBuild2DMipmaps(GL_TEXTURE_2D, channels, width, height, format, type, data)
+#else
+#define TEXTURE_TARGET GL_TEXTURE_2D
+#define qcLoadTexImage(channels, width, height, format, type, data) \
+        glTexImage2D(GL_TEXTURE_2D, 0, channels, \
+                     width, height, 0, format, type, \
+                     data)
 #endif
-
 
 @implementation CAGLTexture
 @synthesize textureID=_textureID;
@@ -72,14 +78,31 @@
 - (void) loadEmptyImageWithWidth: (GLuint)width
                           height: (GLuint)height
 {
+#if __APPLE__
+  glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
+#endif
+    
   /* Used for, for example, renderbuffer's target */
+#if !(USE_BUILDMIPMAPS)
   qcLoadTexImage(GL_RGBA,
     width,
     height,
     GL_RGBA,
     GL_UNSIGNED_BYTE,
     0);
-
+#else
+  // building mipmaps can't be done with NULL.
+  glTexImage2D(GL_TEXTURE_2D,
+    0,
+    GL_RGBA,
+    width,
+    height,
+    0,
+    GL_RGBA,
+    GL_UNSIGNED_BYTE,
+    0);
+#endif
+  
   _width = width;
   _height = height;
 }
@@ -103,7 +126,7 @@
 
   #if !USE_RECT
   /* On Apple, and not using rectangular textures?
-     Client extension can' be used due to use of gluBuild2DMipmaps(), so
+     Client extension can't be used due to use of gluBuild2DMipmaps(), so
      ensure it's off. */
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
   #endif

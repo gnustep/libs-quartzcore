@@ -327,14 +327,27 @@
                 
               // TODO: replace use of glBegin()/glEnd()
               [texture bind];
+              
+              GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
+              if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+                {
+                  textureMaxX = [texture width];
+                  textureMaxY = [texture height];
+                }
+              else
+                {
+                  glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                  glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                }
+
               glBegin(GL_QUADS);
               glTexCoord2f(0, 0);
               glVertex2f(-[texture width]/2.0, -[texture height]/2.0);
-              glTexCoord2f(0, [texture height]);
+              glTexCoord2f(0, textureMaxY);
               glVertex2f(-[texture width]/2.0, [texture height]/2.0);
-              glTexCoord2f([texture width], [texture height]);
+              glTexCoord2f(textureMaxX, textureMaxY);
               glVertex2f([texture width]/2.0, [texture height]/2.0);
-              glTexCoord2f([texture width], 0);
+              glTexCoord2f(textureMaxX, 0);
               glVertex2f([texture width]/2.0, -[texture height]/2.0);
               glEnd();
               glDisable([texture textureTarget]);
@@ -368,20 +381,51 @@
 
               /* Render second pass */
               [_blurVertProgram use];
-              loc = [_blurVertProgram locationForUniform:@"RTBlurH"];
+              loc = [_blurVertProgram locationForUniform: @"RTBlurH"];
               [_blurVertProgram bindUniformAtLocation: loc
                                          toUnsignedInt: 0];
-              
+              loc = [_blurVertProgram locationForUniform: @"shadowColor"];
+              GLfloat components[4] = { 0 };
+              if (CGColorGetNumberOfComponents([layer shadowColor]) == 4)
+                {
+                  const CGFloat * componentsOrig = CGColorGetComponents([layer shadowColor]);
+                  components[0] = componentsOrig[0];
+                  components[1] = componentsOrig[1];
+                  components[2] = componentsOrig[2];
+                  components[3] = componentsOrig[3];
+                  components[3] *= [layer shadowOpacity];
+                }
+              else
+                {
+                  NSLog(@"Invalid number of color components in shadowColor");
+                }
+
+              [_blurVertProgram bindUniformAtLocation: loc
+                                            toFloat4v: components];
+                                            
               // TODO: replace use of glBegin()/glEnd()
               [firstPassTexture bind];
+              
+              GLfloat firstPassTextureMaxX = 1.0, firstPassTextureMaxY = 1.0;
+              if ([firstPassTexture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+                {
+                  firstPassTextureMaxX = [firstPassTexture width];
+                  firstPassTextureMaxY = [firstPassTexture height];
+                }
+              else
+                {
+                  glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                  glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                }
               glBegin(GL_QUADS);
               glTexCoord2f(0, 0);
               glVertex2f(-[firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
-              glTexCoord2f(0, [firstPassTexture height]);
+              glTexCoord2f(0, firstPassTextureMaxY);
               glVertex2f(-[firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-              glTexCoord2f([firstPassTexture width], [firstPassTexture height]);
+              glTexCoord2f(firstPassTextureMaxX, firstPassTextureMaxY);
               glVertex2f([firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-              glTexCoord2f([firstPassTexture width], 0);
+              glTexCoord2f(firstPassTextureMaxX, 0);
               glVertex2f([firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
               glEnd();
               glDisable([firstPassTexture textureTarget]);
@@ -403,14 +447,25 @@
 
               [secondPassTexture bind];
 
+              GLfloat secondPassTextureMaxX = 1.0, secondPassTextureMaxY = 1.0;
+              if ([secondPassTexture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+                {
+                  secondPassTextureMaxX = [secondPassTexture width];
+                  secondPassTextureMaxY = [secondPassTexture height];
+                }
+              else
+                {
+                  glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                  glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                }
               glBegin(GL_QUADS);
               glTexCoord2f(0, 0);
               glVertex2f(-[secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
-              glTexCoord2f(0, [secondPassTexture height]);
+              glTexCoord2f(0, secondPassTextureMaxY);
               glVertex2f(-[secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-              glTexCoord2f([secondPassTexture width], [secondPassTexture height]);
+              glTexCoord2f(secondPassTextureMaxX, secondPassTextureMaxY);
               glVertex2f([secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-              glTexCoord2f([secondPassTexture width], 0);
+              glTexCoord2f(secondPassTextureMaxX, 0);
               glVertex2f([secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
               glEnd();
               glDisable([secondPassTexture textureTarget]);
@@ -431,7 +486,11 @@
           
           #warning Intentionally applying shader to offscreen-rendered layer
           [_simpleProgram use];
-          GLint loc = [_simpleProgram locationForUniform:@"texture_2drect"];
+          GLint loc;
+          if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+            loc = [_simpleProgram locationForUniform:@"texture_2drect"];
+          else
+            loc = [_simpleProgram locationForUniform:@"texture_2d"];
           
           [_simpleProgram bindUniformAtLocation: loc
                                   toUnsignedInt: 0];
@@ -439,14 +498,27 @@
           
           // TODO: replace use of glBegin()/glEnd()
           [texture bind];
+          
+          GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
+          if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+            {
+              textureMaxX = [texture width];
+              textureMaxY = [texture height];
+            }
+          else
+            {
+              glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+              glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            }
+                
           glBegin(GL_QUADS);
           glTexCoord2f(0, 0);
           glVertex2f(-256, -256);
-          glTexCoord2f(0, 512);
+          glTexCoord2f(0, textureMaxY);
           glVertex2f(-256, 256);
-          glTexCoord2f(512, 512);
+          glTexCoord2f(textureMaxX, textureMaxY);
           glVertex2f(256, 256);
-          glTexCoord2f(512, 0);
+          glTexCoord2f(textureMaxX, 0);
           glVertex2f(256, -256);
           glEnd();
           glDisable([texture textureTarget]);

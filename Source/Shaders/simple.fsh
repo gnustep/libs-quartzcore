@@ -11,6 +11,12 @@ precision highp float;
 #endif
 
 #ifdef GL_ES
+#define RECT_TEXTURE 0
+#else
+#define RECT_TEXTURE 0
+#endif
+
+#if RECT_TEXTURE == 0
 uniform sampler2D texture_2d;
 #else
 uniform sampler2DRect texture_2drect;
@@ -37,12 +43,12 @@ vec2 textureSize(sampler2DRect sampler, int lod)
 
 void main()
 {
-    gl_FragColor = colorVarying;
+  gl_FragColor = colorVarying;
   /* Previous line is unused, apart from eliminating warning
      that colorVarying is unused */
   
-  #ifdef GL_ES
-    gl_FragColor = texture2D(texture_2d, fragmentTextureCoordinates);
+  #if RECT_TEXTURE == 0
+  gl_FragColor = texture2D(texture_2d, fragmentTextureCoordinates);
   #else
   gl_FragColor = texture2DRect(texture_2drect, fragmentTextureCoordinates);
 

@@ -127,8 +127,9 @@ Class classOfTestOpenGLView()
   {
     [testsMenu addItemWithTitle:@"Animation 1" action:@selector(animation1:) keyEquivalent:@"1"];
     [testsMenu addItemWithTitle:@"Animation 2" action:@selector(animation2:) keyEquivalent:@"2"];
-    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer1" action:@selector(toggleOffscreenRenderLayer1:) keyEquivalent:@"3"];
-    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer2" action:@selector(toggleOffscreenRenderLayer2:) keyEquivalent:@"4"];
+    [testsMenu addItemWithTitle:@"Animation 3" action:@selector(animation3:) keyEquivalent:@"3"];
+    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer1" action:@selector(toggleOffscreenRenderLayer1:) keyEquivalent:@"4"];
+    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer2" action:@selector(toggleOffscreenRenderLayer2:) keyEquivalent:@"5"];
     [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
   
@@ -175,6 +176,29 @@ Class classOfTestOpenGLView()
     [_theShadowedSublayer setBackgroundColor: yellowColor];
   else
     [_theShadowedSublayer setBackgroundColor: blueColor];
+  toggle = !toggle;
+    
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually committing transaction for implicit animations
+  [CATransaction commit];
+#endif
+}
+
+- (void) animation3:sender
+{
+#if GNUSTEP || GSIMPL_UNDER_COCOA
+  #warning Manually creating transaction for implicit animations
+  [CATransaction begin];
+#endif
+
+  CGColorRef blackColor = CGColorCreateGenericRGB(0, 0, 0, 1);
+  CGColorRef cyanColor = CGColorCreateGenericRGB(0, 1, 1, 1);
+
+  static BOOL toggle = NO;
+  if(!toggle)
+    [_theShadowedSublayer setShadowColor: cyanColor];
+  else
+    [_theShadowedSublayer setShadowColor: blackColor];
   toggle = !toggle;
     
 #if GNUSTEP || GSIMPL_UNDER_COCOA

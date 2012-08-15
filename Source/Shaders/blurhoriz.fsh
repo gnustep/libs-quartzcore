@@ -3,7 +3,7 @@
 
 // modified to use rectangle textures
 
-#define RECT_TEXTURE 1
+#define RECT_TEXTURE 0
 
 #if RECT_TEXTURE == 0
 uniform sampler2D RTScene; // the texture with the scene you want to blur
@@ -31,14 +31,14 @@ vec4 textureSample(sampler2DRect texture, vec2 coord)
 void main(void)
 {
    vec4 sum = vec4(0.0);
- 
+   
    // blur in y (vertical)
    // take nine samples, with the distance blurSize between them
    sum += textureSample(RTScene, vec2(vTexCoord.x - 4.0*blurSize, vTexCoord.y)) * 0.05;
    sum += textureSample(RTScene, vec2(vTexCoord.x - 3.0*blurSize, vTexCoord.y)) * 0.09;
    sum += textureSample(RTScene, vec2(vTexCoord.x - 2.0*blurSize, vTexCoord.y)) * 0.12;
    sum += textureSample(RTScene, vec2(vTexCoord.x - blurSize, vTexCoord.y)) * 0.15;
-   sum += textureSample(RTScene, vec2(vTexCoord.x, vTexCoord.y)) * 0.16;
+   sum += textureSample(RTScene, vec2(vTexCoord.x, vTexCoord.y)) * 0.18; //0.16;
    sum += textureSample(RTScene, vec2(vTexCoord.x + blurSize, vTexCoord.y)) * 0.15;
    sum += textureSample(RTScene, vec2(vTexCoord.x + 2.0*blurSize, vTexCoord.y)) * 0.12;
    sum += textureSample(RTScene, vec2(vTexCoord.x + 3.0*blurSize, vTexCoord.y)) * 0.09;

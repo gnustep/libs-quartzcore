@@ -3,7 +3,7 @@
 
 // modified to use rectangle textures
 
-#define RECT_TEXTURE 1
+#define RECT_TEXTURE 0
 
 #if RECT_TEXTURE == 0
 uniform sampler2D RTBlurH; // this should hold the texture rendered by the horizontal blur pass
@@ -11,6 +11,7 @@ uniform sampler2D RTBlurH; // this should hold the texture rendered by the horiz
 uniform sampler2DRect RTBlurH; // this should hold the texture rendered by the horizontal blur pass
 #endif
 varying vec2 vTexCoord;
+uniform vec4 shadowColor;
   
 #if RECT_TEXTURE == 0
 const float blurSize = 1.0/512.0;
@@ -38,11 +39,14 @@ void main(void)
    sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y - 3.0*blurSize)) * 0.09;
    sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y - 2.0*blurSize)) * 0.12;
    sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y - blurSize)) * 0.15;
-   sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y)) * 0.16;
+   sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y)) * 0.18; //0.16;
    sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y + blurSize)) * 0.15;
    sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y + 2.0*blurSize)) * 0.12;
    sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y + 3.0*blurSize)) * 0.09;
    sum += textureSample(RTBlurH, vec2(vTexCoord.x, vTexCoord.y + 4.0*blurSize)) * 0.05;
  
-   gl_FragColor = sum;
+   if(shadowColor.a == -1.0)
+     gl_FragColor = sum;
+   else
+     gl_FragColor = vec4(shadowColor.rgb, sum.a * shadowColor.a);
 }
