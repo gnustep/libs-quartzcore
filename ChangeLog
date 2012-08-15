@@ -1,5 +1,23 @@
 2012-08-15  Ivan Vučica  <ivan@vucica.net>
 
+	* Headers/QuartzCore/CATransaction.h:
+	* Source/CARenderer.m:
+	* Source/CATransaction+FrameworkPrivate.h:
+	* Source/CATransaction.m:
+	Hacked around the lack of CFRunLoopObservers in GNUstep by
+	creating an implicit transaction on-demand, and committing it
+	in +[CARenderer beginFrame...].
+
+	Fixed a crash caused by transaction not retaining the 
+	animationTimingFunction instantiated in -init.
+
+	* Tests/hello_animation.m:
+	* Tests/offscreen_render.m:
+	Removed hacks creating implicit transactions manually in demo
+	code.
+
+2012-08-15  Ivan Vučica  <ivan@vucica.net>
+
 	* Source/CARenderer.m:
 	Shadow rendering can now accept non-rectangular textures.
 	For example, 2d textures or non-power-of-two 2d textures.

@@ -40,12 +40,14 @@ static NSMutableArray *transactionStack = nil;
 @property (assign) CFTimeInterval animationDuration;
 @property (retain) CAMediaTimingFunction *animationTimingFunction;
 @property (retain) NSMutableArray *actions;
+@property (assign, getter=isImplicit) BOOL implicit;
 @end
 
 @implementation CATransaction
 @synthesize animationDuration=_animationDuration;
 @synthesize animationTimingFunction=_animationTimingFunction;
 @synthesize actions=_actions;
+@synthesize implicit=_implicit;
 
 + (void) begin
 {
@@ -118,6 +120,12 @@ static NSMutableArray *transactionStack = nil;
 /* ***** Private class methods ******* */
 + (CATransaction *) topTransaction
 {
+  if(![transactionStack lastObject])
+    {
+      [CATransaction begin];
+      [[transactionStack lastObject] setImplicit: YES];
+    }
+
   return [transactionStack lastObject];
 }
 
@@ -132,13 +140,14 @@ static NSMutableArray *transactionStack = nil;
 
   _actions = [[NSMutableArray alloc] init];
   _animationDuration = 0.25;
-  _animationTimingFunction = [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault];
+  _animationTimingFunction = [[CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault] retain];
 
   return self;
 }
 
 - (void) dealloc
 {
+  [_animationTimingFunction release];
   [_actions release];
   
   [super dealloc];

@@ -35,6 +35,7 @@
   CAMediaTimingFunction *_animationTimingFunction;
   
   NSMutableArray *_actions;
+  BOOL _implicit;
 }
 
 + (void) begin;

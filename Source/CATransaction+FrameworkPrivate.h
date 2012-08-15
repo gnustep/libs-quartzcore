@@ -28,6 +28,7 @@
 
 @interface CATransaction (FrameworkPrivate)
 
+@property (assign, getter=isImplicit) BOOL implicit;
 + (CATransaction *) topTransaction;
 - (void)registerAction: (NSObject<CAAction> *)action
               onObject: (id)object

@@ -30,6 +30,7 @@
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CALayer.h"
 #import "CALayer+FrameworkPrivate.h"
+#import "CATransaction+FrameworkPrivate.h"
 #import "CABackingStore.h"
 #if !(__APPLE__)
 #import <GL/gl.h>
@@ -157,8 +158,12 @@
   if (!_firstRender)
     {
       _firstRender = timeInterval;
-      return;
     }
+  if([[CATransaction topTransaction] isImplicit])
+    {
+      [CATransaction commit];
+    }
+  
   
   /* Prepare for rasterization */
   [_rasterizationSchedule release];

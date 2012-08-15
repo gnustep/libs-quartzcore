@@ -171,17 +171,7 @@ Class classOfTestOpenGLView()
 
 - (void) animation1:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   [[_renderer layer] setPosition: CGPointZero];
-
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) animation2:sender
@@ -197,11 +187,6 @@ Class classOfTestOpenGLView()
 
 - (void) animation3:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
   [animation setDuration: 1];
   [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(400, 150)]];
@@ -211,20 +196,10 @@ Class classOfTestOpenGLView()
   
   [self printPos: [_renderer layer]];
   [self performSelector:@selector(printPos:) withObject: [_renderer layer] afterDelay:0.5];
-
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) animation4:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath:@"position"];
   [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(0, 0)]];
   [animation setToValue: [NSValue valueWithPoint: NSMakePoint(50, 50)]];
@@ -234,22 +209,10 @@ Class classOfTestOpenGLView()
   [animation setRepeatCount: 3]; //__builtin_inf()];
   
   [_theSublayer addAnimation: animation forKey:@"repeatingAnimation"];
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) animation5:sender
 {
-
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
-
   static BOOL toggle = NO;
   CALayer * layer = [_renderer layer];
   if (!toggle)
@@ -257,31 +220,14 @@ Class classOfTestOpenGLView()
   else
     [layer setTransform: CATransform3DIdentity];
   
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
-
-  
   toggle = !toggle;
 }
 
 - (void) animation6:sender
 {
 
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   CALayer * layer = [_renderer layer];
   [layer setBounds:CGRectMake([layer bounds].origin.x, [layer bounds].origin.y, [layer bounds].size.width + rand() % 50 - 25, [layer bounds].size.height + rand() % 50 - 25)];
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) animation7:sender
@@ -305,23 +251,12 @@ Class classOfTestOpenGLView()
 
 - (void) animation8:sender
 {
-
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   static BOOL toggle = NO;
   CALayer * layer = [_renderer layer];
   if (!toggle)
     [layer setOpacity: 0.2];
   else
     [layer setOpacity: 1.0];
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
   
   toggle = !toggle;
 }
@@ -416,12 +351,6 @@ Class classOfTestOpenGLView()
 
 - (void) timerAnimation: (NSTimer *)aTimer
 {
-
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
@@ -457,12 +386,6 @@ Class classOfTestOpenGLView()
   glFlush();
 
   [[self openGLContext] flushBuffer];
-  
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 

@@ -143,31 +143,16 @@ Class classOfTestOpenGLView()
 
 - (void) animation1:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   static BOOL toggle = NO;
   if(!toggle)
     [[_renderer layer] setPosition: CGPointZero];
   else
     [[_renderer layer] setPosition: CGPointMake([self frame].size.width/2, [self frame].size.height/2)];
   toggle = !toggle;
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) animation2:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
   CGColorRef blueColor = CGColorCreateGenericRGB(0, 0, 1, 1);
 
@@ -177,20 +162,10 @@ Class classOfTestOpenGLView()
   else
     [_theShadowedSublayer setBackgroundColor: blueColor];
   toggle = !toggle;
-    
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) animation3:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   CGColorRef blackColor = CGColorCreateGenericRGB(0, 0, 0, 1);
   CGColorRef cyanColor = CGColorCreateGenericRGB(0, 1, 1, 1);
 
@@ -200,20 +175,10 @@ Class classOfTestOpenGLView()
   else
     [_theShadowedSublayer setShadowColor: blackColor];
   toggle = !toggle;
-    
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) toggleOffscreenRenderLayer1:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-  
   static BOOL toggle = NO;
   if(!toggle)
     [[_renderer layer] setShouldRasterize: YES];
@@ -221,20 +186,10 @@ Class classOfTestOpenGLView()
     [[_renderer layer] setShouldRasterize: NO];
   
   toggle = !toggle;
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 - (void) toggleOffscreenRenderLayer2:sender
 {
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   static BOOL toggle = NO;
   if(!toggle)
     [_theSublayer setShouldRasterize: YES];
@@ -242,11 +197,6 @@ Class classOfTestOpenGLView()
     [_theSublayer setShouldRasterize: NO];
 
   toggle = !toggle;
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 
@@ -254,7 +204,6 @@ Class classOfTestOpenGLView()
 {
   CALayer * layer = [_renderer layer];
   [layer setNeedsDisplay];
-  
 }
 
 - (void) prepareOpenGL
@@ -319,12 +268,6 @@ Class classOfTestOpenGLView()
 
 - (void) timerAnimation: (NSTimer *)aTimer
 {
-
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually creating transaction for implicit animations
-  [CATransaction begin];
-#endif
-
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
@@ -349,11 +292,6 @@ Class classOfTestOpenGLView()
 
   [[self openGLContext] flushBuffer];
   
-  
-#if GNUSTEP || GSIMPL_UNDER_COCOA
-  #warning Manually committing transaction for implicit animations
-  [CATransaction commit];
-#endif
 }
 
 
