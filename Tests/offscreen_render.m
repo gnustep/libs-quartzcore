@@ -128,8 +128,10 @@ Class classOfTestOpenGLView()
     [testsMenu addItemWithTitle:@"Animation 1" action:@selector(animation1:) keyEquivalent:@"1"];
     [testsMenu addItemWithTitle:@"Animation 2" action:@selector(animation2:) keyEquivalent:@"2"];
     [testsMenu addItemWithTitle:@"Animation 3" action:@selector(animation3:) keyEquivalent:@"3"];
-    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer1" action:@selector(toggleOffscreenRenderLayer1:) keyEquivalent:@"4"];
-    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer2" action:@selector(toggleOffscreenRenderLayer2:) keyEquivalent:@"5"];
+    [testsMenu addItemWithTitle:@"Animation 4" action:@selector(animation4:) keyEquivalent:@"4"];
+    [testsMenu addItemWithTitle:@"Animation 5" action:@selector(animation5:) keyEquivalent:@"5"];
+    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer1" action:@selector(toggleOffscreenRenderLayer1:) keyEquivalent:@"6"];
+    [testsMenu addItemWithTitle:@"Toggle Offscreen Render Layer2" action:@selector(toggleOffscreenRenderLayer2:) keyEquivalent:@"7"];
     [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
   
@@ -162,6 +164,9 @@ Class classOfTestOpenGLView()
   else
     [_theShadowedSublayer setBackgroundColor: blueColor];
   toggle = !toggle;
+  
+  CGColorRelease(yellowColor);
+  CGColorRelease(blueColor);
 }
 
 - (void) animation3:sender
@@ -175,6 +180,41 @@ Class classOfTestOpenGLView()
   else
     [_theShadowedSublayer setShadowColor: blackColor];
   toggle = !toggle;
+  
+  CGColorRelease(blackColor);
+  CGColorRelease(cyanColor);
+}
+
+- (void) animation4:sender
+{
+  CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
+  CGColorRef clearColor = CGColorCreateGenericRGB(0, 0, 0, 0);
+
+  static BOOL toggle = NO;
+  if(!toggle)
+    [[_renderer layer] setBackgroundColor: clearColor];
+  else
+    [[_renderer layer] setBackgroundColor: yellowColor];
+  toggle = !toggle;
+  
+  CGColorRelease(yellowColor);
+  CGColorRelease(clearColor);
+}
+
+- (void) animation5:sender
+{
+  CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
+  CGColorRef clearColor = CGColorCreateGenericRGB(0, 0, 0, 0);
+
+  static BOOL toggle = NO;
+  if(!toggle)
+    [_theShadowedSublayer setAnchorPoint: CGPointMake(0,0)];
+  else
+    [_theShadowedSublayer setAnchorPoint: CGPointMake(0.5,0.5)];
+  toggle = !toggle;
+  
+  CGColorRelease(yellowColor);
+  CGColorRelease(clearColor);
 }
 
 - (void) toggleOffscreenRenderLayer1:sender
@@ -236,13 +276,14 @@ Class classOfTestOpenGLView()
   [layer2 setBounds: CGRectMake (0, 0, 100, 100)];
   [layer2 setBackgroundColor: greenColor];
   [layer2 setSize: CGSizeMake([self frame].size.width, [self frame].size.height)];
+  [layer2 setPosition: CGPointMake ([layer bounds].size.width, 0)];
   [layer2 setNeedsDisplay];
   [layer addSublayer: layer2];
   _theSublayer = [layer2 retain];
   
   
   OffscreenRenderCustomLayer * layer3 = [OffscreenRenderCustomLayer layer];
-  [layer3 setBounds: CGRectMake (0, 0, 100, 100)];
+  [layer3 setBounds: CGRectMake (0, 0, 125, 125)];
   [layer3 setValue:(id)blueColor forKey:@"backgroundColor"]; // testing KVC for colors
   [layer3 setSize: CGSizeMake([self frame].size.width, [self frame].size.height)];
   [layer3 setNeedsDisplay];
@@ -250,6 +291,15 @@ Class classOfTestOpenGLView()
   [layer3 setShadowOpacity: 1.0];
   [layer addSublayer: layer3];
   _theShadowedSublayer = [layer3 retain];
+  
+  
+  OffscreenRenderCustomLayer * layer4 = [OffscreenRenderCustomLayer layer];
+  [layer4 setBounds: CGRectMake (0, 0, 125, 125)];
+  [layer4 setSize: CGSizeMake(100, 100)];
+  [layer4 setNeedsDisplay];
+  [layer4 setPosition: CGPointMake (0, [layer bounds].size.height)];
+  [layer addSublayer: layer4];
+  
   
   CGColorRelease(yellowColor);
   CGColorRelease(greenColor);

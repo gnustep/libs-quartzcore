@@ -27,7 +27,7 @@
 #import "CAGLTexture.h"
 
 #define USE_RECT 0
-#define USE_BUILDMIPMAPS 1
+#define USE_BUILDMIPMAPS 0
 #if USE_RECT
 #define TEXTURE_TARGET GL_TEXTURE_RECTANGLE_ARB
 #define qcLoadTexImage(channels, width, height, format, type, data) \
@@ -92,6 +92,7 @@
     0);
 #else
   // building mipmaps can't be done with NULL.
+  //NOTE: This requires support for non-power-of-two textures.
   glTexImage2D(GL_TEXTURE_2D,
     0,
     GL_RGBA,
@@ -139,13 +140,19 @@
    use of BGRA (probably not due to CGImageRefs and other uses that may
    presume RGBA ordering). */
 
-  
   qcLoadTexImage(GL_RGBA,
     width,
     height,
     GL_RGBA,
     GL_UNSIGNED_INT_8_8_8_8_REV,
     data);
+#endif
+
+
+#if !(USE_RECT) && !(USE_BUILDMIPMAPS)
+  /* Use of non-power-of-two textures seems to require GL_NEAREST filter */
+  glTexParameteri(TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 #endif
 }
 

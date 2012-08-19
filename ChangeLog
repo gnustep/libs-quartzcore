@@ -1,3 +1,31 @@
+2012-08-18  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CARenderer.m:
+	Added a missing unbind for a framebuffer.
+
+	* Source/GLHelpers/CAGLSimpleFramebuffer.m:
+	Added the concept of a framebuffer stack, in order to make sure that
+	when we're done using a framebuffer, we restore the previous
+	framebuffer to the active state. This is important during offscreen
+	rendering, since during shadow rendering we switch away from the
+	framebuffer intended for offscreen rendering. As a result, shadowed
+	sublayers and all sublayers after them ended up being rendered
+	on-screen instead of the offscreen framebuffer.
+
+	* Source/GLHelpers/CAGLTexture.m:
+	Fixed non-power-of-two textures by forcing GL_NEAREST filter.
+	
+	* Tests/hello_carenderer.m:
+	Fixed building of the demo under Cocoa.
+
+	* Tests/main.m:
+	Increased demo window size to 800x600.
+
+	* Tests/offscreen_render.m:
+	Released colors in a few more places. Added animation tests for
+	anchor point. Added additional layers and moved layers to new
+	positions.
+
 2012-08-15  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CATransaction.h:

@@ -362,10 +362,12 @@
 
               [texture unbind];
               [framebuffer unbind];
-              
+                            
               /* Preserve the FBO texture and discard framebuffer */
               CAGLTexture * firstPassTexture = [[framebuffer texture] retain];
               [framebuffer release];
+              
+              /************************************/
               
               /* Setup transform for second pass */
               if (sizeof(shadowRasterizeTransform.m11) == sizeof(GLdouble))
@@ -438,10 +440,13 @@
               glUseProgram(0);
 
               [firstPassTexture unbind];
+              [framebuffer unbind];
               
               /* Preserve the FBO texture and discard framebuffer */
               CAGLTexture * secondPassTexture = [[framebuffer texture] retain];
               [framebuffer release];
+              
+              /************************************/
               
               /* Finally! Draw shadow into draw buffer */
               if (sizeof(transform.m11) == sizeof(GLdouble))

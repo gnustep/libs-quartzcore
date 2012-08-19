@@ -60,7 +60,7 @@
   [menu release];
 #endif
 
-  window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,640,480)
+  window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,800,600)
                                        styleMask: NSTitledWindowMask | NSClosableWindowMask
                                          backing: NSBackingStoreBuffered
                                            defer: NO];

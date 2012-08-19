@@ -30,9 +30,8 @@
 #else
 #import <OpenGL/gl.h>
 #endif
-#if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
-#endif
+#import <Foundation/Foundation.h>
 
 #if GSIMPL_UNDER_COCOA
 #import <GSQuartzCore/AppleSupportRevert.h>

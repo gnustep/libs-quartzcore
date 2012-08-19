@@ -29,11 +29,15 @@
 
 @interface CAGLSimpleFramebuffer ()
 @property (nonatomic, retain) CAGLTexture * texture;
+@property (nonatomic, assign) GLuint framebufferID;
 @end
+
+static NSMutableArray * framebufferStack = nil;
 
 @implementation CAGLSimpleFramebuffer
 @synthesize texture=_texture;
 @synthesize depthBufferEnabled=_depthBufferEnabled;
+@synthesize framebufferID=_framebufferID;
 
 - (id)initWithWidth: (CGFloat) width
              height: (CGFloat) height
@@ -67,8 +71,13 @@
 
 - (void) dealloc
 {
+  if ([framebufferStack lastObject] == self)
+    [self unbind];
+  
+  if ([framebufferStack containsObject: self])
+    NSLog(@"Releasing a framebuffer that's still in framebuffer stack");
+    
   /* clean up renderbuffer storage */
-  [self bind];
   if (_depthBufferEnabled)
     [self setDepthBufferEnabled: NO];
   
@@ -87,7 +96,7 @@
     return;
   
   _depthBufferEnabled = depthBufferEnabled;
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+  [self bind];
   
   if (_depthBufferEnabled)
   {
@@ -103,16 +112,32 @@
     
     glDeleteRenderbuffers(1, &_depthRenderbufferID);
   }
+  
+  [self unbind];
 }
 
 - (void) bind
 {
+  if (!framebufferStack)
+    {
+      framebufferStack = [NSMutableArray new];
+    }
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+  [framebufferStack addObject: self];
 }
 
 - (void) unbind
 {
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  if ([framebufferStack lastObject] != self)
+    {
+      NSLog(@"Unbinding a framebuffer that is not on top of the stack");
+    }
+  [framebufferStack removeLastObject];
+  
+  if ([framebufferStack count] > 0)
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, [((CAGLSimpleFramebuffer*)[framebufferStack lastObject]) framebufferID]);
+  else
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
 /*
