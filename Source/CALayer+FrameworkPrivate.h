@@ -39,7 +39,7 @@
 - (BOOL)isPresentationLayer;
 
 - (void) discardPresentationLayer;
-- (void) applyAnimationsAtTime: (CFTimeInterval)time;
+- (CGFloat) applyAnimationsAtTime: (CFTimeInterval)time;
 
 - (CFTimeInterval) activeTime;
 - (CFTimeInterval) localTime;

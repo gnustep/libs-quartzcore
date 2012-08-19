@@ -669,7 +669,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   return [_animations valueForKey: key];
 }
 
-- (void) applyAnimationsAtTime: (CFTimeInterval)theTime
+- (CGFloat) applyAnimationsAtTime: (CFTimeInterval)theTime
 {
   if (![self isPresentationLayer])
     {
@@ -679,50 +679,51 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
           NSLog(@"One time warning: Attempted to apply animations to model layer. Redirecting to presentation layer since applying animations only makes sense for presentation layers.");
           warned = YES;
         }
-      [[self presentationLayer] applyAnimationsAtTime: theTime];
-      return;
+      return [[self presentationLayer] applyAnimationsAtTime: theTime];
     }
     
-    NSMutableArray * animationKeysToRemove = [NSMutableArray new];
+  NSMutableArray * animationKeysToRemove = [NSMutableArray new];
 
-    for (NSString * animationKey in [self animationKeys])
-      {
-        CAAnimation * animation = [_animations objectForKey: animationKey];
+  for (NSString * animationKey in [self animationKeys])
+    {
+      CAAnimation * animation = [_animations objectForKey: animationKey];
 
-        if ([animation beginTime] == 0)
-          {
-            // FIXME: this MUST be grabbed from CATransaction, and
-            // it must be done by the animation itself!
-            // alternatively, this needs to be applied to the
-            // animation upon +[CATransaction commit]
+      if ([animation beginTime] == 0)
+        {
+          // FIXME: this MUST be grabbed from CATransaction, and
+          // it must be done by the animation itself!
+          // alternatively, this needs to be applied to the
+          // animation upon +[CATransaction commit]
             
-            CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
-            currentFrameBeginTime = CACurrentMediaTime();
-            [animation setBeginTime: [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]]];
-            currentFrameBeginTime = oldFrameBeginTime;
-          }        
+          CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
+          currentFrameBeginTime = CACurrentMediaTime();
+          [animation setBeginTime: [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]]];
+          currentFrameBeginTime = oldFrameBeginTime;
+        }
 
 
-        if ([animation isKindOfClass: [CAPropertyAnimation class]])
-          {
-            CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
+      if ([animation isKindOfClass: [CAPropertyAnimation class]])
+        {
+          CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
                         
-            if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
-              {
-                /* FIXME: doesn't take into account speed */
+          if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
+            {
+              /* FIXME: doesn't take into account speed */
                 
-                [animationKeysToRemove addObject: animationKey];
-                continue; /* Prevents animation from applying for one frame longer than its duration */
-              }
+              [animationKeysToRemove addObject: animationKey];
+              continue; /* Prevents animation from applying for one frame longer than its duration */
+            }
             
-            [propertyAnimation applyToLayer: self];
+          [propertyAnimation applyToLayer: self];
             
-          }
-      }
+        }
+    }
     
-    [_animations removeObjectsForKeys: animationKeysToRemove];
-    [_animationKeys removeObjectsInArray: animationKeysToRemove];
-    [animationKeysToRemove release];
+  [_animations removeObjectsForKeys: animationKeysToRemove];
+  [_animationKeys removeObjectsInArray: animationKeysToRemove];
+  [animationKeysToRemove release];
+  
+  return 0;
 }
 
 /* ***************** */

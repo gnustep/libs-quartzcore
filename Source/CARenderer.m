@@ -253,9 +253,9 @@
                   atTime: theTime];
     }
 
-  /* Now that children have had a chance to suffer determining
+  /* Now that children have had a chance to determine
      whether they need to be rendered offscreen, the layer itself
-     can suffer it, too. */
+     can determine it, too. */
   /* (Order is important, because the deeper the layer is, earlier
      it needs to be offscreen-rendered.) */
      
@@ -266,7 +266,7 @@
   [self _determineAndScheduleRasterizationForLayer: [layer mask]];
   #endif
   
-  /* Then determine current layer to determine rasterization */
+  /* Then permit current layer to determine rasterization */
   [self _determineAndScheduleRasterizationForLayer: layer];
 }
 /* Internal method that renders a single layer and then proceeds by recursing, rendering its children. */
