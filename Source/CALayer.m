@@ -37,6 +37,7 @@
 #import <objc/runtime.h>
 #import "CALayer+DynamicProperties.h"
 #import "QuartzCore/CATransaction.h"
+#import "CABackingStore.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
@@ -58,69 +59,11 @@ NSString *const kCAGravityTopRight = @"CAGravityTopRight";
 NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
 NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
-static CGContextRef createCGBitmapContext (int pixelsWide,
-                                    int pixelsHigh)
-{
-  CGContextRef    context = NULL;
-  CGColorSpaceRef colorSpace;
-  void *          bitmapData;
-  int             bitmapByteCount;
-  int             bitmapBytesPerRow;
-  
-  bitmapBytesPerRow   = (pixelsWide * 4);
-  bitmapByteCount     = (bitmapBytesPerRow * pixelsHigh);
-  
-  colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
-
-  // Let CGBitmapContextCreate() allocate the memory.
-  // This should be good under Cocoa too.
-  bitmapData = NULL;
-
-  context = CGBitmapContextCreate (bitmapData,
-                                   pixelsWide,
-                                   pixelsHigh,
-                                   8,      // bits per component
-                                   bitmapBytesPerRow,
-                                   colorSpace,
-#if !GNUSTEP
-                                   kCGImageAlphaPremultipliedLast);
-#else
-  // Opal only supports kCGImageAlphaPremultipliedFirst.
-  // However, this is incorrect since it implies ARGB.
-                                  kCGImageAlphaPremultipliedFirst);
-#endif
-
-  // Note: our use of premultiplied alpha means that we need to
-  // do alpha blending using:
-  //  GL_SRC_ALPHA, GL_ONE
-
-  CGColorSpaceRelease(colorSpace);
-  if (context== NULL)
-    {
-      free (bitmapData);// 5
-      fprintf (stderr, "Context not created!");
-      return NULL;
-    }
-
-#if GNUSTEP
-#warning Opal bug: context should be cleared automatically
-
-#if 0
-  CGContextClearRect (context, CGRectInfinite);
-#else
-#warning Opal bug: CGContextClearRect() permanently whacks the context
-  memset (CGBitmapContextGetData (context), 
-          0, bitmapBytesPerRow * pixelsHigh);
-#endif
-#endif  
-  return context;
-}
-
-
 @interface CALayer()
-@property (nonatomic, assign) CALayer *superlayer;
-@property (nonatomic, retain) NSMutableDictionary *animations;
-@property (retain) NSMutableArray *animationKeys;
+@property (nonatomic, assign) CALayer * superlayer;
+@property (nonatomic, retain) NSMutableDictionary * animations;
+@property (retain) NSMutableArray * animationKeys;
+@property (retain) CABackingStore * backingStore;
 
 - (void)setModelLayer: (id)modelLayer;
 @end
@@ -171,6 +114,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 /* private or publicly read-only properties */
 @synthesize animations=_animations;
 @synthesize animationKeys=_animationKeys;
+@synthesize backingStore=_backingStore;
 
 /* *** dynamic synthesis of properties *** */
 + (void) initialize
@@ -435,8 +379,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [_contentsGravity release];
   [_fillMode release];
   
-  CGContextRelease(_opalContext);
-  
+  [_backingStore release];
   [_animations release];
   [_animationKeys release];
   
@@ -547,31 +490,23 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     
       CGRect bounds = [self bounds];
       
-      if (!_opalContext ||
-          CGBitmapContextGetWidth(_opalContext) != bounds.size.width ||
-          CGBitmapContextGetHeight(_opalContext) != bounds.size.height)
+      if (!_backingStore ||
+          [_backingStore width] != bounds.size.width ||
+          [_backingStore height] != bounds.size.height)
       {
-        CGContextRelease(_opalContext);
-
-        _opalContext = createCGBitmapContext(bounds.size.width, bounds.size.height);
-        
-        self.contents = [CABackingStore backingStoreWithContext: _opalContext];
+        [self setBackingStore: [CABackingStore backingStoreWithWidth: bounds.size.width height: bounds.size.height]];
       }
       
-      CGContextSaveGState (_opalContext);
-      CGContextClipToRect (_opalContext, [self bounds]);
-      [self drawInContext: _opalContext];
-      CGContextRestoreGState (_opalContext);
+      CGContextSaveGState ([_backingStore context]);
+      CGContextClipToRect ([_backingStore context], [self bounds]);
+      [self drawInContext: [_backingStore context]];
+      CGContextRestoreGState ([_backingStore context]);
 
-      /* TODO: does Cocoa CALayer restore 'contents' if it was manually set
-         to an, e.g., CGImageRef? */
-      if (![self.contents isKindOfClass: [CABackingStore class]])
-        {
-          self.contents = [CABackingStore backingStoreWithContext: _opalContext];
-        }
+      /* Call -refresh on backing store to fill its texture */
+      if (![self contents])
+        [self setContents: [self backingStore]];
       
-      /* Since now we're dealing with CABackingStore, we can call -refresh */
-      [self.contents refresh];
+      [self.backingStore refresh];
     }
 }
 

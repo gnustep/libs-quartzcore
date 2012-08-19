@@ -278,233 +278,54 @@
   
       
   // if the layer was offscreen-rendered, render just the texture
-  // TODO Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
-  if ([[layer contents] isKindOfClass:[CABackingStore class]])
+  CAGLTexture * texture = [[layer backingStore] offscreenRenderTexture];
+  if (texture)
     {
-      CAGLTexture * texture = [[layer contents] offscreenRenderTexture];
-      if (texture)
+      transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
+      if (sizeof(transform.m11) == sizeof(GLdouble))
+        glLoadMatrixd((GLdouble*)&transform);
+      else
+        glLoadMatrixf((GLfloat*)&transform);
+      
+      /* have to paint shadow? */
+      if ([layer shadowOpacity] > 0.0)
         {
-          transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
-          if (sizeof(transform.m11) == sizeof(GLdouble))
-            glLoadMatrixd((GLdouble*)&transform);
+          
+          /* first paint shadow */
+          
+          /* TODO: we might be able to skip blurring in case radius == 1. */
+          /* TODO: shouldRasterize means that shadow should be included in
+                   rasterized bitmap. Currently, we still render shadow separately */
+          
+          /* here, we do blurring in two passes. first horizontal, then vertical. */
+          /* IDEA: perform blurring during offscreen-rendering, so we group all
+                   FBO operations in once place? */
+          
+          /* TODO: these not correct sizes for shadow rasterization */
+          const GLuint shadow_rasterize_w = 512, shadow_rasterize_h = 512;
+          
+          CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
+          CATransform3D rasterizedTextureTransform = CATransform3DMakeTranslation([texture width]/2.0, [texture height]/2.0, 0);
+          
+          
+          /* Setup transform for first pass */
+          if (sizeof(rasterizedTextureTransform.m11) == sizeof(GLdouble))
+            glLoadMatrixd((GLdouble*)&rasterizedTextureTransform);
           else
-            glLoadMatrixf((GLfloat*)&transform);
+            glLoadMatrixf((GLfloat*)&rasterizedTextureTransform);
 
-          /* have to paint shadow? */
-          if ([layer shadowOpacity] > 0.0)
-            {
-              
-              /* first paint shadow */
-              
-              /* TODO: we might be able to skip blurring in case radius == 1. */
-              /* TODO: shouldRasterize means that shadow should be included in
-                       rasterized bitmap. Currently, we still render shadow separately */
-              
-              /* here, we do blurring in two passes. first horizontal, then vertical. */
-              /* IDEA: perform blurring during offscreen-rendering, so we group all
-                       FBO operations in once place? */
-              
-              /* TODO: these not correct sizes for shadow rasterization */
-              const GLuint shadow_rasterize_w = 512, shadow_rasterize_h = 512;
-              
-              CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
-              CATransform3D rasterizedTextureTransform = CATransform3DMakeTranslation([texture width]/2.0, [texture height]/2.0, 0);
-              
-              
-              /* Setup transform for first pass */
-              if (sizeof(rasterizedTextureTransform.m11) == sizeof(GLdouble))
-                glLoadMatrixd((GLdouble*)&rasterizedTextureTransform);
-              else
-                glLoadMatrixf((GLfloat*)&rasterizedTextureTransform);
-
-              /* Setup FBO for first pass */
-              CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
-              [framebuffer bind];
-              
-              glClearColor(0.0, 0.0, 0.0, 0.0);
-              glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-              /* Render first pass */
-              [_blurHorizProgram use];
-              GLint loc = [_blurHorizProgram locationForUniform:@"RTScene"];
-              [_blurHorizProgram bindUniformAtLocation: loc
-                                         toUnsignedInt: 0];
-                
-              // TODO: replace use of glBegin()/glEnd()
-              [texture bind];
-              
-              GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
-              if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
-                {
-                  textureMaxX = [texture width];
-                  textureMaxY = [texture height];
-                }
-              else
-                {
-                  glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                  glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                }
-
-              glBegin(GL_QUADS);
-              glTexCoord2f(0, 0);
-              glVertex2f(-[texture width]/2.0, -[texture height]/2.0);
-              glTexCoord2f(0, textureMaxY);
-              glVertex2f(-[texture width]/2.0, [texture height]/2.0);
-              glTexCoord2f(textureMaxX, textureMaxY);
-              glVertex2f([texture width]/2.0, [texture height]/2.0);
-              glTexCoord2f(textureMaxX, 0);
-              glVertex2f([texture width]/2.0, -[texture height]/2.0);
-              glEnd();
-              glDisable([texture textureTarget]);
-              
-              
-              glUseProgram(0);
-
-              [texture unbind];
-              [framebuffer unbind];
-                            
-              /* Preserve the FBO texture and discard framebuffer */
-              CAGLTexture * firstPassTexture = [[framebuffer texture] retain];
-              [framebuffer release];
-              
-              /************************************/
-              
-              /* Setup transform for second pass */
-              if (sizeof(shadowRasterizeTransform.m11) == sizeof(GLdouble))
-                glLoadMatrixd((GLdouble*)&shadowRasterizeTransform);
-              else
-                glLoadMatrixf((GLfloat*)&shadowRasterizeTransform);
-               
-              
-              /* Setup FBO for second pass */
-              framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
-              [framebuffer bind];
-              
-              glDisable([[framebuffer texture] textureTarget]);
-
-              glClearColor(0.0, 0.0, 0.0, 0.0);
-              glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-              /* Render second pass */
-              [_blurVertProgram use];
-              loc = [_blurVertProgram locationForUniform: @"RTBlurH"];
-              [_blurVertProgram bindUniformAtLocation: loc
-                                         toUnsignedInt: 0];
-              loc = [_blurVertProgram locationForUniform: @"shadowColor"];
-              GLfloat components[4] = { 0 };
-              if (CGColorGetNumberOfComponents([layer shadowColor]) == 4)
-                {
-                  const CGFloat * componentsOrig = CGColorGetComponents([layer shadowColor]);
-                  components[0] = componentsOrig[0];
-                  components[1] = componentsOrig[1];
-                  components[2] = componentsOrig[2];
-                  components[3] = componentsOrig[3];
-                  components[3] *= [layer shadowOpacity];
-                }
-              else
-                {
-                  NSLog(@"Invalid number of color components in shadowColor");
-                }
-
-              [_blurVertProgram bindUniformAtLocation: loc
-                                            toFloat4v: components];
-                                            
-              // TODO: replace use of glBegin()/glEnd()
-              [firstPassTexture bind];
-              
-              GLfloat firstPassTextureMaxX = 1.0, firstPassTextureMaxY = 1.0;
-              if ([firstPassTexture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
-                {
-                  firstPassTextureMaxX = [firstPassTexture width];
-                  firstPassTextureMaxY = [firstPassTexture height];
-                }
-              else
-                {
-                  glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                  glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-                }
-              glBegin(GL_QUADS);
-              glTexCoord2f(0, 0);
-              glVertex2f(-[firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
-              glTexCoord2f(0, firstPassTextureMaxY);
-              glVertex2f(-[firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-              glTexCoord2f(firstPassTextureMaxX, firstPassTextureMaxY);
-              glVertex2f([firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-              glTexCoord2f(firstPassTextureMaxX, 0);
-              glVertex2f([firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
-              glEnd();
-              glDisable([firstPassTexture textureTarget]);
-              
-              glUseProgram(0);
-
-              [firstPassTexture unbind];
-              [framebuffer unbind];
-              
-              /* Preserve the FBO texture and discard framebuffer */
-              CAGLTexture * secondPassTexture = [[framebuffer texture] retain];
-              [framebuffer release];
-              
-              /************************************/
-              
-              /* Finally! Draw shadow into draw buffer */
-              if (sizeof(transform.m11) == sizeof(GLdouble))
-                glLoadMatrixd((GLdouble*)&transform);
-              else
-                glLoadMatrixf((GLfloat*)&transform);
-              glTranslatef([layer shadowOffset].width, [layer shadowOffset].height, 0);
-
-              [secondPassTexture bind];
-
-              GLfloat secondPassTextureMaxX = 1.0, secondPassTextureMaxY = 1.0;
-              if ([secondPassTexture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
-                {
-                  secondPassTextureMaxX = [secondPassTexture width];
-                  secondPassTextureMaxY = [secondPassTexture height];
-                }
-              else
-                {
-                  glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                  glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                }
-              glBegin(GL_QUADS);
-              glTexCoord2f(0, 0);
-              glVertex2f(-[secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
-              glTexCoord2f(0, secondPassTextureMaxY);
-              glVertex2f(-[secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-              glTexCoord2f(secondPassTextureMaxX, secondPassTextureMaxY);
-              glVertex2f([secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-              glTexCoord2f(secondPassTextureMaxX, 0);
-              glVertex2f([secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
-              glEnd();
-              glDisable([secondPassTexture textureTarget]);
-              
-              [firstPassTexture release];
-              [secondPassTexture release];
-              
-              /* Without shadow offset */
-              if (sizeof(transform.m11) == sizeof(GLdouble))
-                glLoadMatrixd((GLdouble*)&transform);
-              else
-                glLoadMatrixf((GLfloat*)&transform);
-
-            }
-
-          #warning Intentionally coloring offscreen-rendered layer
-          glColor3f(0.4, 1.0, 1.0);
+          /* Setup FBO for first pass */
+          CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
+          [framebuffer bind];
           
-          #warning Intentionally applying shader to offscreen-rendered layer
-          [_simpleProgram use];
-          GLint loc;
-          if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
-            loc = [_simpleProgram locationForUniform:@"texture_2drect"];
-          else
-            loc = [_simpleProgram locationForUniform:@"texture_2d"];
-          
-          [_simpleProgram bindUniformAtLocation: loc
-                                  toUnsignedInt: 0];
-          
+          glClearColor(0.0, 0.0, 0.0, 0.0);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+          /* Render first pass */
+          [_blurHorizProgram use];
+          GLint loc = [_blurHorizProgram locationForUniform:@"RTScene"];
+          [_blurHorizProgram bindUniformAtLocation: loc
+                                     toUnsignedInt: 0];
           
           // TODO: replace use of glBegin()/glEnd()
           [texture bind];
@@ -520,27 +341,203 @@
               glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
               glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
-                
+          
           glBegin(GL_QUADS);
           glTexCoord2f(0, 0);
-          glVertex2f(-256, -256);
+          glVertex2f(-[texture width]/2.0, -[texture height]/2.0);
           glTexCoord2f(0, textureMaxY);
-          glVertex2f(-256, 256);
+          glVertex2f(-[texture width]/2.0, [texture height]/2.0);
           glTexCoord2f(textureMaxX, textureMaxY);
-          glVertex2f(256, 256);
+          glVertex2f([texture width]/2.0, [texture height]/2.0);
           glTexCoord2f(textureMaxX, 0);
-          glVertex2f(256, -256);
+          glVertex2f([texture width]/2.0, -[texture height]/2.0);
           glEnd();
           glDisable([texture textureTarget]);
           
-          #warning Intentionally coloring offscreen-rendered layer
-          glColor3f(1.0, 1.0, 1.0);
-          #warning Intentionally applying shader to offscreen-rendered layer
-          glUseProgram(0);
           
-          return;
+          glUseProgram(0);
+
+          [texture unbind];
+          [framebuffer unbind];
+                        
+          /* Preserve the FBO texture and discard framebuffer */
+          CAGLTexture * firstPassTexture = [[framebuffer texture] retain];
+          [framebuffer release];
+          
+          /************************************/
+          
+          /* Setup transform for second pass */
+          if (sizeof(shadowRasterizeTransform.m11) == sizeof(GLdouble))
+            glLoadMatrixd((GLdouble*)&shadowRasterizeTransform);
+          else
+            glLoadMatrixf((GLfloat*)&shadowRasterizeTransform);
+           
+          
+          /* Setup FBO for second pass */
+          framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
+          [framebuffer bind];
+          
+          glDisable([[framebuffer texture] textureTarget]);
+
+          glClearColor(0.0, 0.0, 0.0, 0.0);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+          /* Render second pass */
+          [_blurVertProgram use];
+          loc = [_blurVertProgram locationForUniform: @"RTBlurH"];
+          [_blurVertProgram bindUniformAtLocation: loc
+                                     toUnsignedInt: 0];
+          loc = [_blurVertProgram locationForUniform: @"shadowColor"];
+          GLfloat components[4] = { 0 };
+          if (CGColorGetNumberOfComponents([layer shadowColor]) == 4)
+            {
+              const CGFloat * componentsOrig = CGColorGetComponents([layer shadowColor]);
+              components[0] = componentsOrig[0];
+              components[1] = componentsOrig[1];
+              components[2] = componentsOrig[2];
+              components[3] = componentsOrig[3];
+              components[3] *= [layer shadowOpacity];
+            }
+          else
+            {
+              NSLog(@"Invalid number of color components in shadowColor");
+            }
+
+          [_blurVertProgram bindUniformAtLocation: loc
+                                        toFloat4v: components];
+                                        
+          // TODO: replace use of glBegin()/glEnd()
+          [firstPassTexture bind];
+          
+          GLfloat firstPassTextureMaxX = 1.0, firstPassTextureMaxY = 1.0;
+          if ([firstPassTexture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+            {
+              firstPassTextureMaxX = [firstPassTexture width];
+              firstPassTextureMaxY = [firstPassTexture height];
+            }
+          else
+            {
+              glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+              glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            }
+          glBegin(GL_QUADS);
+          glTexCoord2f(0, 0);
+          glVertex2f(-[firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
+          glTexCoord2f(0, firstPassTextureMaxY);
+          glVertex2f(-[firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
+          glTexCoord2f(firstPassTextureMaxX, firstPassTextureMaxY);
+          glVertex2f([firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
+          glTexCoord2f(firstPassTextureMaxX, 0);
+          glVertex2f([firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
+          glEnd();
+          glDisable([firstPassTexture textureTarget]);
+          
+          glUseProgram(0);
+
+          [firstPassTexture unbind];
+          [framebuffer unbind];
+          
+          /* Preserve the FBO texture and discard framebuffer */
+          CAGLTexture * secondPassTexture = [[framebuffer texture] retain];
+          [framebuffer release];
+          
+          /************************************/
+          
+          /* Finally! Draw shadow into draw buffer */
+          if (sizeof(transform.m11) == sizeof(GLdouble))
+            glLoadMatrixd((GLdouble*)&transform);
+          else
+            glLoadMatrixf((GLfloat*)&transform);
+          glTranslatef([layer shadowOffset].width, [layer shadowOffset].height, 0);
+
+          [secondPassTexture bind];
+
+          GLfloat secondPassTextureMaxX = 1.0, secondPassTextureMaxY = 1.0;
+          if ([secondPassTexture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+            {
+              secondPassTextureMaxX = [secondPassTexture width];
+              secondPassTextureMaxY = [secondPassTexture height];
+            }
+          else
+            {
+              glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+              glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            }
+          glBegin(GL_QUADS);
+          glTexCoord2f(0, 0);
+          glVertex2f(-[secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
+          glTexCoord2f(0, secondPassTextureMaxY);
+          glVertex2f(-[secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
+          glTexCoord2f(secondPassTextureMaxX, secondPassTextureMaxY);
+          glVertex2f([secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
+          glTexCoord2f(secondPassTextureMaxX, 0);
+          glVertex2f([secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
+          glEnd();
+          glDisable([secondPassTexture textureTarget]);
+          
+          [firstPassTexture release];
+          [secondPassTexture release];
+          
+          /* Without shadow offset */
+          if (sizeof(transform.m11) == sizeof(GLdouble))
+            glLoadMatrixd((GLdouble*)&transform);
+          else
+            glLoadMatrixf((GLfloat*)&transform);
+
         }
+
+      #warning Intentionally coloring offscreen-rendered layer
+      glColor3f(0.4, 1.0, 1.0);
+      
+      #warning Intentionally applying shader to offscreen-rendered layer
+      [_simpleProgram use];
+      GLint loc;
+      if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+        loc = [_simpleProgram locationForUniform:@"texture_2drect"];
+      else
+        loc = [_simpleProgram locationForUniform:@"texture_2d"];
+      
+      [_simpleProgram bindUniformAtLocation: loc
+                              toUnsignedInt: 0];
+      
+      
+      // TODO: replace use of glBegin()/glEnd()
+      [texture bind];
+      
+      GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
+      if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+        {
+          textureMaxX = [texture width];
+          textureMaxY = [texture height];
+        }
+      else
+        {
+          glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+            
+      glBegin(GL_QUADS);
+      glTexCoord2f(0, 0);
+      glVertex2f(-256, -256);
+      glTexCoord2f(0, textureMaxY);
+      glVertex2f(-256, 256);
+      glTexCoord2f(textureMaxX, textureMaxY);
+      glVertex2f(256, 256);
+      glTexCoord2f(textureMaxX, 0);
+      glVertex2f(256, -256);
+      glEnd();
+      glDisable([texture textureTarget]);
+      
+      #warning Intentionally coloring offscreen-rendered layer
+      glColor3f(1.0, 1.0, 1.0);
+      #warning Intentionally applying shader to offscreen-rendered layer
+      glUseProgram(0);
+      
+      return;
     }
+
 
   
   // apply transform and translate to position
@@ -640,19 +637,26 @@
   if ([layer contents])
     {
       CAGLTexture * texture = nil;
+      id layerContents = [layer contents];
       
-      if ([[layer contents] isKindOfClass: [CABackingStore class]])
+      if ([layerContents isKindOfClass: [CABackingStore class]])
         {
-          CABackingStore * layerContents = ((CABackingStore *)[layer contents]);
+          CABackingStore * backingStore = layerContents;
 
-          texture = [layerContents contentsTexture];
+          texture = [backingStore contentsTexture];
         }
-#if !(GSIMPL_UNDER_COCOA)
-      else if ([[layer contents] isKindOfClass: [CGImage class]])
-        {
-          // TODO
-        }
+#if GNUSTEP
+      else if ([layerContents isKindOfClass: [CGImage class]])
+#else
+      else if ([layerContents isKindOfClass: NSClassFromString(@"__NSCFType")] &&
+               CFGetTypeID(layerContents) == CGImageGetTypeID())
 #endif
+        {
+          CGImageRef image = (CGImageRef)layerContents;
+          
+          texture = [CAGLTexture texture];
+          [texture loadImage: image];
+        }
       
       if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
         {
@@ -700,14 +704,7 @@
   if (shouldRasterize)
     [self _scheduleRasterization: layer];
   else
-    {
-      // TODO
-      #warning Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
-      if ([[layer contents] isKindOfClass:[CABackingStore class]])
-        {
-          [[layer contents] setOffscreenRenderTexture: nil];
-        }
-    }
+    [[layer backingStore] setOffscreenRenderTexture: nil];
   
 }
 
@@ -728,12 +725,8 @@
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
 
-  // TODO Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
-  if ([[layer contents] isKindOfClass:[CABackingStore class]])
-    {
-      /* Empty the cache so redraw gets performed in -[CARenderer _renderLayer:withTransform:] */
-      [[layer contents] setOffscreenRenderTexture: nil];
-    }
+  /* Empty the cache so redraw gets performed in -[CARenderer _renderLayer:withTransform:] */
+  [[layer backingStore] setOffscreenRenderTexture: nil];
 
   // TODO: 512x512 is NOT correct, we need to determine the actual layer size together with sublayers
   const GLuint rasterize_w = 512, rasterize_h = 512;
@@ -750,11 +743,7 @@
   
   [framebuffer unbind];
   
-  // TODO Layers need a way to store framebuffer-rendered texture apart from CABackingStore in [layer contents]
-  if ([[layer contents] isKindOfClass:[CABackingStore class]])
-    {
-      [[layer contents] setOffscreenRenderTexture: [framebuffer texture]];
-    }
+  [[layer backingStore] setOffscreenRenderTexture: [framebuffer texture]];
   
   [framebuffer release];
 }

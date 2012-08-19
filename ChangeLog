@@ -1,3 +1,38 @@
+2012-08-19  Ivan Vučica  <ivan@vucica.net>
+
+	* Headers/QuartzCore/CALayer.h:
+	* Source/CALayer+FrameworkPrivate.h:
+	* Source/CALayer.m:
+	Removed unused ivar for offscreen framebuffer. Removed now unused
+	opalContext -- management of context has been moved to the backing
+	store.
+	Added backingStore as a standalone ivar, so we can handle contents
+	containing images instead of being dynamically painted.
+
+	Moved createCGBitmapContext() to backing store.
+	
+	Coding style fixes.
+
+	* Source/CABackingStore.h:
+	* Source/CABackingStore.m:
+	Backing store now manages its own context instead of being passed
+	layer's context.
+
+	* Source/CARenderer.m:
+	In several places, removed check whether layer contents is a backing
+	store, replacing use of contents property with backingStore property
+	which is supposed to always contain a backing store (or nil).
+
+	* Source/GLHelpers/CAGLTexture.h:
+	* Source/GLHelpers/CAGLTexture.m:
+	Added loading of CGImageRef into a texture.
+
+	* Tests/GNUstepQuartzCoreTests.xcodeproj/project.pbxproj:
+	* Tests/offscreen_render.m:
+	* Tests/PoweredByGNUstep.tiff:
+	Added test of image painting. PoweredByGNUstep.tiff is taken from
+	GNUstep core.
+
 2012-08-18  Ivan Vučica  <ivan@vucica.net>
 
 	* Source/CARenderer.m:

@@ -58,6 +58,9 @@ NSString *const kCATransition;
 #define NONATOMIC_GSONLY atomic
 #endif
 
+@class CABackingStore;
+@class CAGLSimpleFramebuffer;
+
 @interface CALayer : NSObject<CAMediaTiming>
 {
   /* property-backing i-vars */
@@ -105,13 +108,19 @@ NSString *const kCATransition;
   float _speed;
   
   /* i-vars */
-  CGContextRef _opalContext;
   BOOL _needsDisplay;
   BOOL _needsLayout;
   NSMutableDictionary *_animations;
   NSMutableArray *_animationKeys;
   NSMutableArray *_observedKeyPaths;
-  id _offscreenFramebuffer;
+  CABackingStore * _backingStore;
+  
+  /* TODO: add CAGLSimpleFramebuffer ivars for storing:
+     - offscreen rendering framebuffer
+     - shadow framebuffer
+     - ...more?
+     Creating framebuffers is more expensive than reusing them.
+     */
 }
 
 + (id) layer;

@@ -156,6 +156,62 @@
 #endif
 }
 
+- (void)loadImage: (CGImageRef) image
+{
+  CGFloat width = CGImageGetWidth(image);
+	CGFloat height = CGImageGetHeight(image);
+	size_t bitsPerComponent = 8; //CGImageGetBitsPerComponent(image);
+	unsigned long bytesPerRow = width * 4; //CGImageGetBytesPerRow(image); // in some cases, we cannot generate RGB textureContext, it appears; only RGBA
+	CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB(); //CGImageGetColorSpace(image); // if we get indexed-colorspace image, creation of bitmap context will fail. also, we load image into OpenGL as RGB. so, force RGB
+  
+  /* Draw CGImage to a byte array */
+  CGContextRef context = CGBitmapContextCreate(NULL,
+    width, height,
+    bitsPerComponent, 
+    bytesPerRow,
+    space,
+    kCGImageAlphaPremultipliedLast);
+  CGColorSpaceRelease(space);
+  if (!context)
+    {
+      NSLog(@"%@: Failed to create bitmap context", NSStringFromSelector(_cmd));
+      return;
+    }
+    
+	CGContextDrawImage(context, CGRectMake(0.0, 0.0, width, height), image);
+
+  uint8_t * data = CGBitmapContextGetData(context);
+  for(int i=0; i < bytesPerRow * height; i+=4)
+	  {
+      #if !(GNUSTEP)
+      /* let's undo premultiplication */
+      /* TODO: do we need to undo premultiplication under GNUstep too? */
+      for(int j=0; j<3; j++)
+        {
+          data[i+j] = data[i+j] / (data[i+3]/255.);
+        }
+      #endif
+    }
+  
+  #if 0
+  BOOL hasAlpha = (CGImageGetBytesPerRow(image) / width == 4);
+	GLuint internalFormat = GL_RGBA; /* does not depend on hasAlpha, we always paint a RGBA image into CGContext (sadly) */
+  #endif
+  
+  #if !USE_RECT
+  /* Since we release the context, we also release its pixels.
+     We cannot use client storage extension. */
+  glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
+  #endif
+  
+  [self loadRGBATexImage: data
+                   width: width
+                  height: height];
+
+  CGContextRelease(context);
+
+}
+
 - (void) bind
 {
   glEnable(TEXTURE_TARGET);

@@ -49,6 +49,7 @@
 
 - (void) loadEmptyImageWithWidth: (GLuint)width
                           height: (GLuint)height;
+- (void) loadImage: (CGImageRef) image;
 - (void) loadRGBATexImage: (void *)data
                     width: (GLuint)width
                    height: (GLuint)height;

@@ -35,6 +35,7 @@
 		7FA8CD1215892303009C3B19 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7FA8CCDF15891CE7009C3B19 /* Cocoa.framework */; };
 		7FA8CD1415892303009C3B19 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7FA8CD0715891E93009C3B19 /* MainMenu.xib */; };
 		7FA8CD1D1589233D009C3B19 /* hello.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FA8CD1C1589233D009C3B19 /* hello.m */; };
+		7FF2962B15E1166B007E34C8 /* PoweredByGNUstep.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 7FF2962A15E1166B007E34C8 /* PoweredByGNUstep.tiff */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 		7FA8CD1815892303009C3B19 /* hello.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = hello.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FA8CD1A15892303009C3B19 /* hello-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "hello-Info.plist"; path = "/Users/ivucica/projects/THIRDPARTY/gnustep-git/gnustep-quartzcore/Tests/hello-Info.plist"; sourceTree = "<absolute>"; };
 		7FA8CD1C1589233D009C3B19 /* hello.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = hello.m; sourceTree = "<group>"; };
+		7FF2962A15E1166B007E34C8 /* PoweredByGNUstep.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = PoweredByGNUstep.tiff; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,7 @@
 		7F622BEE15C5B05B00115026 /* offscreen_render */ = {
 			isa = PBXGroup;
 			children = (
+				7FF2962A15E1166B007E34C8 /* PoweredByGNUstep.tiff */,
 				7F622BEC15C5AFED00115026 /* offscreen_render-Info.plist */,
 				7F622BEF15C5B07300115026 /* offscreen_render.m */,
 			);
@@ -306,6 +309,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F622BE515C5AFED00115026 /* MainMenu.xib in Resources */,
+				7FF2962B15E1166B007E34C8 /* PoweredByGNUstep.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -28,28 +28,90 @@
 #import "CABackingStore.h"
 #import "GLHelpers/CAGLTexture.h"
 
+static CGContextRef createCGBitmapContext (int pixelsWide,
+                                    int pixelsHigh)
+{
+  CGContextRef    context = NULL;
+  CGColorSpaceRef colorSpace;
+  void *          bitmapData;
+  int             bitmapByteCount;
+  int             bitmapBytesPerRow;
+  
+  bitmapBytesPerRow   = (pixelsWide * 4);
+  bitmapByteCount     = (bitmapBytesPerRow * pixelsHigh);
+  
+  colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
+
+  // Let CGBitmapContextCreate() allocate the memory.
+  // This should be good under Cocoa too.
+  bitmapData = NULL;
+
+  context = CGBitmapContextCreate (bitmapData,
+                                   pixelsWide,
+                                   pixelsHigh,
+                                   8,      // bits per component
+                                   bitmapBytesPerRow,
+                                   colorSpace,
+#if !GNUSTEP
+                                   kCGImageAlphaPremultipliedLast);
+#else
+  // Opal only supports kCGImageAlphaPremultipliedFirst.
+  // However, this is incorrect since it implies ARGB.
+                                  kCGImageAlphaPremultipliedFirst);
+#endif
+
+  // Note: our use of premultiplied alpha means that we need to
+  // do alpha blending using:
+  //  GL_SRC_ALPHA, GL_ONE
+
+  CGColorSpaceRelease(colorSpace);
+  if (context== NULL)
+    {
+      free (bitmapData);// 5
+      fprintf (stderr, "Context not created!");
+      return NULL;
+    }
+
+#if GNUSTEP
+#warning Opal bug: context should be cleared automatically
+
+#if 0
+  CGContextClearRect (context, CGRectInfinite);
+#else
+#warning Opal bug: CGContextClearRect() permanently whacks the context
+  memset (CGBitmapContextGetData (context), 
+          0, bitmapBytesPerRow * pixelsHigh);
+#endif
+#endif  
+  return context;
+}
+
 @implementation CABackingStore
 @synthesize contentsTexture=_contentsTexture;
 @synthesize offscreenRenderTexture=_offscreenRenderTexture;
 
-+ (id)backingStoreWithContext: (CGContextRef)context
++ (CABackingStore *) backingStoreWithWidth: (CGFloat)width
+                                    height: (CGFloat)height
 {
-  return [[[self alloc] initWithContext: context] autorelease];
+  return [[[self alloc] initWithWidth: width height: height] autorelease];
 }
 
-- (id)initWithContext: (CGContextRef)context
+- (id) initWithWidth: (CGFloat) width
+              height: (CGFloat) height
 {
   self = [super init];
   if (!self)
     return nil;
-
+  
+  CGContextRef context = createCGBitmapContext(width, height);
   [self setContext: context];
   [self setContentsTexture: [CAGLTexture texture]];
   [self setOffscreenRenderTexture: nil]; /* set at a later time by layer */
+  
+  CGContextRelease(context);
 
   return self;
 }
-
 - (void) dealloc
 {
   [_offscreenRenderTexture release];
@@ -81,6 +143,15 @@
   
   /* Refresh */
   [self refresh];
+}
+
+- (CGFloat) width
+{
+  return CGBitmapContextGetWidth(_context);
+}
+- (CGFloat) height
+{
+  return CGBitmapContextGetHeight(_context);
 }
 
 - (void) refresh

@@ -300,6 +300,25 @@ Class classOfTestOpenGLView()
   [layer4 setPosition: CGPointMake (0, [layer bounds].size.height)];
   [layer addSublayer: layer4];
   
+  CFURLRef poweredByGNUstepURL = (CFURLRef)[[NSBundle mainBundle] URLForResource:@"PoweredByGNUstep" withExtension:@"tiff"];
+  CGImageSourceRef poweredByGNUstepSource = CGImageSourceCreateWithURL(poweredByGNUstepURL, NULL);
+  CGImageRef poweredByGNUstepImage = CGImageSourceCreateImageAtIndex(poweredByGNUstepSource, 0, NULL);
+  CFRelease(poweredByGNUstepSource);
+  
+  if (poweredByGNUstepImage)
+    {
+      OffscreenRenderCustomLayer * layer5 = [OffscreenRenderCustomLayer layer];
+      [layer5 setBounds: CGRectMake (0, 0, CGImageGetWidth(poweredByGNUstepImage), CGImageGetHeight(poweredByGNUstepImage))];
+      [layer5 setContents: (id)poweredByGNUstepImage];
+      [layer5 setPosition: CGPointMake ([layer bounds].size.width / 2, [layer bounds].size.height / 2)];
+      [layer addSublayer: layer5];
+      
+      CGImageRelease(poweredByGNUstepImage);
+    }
+  else
+    NSLog(@"offscreen_render could not find PoweredByGNUstep.tiff");
+  
+  
   
   CGColorRelease(yellowColor);
   CGColorRelease(greenColor);

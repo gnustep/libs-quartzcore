@@ -43,4 +43,6 @@
 
 - (CFTimeInterval) activeTime;
 - (CFTimeInterval) localTime;
+
+@property (retain) CABackingStore * backingStore;
 @end
