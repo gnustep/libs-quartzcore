@@ -143,6 +143,11 @@ Class classOfTestOpenGLView()
 - (void)viewDidMoveToSuperview
 {
   [super viewDidMoveToSuperview];
+  
+  static BOOL ranOnce = NO;
+  if (ranOnce)
+    return;
+  ranOnce = YES;
 
   NSMenu * mainMenu = [[NSApplication sharedApplication] mainMenu];
   
@@ -193,7 +198,7 @@ Class classOfTestOpenGLView()
   [animation setToValue: [NSValue valueWithPoint: NSMakePoint(400, 250)]];
   
   [[_renderer layer] addAnimation: animation forKey:@"thePositionAnimation"];
-  
+    
   [self printPos: [_renderer layer]];
   [self performSelector:@selector(printPos:) withObject: [_renderer layer] afterDelay:0.5];
 }
@@ -225,7 +230,6 @@ Class classOfTestOpenGLView()
 
 - (void) animation6:sender
 {
-
   CALayer * layer = [_renderer layer];
   [layer setBounds:CGRectMake([layer bounds].origin.x, [layer bounds].origin.y, [layer bounds].size.width + rand() % 50 - 25, [layer bounds].size.height + rand() % 50 - 25)];
 }
@@ -295,6 +299,9 @@ Class classOfTestOpenGLView()
 {
   [super prepareOpenGL];
 
+  glViewport(0, 0, [self frame].size.width, [self frame].size.height);
+  glClear(GL_COLOR_BUFFER_BIT);
+
   CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
   CGColorRef greenColor = CGColorCreateGenericRGB(0, 1, 0, 1);
 
@@ -351,11 +358,11 @@ Class classOfTestOpenGLView()
 
 - (void) timerAnimation: (NSTimer *)aTimer
 {
+  [super timerAnimation: aTimer];
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
 
-  glClear(GL_COLOR_BUFFER_BIT);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -1, 1);
@@ -370,7 +377,7 @@ Class classOfTestOpenGLView()
   /* */
   [_renderer beginFrameAtTime: CACurrentMediaTime()
                     timeStamp: NULL];
-  [_renderer addUpdateRect: [_renderer bounds]];
+  [self clearBounds: [_renderer updateBounds]];
   [_renderer render];
   [_renderer endFrame];
   /* */
@@ -386,6 +393,12 @@ Class classOfTestOpenGLView()
   glFlush();
 
   [[self openGLContext] flushBuffer];
+  
+  _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60 //[_renderer nextFrameTime]-CACurrentMediaTime()
+                                            target: self
+                                          selector: @selector(timerAnimation:)
+                                          userInfo: nil
+                                           repeats: NO];
 }
 
 

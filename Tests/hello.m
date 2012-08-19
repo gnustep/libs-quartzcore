@@ -62,6 +62,7 @@ Class classOfTestOpenGLView()
 #else
 - (void) timerAnimation: (NSTimer *)aTimer
 {
+  [super timerAnimation: aTimer];
 #endif
   [[self openGLContext] makeCurrentContext];
 
@@ -96,6 +97,12 @@ Class classOfTestOpenGLView()
   glFlush();
 
   [[self openGLContext] flushBuffer];
+  
+  _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60
+                                            target: self
+                                          selector: @selector(timerAnimation:)
+                                          userInfo: nil
+                                           repeats: NO];
 }
 
 @end

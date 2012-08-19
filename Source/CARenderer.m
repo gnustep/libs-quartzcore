@@ -145,9 +145,22 @@
   [super dealloc];
 }
 
+- (void)setBounds: (CGRect)bounds
+{
+  _bounds = bounds;
+  
+  /* This value is returned from -updateBounds in case nothing has changed */
+  _updateBounds = CGRectMake(__builtin_inf(), __builtin_inf(), 0, 0);
+  
+  [self addUpdateRect: bounds];
+}
 /* Adds a rectangle to the update region. */
 - (void) addUpdateRect: (CGRect)updateRect
 {
+  if(isinf(_updateBounds.origin.x) && isinf(_updateBounds.origin.y))
+    _updateBounds = updateRect;
+  else
+    _updateBounds = CGRectUnion(_updateBounds, updateRect);
 }
 
 /* Begins rendering a frame at the specified time.
@@ -163,7 +176,7 @@
     {
       [CATransaction commit];
     }
-  
+  _nextFrameTime = __builtin_inf();
   
   /* Prepare for rasterization */
   [_rasterizationSchedule release];
@@ -177,6 +190,8 @@
 /* Ends rendering the frame, releasing any temporary data. */
 - (void) endFrame
 {
+  /* This value is returned from -updateBounds in case nothing has changed */
+  _updateBounds = CGRectMake(__builtin_inf(), __builtin_inf(), 0, 0);
 }
 /* Returns time at which next update should be performed.
    Current time denotes continuous animation and next update
@@ -184,13 +199,19 @@
    that no update should be scheduled. */
 - (CFTimeInterval) nextFrameTime
 {
-  return CACurrentMediaTime();
+  return _nextFrameTime;
 }
 
 /* Renders a frame to the target context. Best case scenario, it 
    should be rendering the update region only. */
 - (void) render
 {
+  /* If we have nothing to render, just skip rendering */
+  CGRect updateBounds = [self updateBounds];
+  if (isinf(updateBounds.origin.x) &&
+      isinf(updateBounds.origin.y))
+    return;
+
   [_GLContext makeCurrentContext];
 
   glMatrixMode(GL_MODELVIEW);
@@ -222,8 +243,26 @@
 /* Returns rectangle containing all pixels that should be updated. */
 - (CGRect) updateBounds
 {
-  // TODO update bounds are currently unused
-  return CGRectZero;
+  /* TODO: This one is important to implement, and then make use of,
+     in order to keep the number of layers that are rendered to a
+     minimum. This is the method Apple seems to use to keep down the
+     amount of content rendered upon screen refresh.
+     
+     https://mail.mozilla.org/pipermail/plugin-futures/2010-March/000023.html
+
+     This quote: "A -render with nothing to do is cheap." leads me to
+     believe that -render is actually repeatedly ran, but that it's counted
+     on that most often, nothing will be painted. 
+     
+     Value of -updateBounds is apparently calculated in -beginFrameAtTime:timeStamp:.
+     This makes sense and we'll do the same.
+     */
+
+  if (isinf(_nextFrameTime))
+    return _updateBounds;
+
+  /* for the time being, we return entire renderer as needing a redraw. */
+  return [self bounds];
 }
 
 /* *********************** */
@@ -244,7 +283,9 @@
   CALayer * presentationLayer = [layer presentationLayer];
   
   /* Tell the presentation layer to apply animations. */
-  [presentationLayer applyAnimationsAtTime: theTime];
+  /* Also, determine nextFrameTime */
+  _nextFrameTime = MIN(_nextFrameTime, [presentationLayer applyAnimationsAtTime: theTime]);
+  _nextFrameTime = MAX(_nextFrameTime, theTime);
   
   /* Tell all children to update themselves. */
   for (CALayer * sublayer in [layer sublayers])
@@ -286,11 +327,10 @@
         glLoadMatrixd((GLdouble*)&transform);
       else
         glLoadMatrixf((GLfloat*)&transform);
-      
+
       /* have to paint shadow? */
       if ([layer shadowOpacity] > 0.0)
         {
-          
           /* first paint shadow */
           
           /* TODO: we might be able to skip blurring in case radius == 1. */
@@ -743,6 +783,8 @@
   
   [framebuffer unbind];
   
+  if (![layer backingStore])
+    [layer setBackingStore: [CABackingStore backingStoreWithWidth: rasterize_w height: rasterize_h]];
   [[layer backingStore] setOffscreenRenderTexture: [framebuffer texture]];
   
   [framebuffer release];

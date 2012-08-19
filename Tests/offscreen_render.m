@@ -119,6 +119,11 @@ Class classOfTestOpenGLView()
 {
   [super viewDidMoveToSuperview];
 
+  static BOOL ranOnce = NO;
+  if (ranOnce)
+    return;
+  ranOnce = YES;
+
   NSMenu * mainMenu = [[NSApplication sharedApplication] mainMenu];
   
   NSMenuItem * testsMenuItem = [[NSMenuItem alloc] init];
@@ -250,6 +255,9 @@ Class classOfTestOpenGLView()
 {
   [super prepareOpenGL];
 
+  glViewport(0, 0, [self frame].size.width, [self frame].size.height);
+  glClear(GL_COLOR_BUFFER_BIT);
+  
   CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);  
   CGColorRef greenColor = CGColorCreateGenericRGB(0, 1, 0, 1);
   CGColorRef blueColor = CGColorCreateGenericRGB(0, 0, 1, 1);
@@ -318,8 +326,6 @@ Class classOfTestOpenGLView()
   else
     NSLog(@"offscreen_render could not find PoweredByGNUstep.tiff");
   
-  
-  
   CGColorRelease(yellowColor);
   CGColorRelease(greenColor);
   CGColorRelease(blueColor);
@@ -337,22 +343,22 @@ Class classOfTestOpenGLView()
 
 - (void) timerAnimation: (NSTimer *)aTimer
 {
+  [super timerAnimation: aTimer];
   [[self openGLContext] makeCurrentContext];
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
 
-  glClear(GL_COLOR_BUFFER_BIT);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -1, 1);
-    
+        
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
   /* */
   [_renderer beginFrameAtTime: CACurrentMediaTime()
                     timeStamp: NULL];
-  [_renderer addUpdateRect: [_renderer bounds]];
+  [self clearBounds: [_renderer updateBounds]];
   [_renderer render];
   [_renderer endFrame];
   /* */
@@ -361,6 +367,11 @@ Class classOfTestOpenGLView()
 
   [[self openGLContext] flushBuffer];
   
+  _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60 //[_renderer nextFrameTime]-CACurrentMediaTime()
+                                            target: self
+                                          selector: @selector(timerAnimation:)
+                                          userInfo: nil
+                                           repeats: NO];
 }
 
 

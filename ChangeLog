@@ -1,5 +1,60 @@
 2012-08-19  Ivan Vučica  <ivan@vucica.net>
 
+	* Headers/QuartzCore/CARenderer.h:
+	* Source/CARenderer.m:
+	Very, very elementary support for -nextFrameTime and -updateBounds.
+	If backing store doesn't exist at the time when offscreen render
+	is performed, it's constructed so it can store the offscreen
+	render texture.
+
+	Most important change is that if no change is scheduled	(i.e.,
+	-nextFrameTime returns infinity) -updateBounds will return either
+	a zero-sized rectangle with origin in (infinity,infinity), or
+	whatever was manually added via -addUpdateRect:. Then, if we
+	see that -updateBounds returns a rectangle with origin in
+	the (infinity, infinity) point, we'll skip rendering.
+
+	This should bring down the impact of rendering to a minimum, even
+	if we cannot actually make use of -nextFrameTime. This is because
+	any change to layers and animations in the layer tree cannot result
+	in a notification to CARenderer's host -- there is no public API for
+	that.
+
+	* Source/CAAnimation.m:
+	Fixed incorrect data type being used for a variable.
+
+	* Source/CALayer+FrameworkPrivate.h:
+	Corrected return value type for -applyAnimationsAtTime:.
+
+	* Source/CALayer.m:
+	Calculation of nextFrameTime in applyAnimationsAtTime:. Skipping
+	applying an animation that did not start yet.
+
+	* Tests/QCTestOpenGLView.h:
+	* Tests/QCTestOpenGLView.m:
+	Animation timer is no longer autorepeating (because there was hope
+	-nextFrameTime could be leveraged to determine when next render should
+	occur). Added -clearBounds: which renders a black quad in the passed
+	rect. This is used to clear background behind the area that the
+	renderer says updated content will be rendered into.
+
+	* Tests/hello.m:
+	Updated to schedule timer manually.
+
+	* Tests/hello_animation.m:
+	* Tests/hello_carenderer.m:
+	* Tests/offscreen_render.m:
+	In hello_animation and offscreen_render, ensuring that 
+	-viewDidMoveToSuperview:'s initialization code runs only once (if
+	in future the demo starts supporting moving the view into new
+	superviews, this'll be important).
+
+	In all demos, clearing context is done only once, at initialization,
+	and any future clears are done solely by painting a black quad over the
+	areas that will be updated by CARenderer.
+
+2012-08-19  Ivan Vučica  <ivan@vucica.net>
+
 	* Source/CALayer+FrameworkPrivate.h:
 	Began work on making use of applyAnimationsAtTime: to determine the
 	time for next frame.

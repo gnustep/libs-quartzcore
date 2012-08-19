@@ -26,6 +26,7 @@
 
 #import <AppKit/NSOpenGLView.h>
 #import <Foundation/Foundation.h>
+#import <CoreGraphics/CGGeometry.h>
 
 #define QC_USEOPENGLES 0
 
@@ -48,7 +49,7 @@
 - (void) startAnimation;
 - (void) stopAnimation;
 - (void) timerAnimation: (NSTimer *)aTimer;
-
+- (void) clearBounds: (CGRect) bounds;
 @end
 
 Class classOfTestOpenGLView();

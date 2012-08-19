@@ -832,7 +832,7 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           const CGFloat * fromComponents = CGColorGetComponents(from);
           const CGFloat * toComponents = CGColorGetComponents(to);
 
-          int numberOfComponents = CGColorGetNumberOfComponents(from);
+          size_t numberOfComponents = CGColorGetNumberOfComponents(from);
           CGFloat valueComponents[numberOfComponents];
           for (int i = 0; i < numberOfComponents; i++)
             {

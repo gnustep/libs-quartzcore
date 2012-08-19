@@ -29,6 +29,12 @@
 #if QC_USEOPENGLES
 #import "GLESContext.h"
 #endif
+#if !(__APPLE__)
+#import <GL/gl.h>
+#import <GL/glu.h>
+#else
+#import <OpenGL/gl.h>
+#endif
 
 @implementation QCTestOpenGLView
 
@@ -111,7 +117,7 @@
                                               target: self 
                                             selector: @selector(timerAnimation:) 
                                             userInfo: nil 
-                                             repeats: YES];
+                                             repeats: NO];
   _isAnimating = YES;
 
 }
@@ -126,8 +132,22 @@
 
 - (void) timerAnimation: (NSTimer *)timer
 {
-  // noop by default
+  _timer = nil;
+  /* since the timer does not repeat, it's invalidated and
+     we should forget about it after it was fired. */
 }
+
+- (void)clearBounds:(CGRect)bounds
+{  
+  glBegin(GL_QUADS);
+  glColor4f(0,0,0,1);
+  glVertex2f(bounds.origin.x, bounds.origin.y);
+  glVertex2f(bounds.origin.x+bounds.size.width, bounds.origin.y);
+  glVertex2f(bounds.origin.x+bounds.size.width, bounds.origin.y+bounds.size.height);
+  glVertex2f(bounds.origin.x, bounds.origin.y+bounds.size.height);
+  glEnd();
+}
+
 @end
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

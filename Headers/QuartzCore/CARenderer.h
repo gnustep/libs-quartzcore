@@ -54,9 +54,11 @@ typedef struct _CVTimeStamp
   NSOpenGLContext * _GLContext;
   CALayer * _layer;
   CGRect _bounds;
+  CGRect _updateBounds;
   
   CFTimeInterval _firstRender;
   CFTimeInterval _currentTime;
+  CFTimeInterval _nextFrameTime;
   
   NSMutableArray * _rasterizationSchedule;
 
@@ -70,7 +72,7 @@ typedef struct _CVTimeStamp
                                    options: (NSDictionary *)options;
 
 @property (retain) CALayer *layer; /* root layer */
-@property (assign) CGRect bounds;
+@property (nonatomic, assign) CGRect bounds;
 
 - (void) addUpdateRect: (CGRect)updateRect;
 - (void) beginFrameAtTime: (CFTimeInterval)timeInterval

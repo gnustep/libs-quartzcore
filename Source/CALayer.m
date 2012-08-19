@@ -669,7 +669,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   return [_animations valueForKey: key];
 }
 
-- (CGFloat) applyAnimationsAtTime: (CFTimeInterval)theTime
+- (CFTimeInterval) applyAnimationsAtTime: (CFTimeInterval)theTime
 {
   if (![self isPresentationLayer])
     {
@@ -683,7 +683,8 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     }
     
   NSMutableArray * animationKeysToRemove = [NSMutableArray new];
-
+  CFTimeInterval lowestNextFrameTime = __builtin_inf();
+  
   for (NSString * animationKey in [self animationKeys])
     {
       CAAnimation * animation = [_animations objectForKey: animationKey];
@@ -694,6 +695,15 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
           // it must be done by the animation itself!
           // alternatively, this needs to be applied to the
           // animation upon +[CATransaction commit]
+          
+          // Additional observed behavior:
+          // beginTime appears to be applied not to the original
+          // animation object, but to the presentationLayer replica's
+          // animation object. Test by printing beginTime immediately after
+          // creating a non-implicit animation and printing presentationLayer's
+          // beginTime. Original object should still have 0 as beginTime,
+          // but the replica's animation object should now have the calculated
+          // begin time.
             
           CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
           currentFrameBeginTime = CACurrentMediaTime();
@@ -701,7 +711,20 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
           currentFrameBeginTime = oldFrameBeginTime;
         }
 
-
+      CFTimeInterval nextFrameTime = [animation beginTime];
+      nextFrameTime = [self convertTime: nextFrameTime toLayer: nil];
+      
+      if(nextFrameTime < lowestNextFrameTime)
+        lowestNextFrameTime = nextFrameTime;
+      
+      if (nextFrameTime > CACurrentMediaTime())
+        {
+          /* TODO: update for correctness once we support fillMode */
+          /* TODO: take into account animation groups once we support them */
+          
+          continue;
+        }
+      
       if ([animation isKindOfClass: [CAPropertyAnimation class]])
         {
           CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
@@ -723,7 +746,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [_animationKeys removeObjectsInArray: animationKeysToRemove];
   [animationKeysToRemove release];
   
-  return 0;
+  return lowestNextFrameTime;
 }
 
 /* ***************** */
