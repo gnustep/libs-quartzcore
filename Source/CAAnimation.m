@@ -365,7 +365,6 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   id modelValue = [[layer modelLayer] valueForKeyPath: [self keyPath]];
   id calculatedValue = [self calculatedAnimationValueAtTime: theTime
                                                     onLayer: layer];
-
   if (!calculatedValue)
     {
       /* We can't apply nil value! */
@@ -592,7 +591,7 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
   
   if (!toValue)
     toValue = [[layer modelLayer] valueForKeyPath: _keyPath];
-
+  
   if ([fromValue isKindOfClass: [NSNumber class]] &&
       [toValue isKindOfClass: [NSNumber class]])
     {
@@ -605,7 +604,7 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
       
       return [NSNumber numberWithFloat: value];
     }
-  
+
   if ([fromValue isKindOfClass: [NSValue class]] &&
       [toValue isKindOfClass: [NSValue class]] &&
       !strcmp([fromValue objCType], [toValue objCType]))
@@ -621,19 +620,39 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           CGPoint fromPt = CGPointMake([from pointValue].x, [from pointValue].y);
           CGPoint toPt = CGPointMake([to pointValue].x, [to pointValue].y);
           
-          from = [NSValue valueWithBytes:&fromPt objCType:@encode(CGPoint)];
-          to = [NSValue valueWithBytes:&toPt objCType:@encode(CGPoint)];
+          from = [NSValue valueWithBytes: &fromPt objCType: @encode(CGPoint)];
+          to = [NSValue valueWithBytes: &toPt objCType: @encode(CGPoint)];
         }
-        
+#if GNUSTEP
+      if (!strcmp([from objCType], @encode(NSPoint)))
+        {
+          static BOOL warned = NO;
+          if (!warned)
+            {
+              NSLog(@"CAAnimation: one time warning: bug in gnustep-base: despite storing cgpoint, we ended up with a nspoint.");
+              if (sizeof(NSPoint) != sizeof(CGPoint))
+                NSLog(@"(that's even more problematic since currently sizeof(NSPoint)==%d and sizeof(CGPoint)==%d.", sizeof(NSPoint), sizeof(CGPoint));
+            }
+          warned = YES;
+
+          NSPoint fromPt = [from pointValue];
+          NSPoint toPt = [to pointValue];
+          NSPoint valuePt = NSMakePoint(linearInterpolation(fromPt.x, toPt.x, fraction),
+                                        linearInterpolation(fromPt.y, toPt.y, fraction));     
+          return [NSValue valueWithPoint: valuePt];
+        }
+#endif
       if (!strcmp([from objCType], @encode(CGPoint)))
         {
+          
           /* NSValue doesn't come with CGPoint support.
              Opal and Core Graphics don't provide it either.
              This support is an extension provided by UIKit. */
           /* Note: this branch CASCADES from NSPoint branch and
              should come immediately after it. */
-          CGPoint fromPt; [from getValue:&fromPt];
-          CGPoint toPt; [to getValue:&toPt];
+          CGPoint fromPt = { 0 }; [from getValue:&fromPt];
+          CGPoint toPt = { 0 }; [to getValue:&toPt];
+	  NSLog(@"from %g %g to %g %g", fromPt.x, fromPt.y, toPt.x, toPt.y);
           
           CGPoint valuePt = CGPointMake(linearInterpolation(fromPt.x, toPt.x, fraction),
                                       linearInterpolation(fromPt.y, toPt.y, fraction));
@@ -643,7 +662,7 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
       //////////////////////////////////
       if (!strcmp([from objCType], @encode(NSRect)))
         {
-          /* Just convert to CGPoint. Core Animation doesn't deal with NSPoints! */
+          /* Just convert to CGRect. Core Animation doesn't deal with NSRects! */
           /* After that, don't return; instead let the CGPoint branch deal with the values. */
           
           CGRect fromRect = CGRectMake([from rectValue].origin.x, [from rectValue].origin.y,
@@ -654,13 +673,34 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           from = [NSValue valueWithBytes:&fromRect objCType:@encode(CGRect)];
           to = [NSValue valueWithBytes:&toRect objCType:@encode(CGRect)];
         }
+#if GNUSTEP
+      if (!strcmp([from objCType], @encode(NSRect)))
+        {
+          static BOOL warned = NO;
+          if (!warned)
+            {
+              NSLog(@"CAAnimation: one time warning: bug in gnustep-base: despite storing cgrect, we ended up with a nsrect.");
+              if (sizeof(NSRect) != sizeof(CGRect))
+                NSLog(@"(that's even more problematic since currently sizeof(NSRect)==%d and sizeof(CGRect)==%d.", sizeof(NSRect), sizeof(CGRect));
+            }
+          warned = YES;
+
+          NSRect fromRect = [from rectValue];
+          NSRect toRect = [to rectValue];
+          NSRect valueRect = NSMakeRect(linearInterpolation(fromRect.origin.x, toRect.origin.x, fraction),
+                                        linearInterpolation(fromRect.origin.y, toRect.origin.y, fraction),
+                                        linearInterpolation(fromRect.size.width, toRect.size.width, fraction),
+                                        linearInterpolation(fromRect.size.height, toRect.size.height, fraction));
+          return [NSValue valueWithRect: valueRect];
+        }
+#endif
         
       if (!strcmp([from objCType], @encode(CGRect)))
         {
           /* NSValue doesn't come with CGRect support.
              Opal and Core Graphics don't provide it either.
              This support is an extension provided by UIKit. */
-          /* Note: this branch CASCADES from NSPoint branch and
+          /* Note: this branch CASCADES from NSRect branch and
              should come immediately after it. */
           CGRect fromRect; [from getValue:&fromRect];
           CGRect toRect; [to getValue:&toRect];
@@ -833,7 +873,8 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           const CGFloat * toComponents = CGColorGetComponents(to);
 
           size_t numberOfComponents = CGColorGetNumberOfComponents(from);
-          CGFloat valueComponents[numberOfComponents];
+          
+          CGFloat valueComponents[4] = { 0, 0, 0, 1 }; //numberOfComponents];
           for (int i = 0; i < numberOfComponents; i++)
             {
               valueComponents[i] = linearInterpolation(fromComponents[i], toComponents[i], fraction);

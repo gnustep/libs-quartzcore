@@ -33,8 +33,10 @@
 #import "CATransaction+FrameworkPrivate.h"
 #import "CABackingStore.h"
 #if !(__APPLE__)
+#define GL_GLEXT_PROTOTYPES 1
 #import <GL/gl.h>
 #import <GL/glu.h>
+#import <GL/glext.h>
 #else
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
@@ -317,7 +319,6 @@
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
   
-      
   // if the layer was offscreen-rendered, render just the texture
   CAGLTexture * texture = [[layer backingStore] offscreenRenderTexture];
   if (texture)
@@ -439,7 +440,22 @@
               components[3] = componentsOrig[3];
               components[3] *= [layer shadowOpacity];
             }
-          else
+          else if (CGColorGetNumberOfComponents([layer shadowColor]) == 3)
+	    {
+              static BOOL warned = NO;
+              if (!warned)
+                {
+                  NSLog(@"One time warning: possible Opal bug - shadowColor has only 3 components");
+                  warned = YES;
+                }
+              const CGFloat * componentsOrig = CGColorGetComponents([layer shadowColor]);
+              components[0] = componentsOrig[0];
+              components[1] = componentsOrig[1];
+              components[2] = componentsOrig[2];
+              components[3] = 1.0;
+              components[3] *= [layer shadowOpacity]; 
+	    }
+	  else
             {
               NSLog(@"Invalid number of color components in shadowColor");
             }
@@ -649,16 +665,18 @@
   if ([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
     {
       const CGFloat * componentsCG = CGColorGetComponents([layer backgroundColor]);
-      GLfloat components[4];
+      GLfloat components[4] = { 0, 0, 0, 1 };
       
       // convert
       components[0] = componentsCG[0];
       components[1] = componentsCG[1];
       components[2] = componentsCG[2];
-      components[3] = componentsCG[3];
+      if (CGColorGetNumberOfComponents == 4)
+        components[3] = componentsCG[3];
       
       // apply opacity
       components[3] *= [layer opacity];
+
       
       // FIXME: here we presume that color contains RGBA channels.
       // However this may depend on colorspace, number of components et al

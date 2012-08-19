@@ -1,6 +1,7 @@
 include $(GNUSTEP_MAKEFILES)/common.make
 
-TOOL_NAME = hello hello_opal hello_carenderer hello_animation offscreen_render
+TOOL_NAME = hello hello_opal hello_carenderer hello_animation
+APP_NAME = offscreen_render
 main_files = main.m QCTestOpenGLView.m
 
 # OpenGL ES:
@@ -12,6 +13,7 @@ hello_opal_OBJC_FILES = $(main_files) hello_opal.m
 hello_carenderer_OBJC_FILES = $(main_files) hello_carenderer.m
 hello_animation_OBJC_FILES = $(main_files) hello_animation.m
 offscreen_render_OBJC_FILES = $(main_files) offscreen_render.m
+offscreen_render_RESOURCE_FILES = PoweredByGNUstep.tiff
 
 # Some examples from opal:
 #TOOL_NAME = test1 test2 test3
@@ -40,7 +42,7 @@ ADDITIONAL_LDFLAGS += $(shell pkg-config --libs cairo)
 ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_LDFLAGS += -L../Source/obj -L../Source/QuartzCore.framework
-ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lopal -lQuartzCore
+ADDITIONAL_TOOL_LIBS =  -lgnustep-gui -lGL -lGLU -lopal -lQuartzCore 
 ADDITIONAL_INCLUDE_DIRS = -I../Headers
 
 # OpenGL ES:
@@ -49,4 +51,5 @@ ADDITIONAL_INCLUDE_DIRS = -I../Headers
 
 -include GNUmakefile.preamble
 include $(GNUSTEP_MAKEFILES)/tool.make
+include $(GNUSTEP_MAKEFILES)/application.make
 -include GNUmakefile.postamble

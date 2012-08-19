@@ -42,6 +42,9 @@ QuartzCore_HEADER_FILES = \
 	CAValueFunction.h \
 	CoreAnimation.h \
 	QuartzCore.h
+QuartzCore_RESOURCE_FILES = \
+	$(wildcard Shaders/*.vsh) \
+	$(wildcard Shaders/*.fsh)
 
 QuartzCore_OBJC_FILES = $(wildcard *.m) $(wildcard GLHelpers/*.m)
 

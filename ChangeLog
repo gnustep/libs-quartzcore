@@ -1,3 +1,59 @@
+2012-08-20  Ivan Vučica  <ivan@vucica.net>
+
+	* Source/CAAnimation.m:
+	Since July 20th, -base transforms CGPoint into a NSPoint and
+	CGRect into a NSRect when stored into NSValue. Added a workaround.
+	
+	Handling Opal sometimes serving a 3-component color. In this case,
+	we set alpha to be 1.
+
+	* Source/CABackingStore.h:
+	Silenced a warning by adding (assign).
+
+	* Source/CARenderer.m:
+	Added include of glext.h along with defining GL_GLEXT_PROTOTYPES,
+	so methods from extensions get defined.
+
+	Handling Opal sometimes serving a 3-component color. In this case,
+	we set alpha to be 1.
+
+	* Source/GLHelpers/CAGLProgram.h:
+	* Source/GLHelpers/CAGLShader.h:
+	* Source/GLHelpers/CAGLSimpleFramebuffer.h:
+	* Source/GLHelpers/CAGLTexture.h:
+	Added include of glext.h along with defining GL_GLEXT_PROTOTYPES,
+	so methods from extensions get defined.
+
+	* Source/GLHelpers/CAGLShader.m:
+	Silenced a clang warning by passing NULL instead of nil.
+
+	* Source/GLHelpers/CAGLSimpleFramebuffer.m:
+	Various calls to GL functions with EXT appended to the end of the
+	name replaced with calls without EXT.
+
+	* Source/GLHelpers/CAGLTexture.m:
+	Fixed support for loading CGImageRefs using Opal. Fixed indentation.
+
+	* Source/GNUmakefile:
+	Added shaders to distribution.
+
+	* Source/GNUmakefile.postamble:
+	Removing correct framework.
+
+	* Source/Shaders/blurhoriz.fsh:
+	* Source/Shaders/blurvert.fsh:
+	* Source/Shaders/simple.fsh:
+	Added declaration which GLSL extension is required in case we use
+	rectangle textures.
+
+	* Tests/GNUmakefile:
+	offscreen_render is now compiled as an app, because it comes with
+	a resource (PoweredByGNUstep.tiff).
+
+	* Tests/offscreen_render.m:
+	Handling of opal's broken tiff loading. Avoiding linking with
+	corebase by calling -release in place of CFRelease() under GNUstep.
+
 2012-08-19  Ivan Vučica  <ivan@vucica.net>
 
 	* Headers/QuartzCore/CARenderer.h:

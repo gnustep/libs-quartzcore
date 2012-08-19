@@ -36,8 +36,10 @@
 
 #import <Foundation/Foundation.h>
 #if !(__APPLE__)
+#define GL_GLEXT_PROTOTYPES 1
 #import <GL/gl.h>
 #import <GL/glu.h>
+#import <GL/glext.h>
 #else
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>

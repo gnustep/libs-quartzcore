@@ -1,3 +1,4 @@
+#extension GL_ARB_texture_rectangle : enable
 /* Note:
    Main code of the framework doesn't bind many of the attributes,
    and does not supply any values.

@@ -30,9 +30,12 @@
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
 #else
+#define GL_GLEXT_PROTOTYPES 1
 #import <GL/gl.h>
 #import <GL/glu.h>
+#import <GL/glext.h>
 #endif
+#import <CoreGraphics/CGImage.h>
 
 @interface CAGLTexture : NSObject
 {

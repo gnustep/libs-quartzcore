@@ -46,6 +46,7 @@
                      width, height, 0, format, type, \
                      data)
 #endif
+#import <CoreGraphics/CoreGraphics.h>
 
 @implementation CAGLTexture
 @synthesize textureID=_textureID;
@@ -159,18 +160,29 @@
 - (void)loadImage: (CGImageRef) image
 {
   CGFloat width = CGImageGetWidth(image);
-	CGFloat height = CGImageGetHeight(image);
-	size_t bitsPerComponent = 8; //CGImageGetBitsPerComponent(image);
-	unsigned long bytesPerRow = width * 4; //CGImageGetBytesPerRow(image); // in some cases, we cannot generate RGB textureContext, it appears; only RGBA
-	CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB(); //CGImageGetColorSpace(image); // if we get indexed-colorspace image, creation of bitmap context will fail. also, we load image into OpenGL as RGB. so, force RGB
-  
+  CGFloat height = CGImageGetHeight(image);
+  size_t bitsPerComponent = 8; //CGImageGetBitsPerComponent(image);
+  unsigned long bytesPerRow = width * 4; //CGImageGetBytesPerRow(image); // in some cases, we cannot generate RGB textureContext, it appears; only RGBA
+#if !GNUSTEP
+  CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB(); //CGImageGetColorSpace(image); // if we get indexed-colorspace image, creation of bitmap context will fail. also, we load image into OpenGL as RGB. so, force RGB
+#else
+#warning Opal doesn't like CGColorSpaceCreateDeviceRGB() passed as colorpsace for bitmap context
+  CGColorSpaceRef space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
+#endif
+
   /* Draw CGImage to a byte array */
   CGContextRef context = CGBitmapContextCreate(NULL,
     width, height,
     bitsPerComponent, 
     bytesPerRow,
     space,
-    kCGImageAlphaPremultipliedLast);
+#if !GNUSTEP
+    kCGImageAlphaPremultipliedLast
+#else
+#warning GNUstep: forced to pass kCGImageAlphaPremultipliedFirst although we end up with ...Last
+    kCGImageAlphaPremultipliedFirst
+#endif
+  );
   CGColorSpaceRelease(space);
   if (!context)
     {
@@ -178,7 +190,7 @@
       return;
     }
     
-	CGContextDrawImage(context, CGRectMake(0.0, 0.0, width, height), image);
+  CGContextDrawImage(context, CGRectMake(0.0, 0.0, width, height), image);
 
   uint8_t * data = CGBitmapContextGetData(context);
   for(int i=0; i < bytesPerRow * height; i+=4)

@@ -67,7 +67,7 @@
   /* Find source file */
   NSString * source = [NSString stringWithContentsOfFile: filePath
                                                 encoding: NSUTF8StringEncoding
-                                                   error: nil];
+                                                   error: NULL];
   if (!source)
     {
       [self release];

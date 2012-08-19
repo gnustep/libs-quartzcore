@@ -1,3 +1,4 @@
+#extension GL_ARB_texture_rectangle : enable
 // source:
 // http://www.gamerendering.com/2008/10/11/gaussian-blur-filter-shader/
 

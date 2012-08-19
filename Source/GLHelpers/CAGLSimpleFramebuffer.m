@@ -46,7 +46,7 @@ static NSMutableArray * framebufferStack = nil;
   if (!self)
     return nil;
 
-  glGenFramebuffersEXT(1, &_framebufferID);
+  glGenFramebuffers(1, &_framebufferID);
   
   /* Build a texture and assign it to the framebuffer */
   _texture = [CAGLTexture new];
@@ -63,8 +63,8 @@ static NSMutableArray * framebufferStack = nil;
   [_texture loadEmptyImageWithWidth: width
                              height: height];
   
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, [_texture textureTarget], [_texture textureID], 0);
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, _framebufferID);
+  glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, [_texture textureTarget], [_texture textureID], 0);
     
   return self;
 }
@@ -82,7 +82,7 @@ static NSMutableArray * framebufferStack = nil;
     [self setDepthBufferEnabled: NO];
   
   /* delete framebuffer itself */
-  glDeleteFramebuffersEXT(1, &_framebufferID);
+  glDeleteFramebuffers(1, &_framebufferID);
   
   /* release the texture */
   [_texture release];
@@ -100,15 +100,15 @@ static NSMutableArray * framebufferStack = nil;
   
   if (_depthBufferEnabled)
   {
-    glGenRenderbuffersEXT(1, &_depthRenderbufferID);
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthRenderbufferID);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, [_texture width], [_texture height]);
+    glGenRenderbuffers(1, &_depthRenderbufferID);
+    glBindRenderbuffer(GL_RENDERBUFFER_EXT, _depthRenderbufferID);
+    glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, [_texture width], [_texture height]);
 
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthRenderbufferID);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthRenderbufferID);
   }
   else
   {
-    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0);
     
     glDeleteRenderbuffers(1, &_depthRenderbufferID);
   }
@@ -122,7 +122,7 @@ static NSMutableArray * framebufferStack = nil;
     {
       framebufferStack = [NSMutableArray new];
     }
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _framebufferID);
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, _framebufferID);
   [framebufferStack addObject: self];
 }
 
@@ -135,9 +135,9 @@ static NSMutableArray * framebufferStack = nil;
   [framebufferStack removeLastObject];
   
   if ([framebufferStack count] > 0)
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, [((CAGLSimpleFramebuffer*)[framebufferStack lastObject]) framebufferID]);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, [((CAGLSimpleFramebuffer*)[framebufferStack lastObject]) framebufferID]);
   else
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
 }
 
 /*

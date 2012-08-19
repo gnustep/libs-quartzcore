@@ -63,7 +63,7 @@
               height: (CGFloat) height;
 - (void) refresh;
 
-@property /* (retain) */ CGContextRef context;
+@property (assign) /* (retain) */ CGContextRef context;
 @property (retain) CAGLTexture * contentsTexture;
 @property (retain) CAGLTexture * offscreenRenderTexture;
 @property (readonly) CGFloat width;

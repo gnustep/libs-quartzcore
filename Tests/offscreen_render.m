@@ -32,6 +32,7 @@
 #endif
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
+#import <CoreFoundation/CoreFoundation.h>
 #endif
 
 #if GSIMPL_UNDER_COCOA
@@ -311,8 +312,30 @@ Class classOfTestOpenGLView()
   CFURLRef poweredByGNUstepURL = (CFURLRef)[[NSBundle mainBundle] URLForResource:@"PoweredByGNUstep" withExtension:@"tiff"];
   CGImageSourceRef poweredByGNUstepSource = CGImageSourceCreateWithURL(poweredByGNUstepURL, NULL);
   CGImageRef poweredByGNUstepImage = CGImageSourceCreateImageAtIndex(poweredByGNUstepSource, 0, NULL);
+#if GNUSTEP
+  if (poweredByGNUstepURL && !poweredByGNUstepImage)
+    {
+      NSLog(@"pbgsu: %@", poweredByGNUstepURL);
+      NSLog(@"src: %@", poweredByGNUstepSource);
+      if ([poweredByGNUstepSource isKindOfClass: NSClassFromString(@"CGImageSourcePNG")])
+        {
+          [(id)poweredByGNUstepSource release];
+          NSLog(@"Opal bug! Trying to read a tiff with PNG image source.");
+          NSDictionary * options = [NSDictionary dictionaryWithObjectsAndKeys: @"public.tiff", kCGImageSourceTypeIdentifierHint, nil];
+          poweredByGNUstepSource = CGImageSourceCreateWithURL(poweredByGNUstepURL, options);
+          poweredByGNUstepImage = CGImageSourceCreateImageAtIndex(poweredByGNUstepSource, 0, NULL);
+        }
+    }
+  NSLog(@"img: %@", poweredByGNUstepImage);
+#endif
+
+#if !GNUSTEP
   CFRelease(poweredByGNUstepSource);
-  
+#else
+  // avoding linking to corebase, for now
+  [(id)poweredByGNUstepSource release];
+#endif
+
   if (poweredByGNUstepImage)
     {
       OffscreenRenderCustomLayer * layer5 = [OffscreenRenderCustomLayer layer];
