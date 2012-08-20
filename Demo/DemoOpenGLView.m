@@ -342,9 +342,9 @@
   [textLayer setPosition: CGPointMake([backgroundLayer bounds].size.width/2, [backgroundLayer bounds].size.height/2)];
   [textLayer setText: [item valueForKey: @"name"]];
   [textLayer setColor: blackColor];
-  [textLayer setShadowRadius: 1.0];
-  [textLayer setShadowOpacity: 1.0];
-  [textLayer setShadowOffset: CGSizeZero];
+//  [textLayer setShadowRadius: 1.0];
+//  [textLayer setShadowOpacity: 1.0];
+//  [textLayer setShadowOffset: CGSizeZero];
   [textLayer setFontSize: 16];
   [textLayer setNeedsDisplay];
   [backgroundLayer addSublayer: textLayer];
