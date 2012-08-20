@@ -652,7 +652,6 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
              should come immediately after it. */
           CGPoint fromPt = { 0 }; [from getValue:&fromPt];
           CGPoint toPt = { 0 }; [to getValue:&toPt];
-	  NSLog(@"from %g %g to %g %g", fromPt.x, fromPt.y, toPt.x, toPt.y);
           
           CGPoint valuePt = CGPointMake(linearInterpolation(fromPt.x, toPt.x, fraction),
                                       linearInterpolation(fromPt.y, toPt.y, fraction));
