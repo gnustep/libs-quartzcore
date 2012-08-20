@@ -1,13 +1,9 @@
-/* 
-   CoreAnimation.h
+/* Demo/AppController.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
-   Author: Amr Aboelela <amraboelela@gmail.com>
-   Date: January 2012
-   
-   Author: Ivan Vučica <ivan@vucica.net>
-   Date: June 2012
+   Author: Ivan Vucica <ivan@vucica.net>
+   Date: August 2012
 
    This file is part of QuartzCore.
 
@@ -28,11 +24,13 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "QuartzCore/CABase.h"
-#import "QuartzCore/CALayer.h"
-#import "QuartzCore/CAAnimation.h"
-#import "QuartzCore/CAMediaTiming.h"
-#import "QuartzCore/CAMediaTimingFunction.h"
-#import "QuartzCore/CARenderer.h"
-#import "QuartzCore/CATransaction.h"
+#import <Foundation/Foundation.h>
+#import <AppKit/AppKit.h>
 
+@interface AppController : NSObject
+{
+  NSWindow *_window;
+}
+@end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

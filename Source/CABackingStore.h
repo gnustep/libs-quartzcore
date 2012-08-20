@@ -39,6 +39,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #endif
 #if (__APPLE__)
+#define GL_GLEXT_PROTOTYPES 1
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>

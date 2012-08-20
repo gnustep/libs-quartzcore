@@ -189,6 +189,17 @@
       NSLog(@"%@: Failed to create bitmap context", NSStringFromSelector(_cmd));
       return;
     }
+
+#if GNUSTEP
+#warning Opal bug: context should be cleared automatically
+#if 0
+  CGContextClearRect (context, CGRectInfinite);
+#else
+#warning Opal bug: CGContextClearRect() permanently whacks the context
+  memset (CGBitmapContextGetData (context), 
+          0, bytesPerRow * height);
+#endif
+#endif  
     
   CGContextDrawImage(context, CGRectMake(0.0, 0.0, width, height), image);
 

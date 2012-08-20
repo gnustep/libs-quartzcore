@@ -62,6 +62,9 @@ typedef struct _CVTimeStamp
   
   NSMutableArray * _rasterizationSchedule;
 
+  /* a temporary optimization hack */
+  BOOL _previousFrameWasANoop;
+
   /* GL programs */
   CAGLProgram * _simpleProgram;
   CAGLProgram * _blurHorizProgram;

@@ -200,6 +200,8 @@
 {
   /* This value is returned from -updateBounds in case nothing has changed */
   _updateBounds = CGRectMake(__builtin_inf(), __builtin_inf(), 0, 0);
+
+  _previousFrameWasANoop = isinf(_nextFrameTime);
 }
 /* Returns time at which next update should be performed.
    Current time denotes continuous animation and next update
@@ -266,7 +268,7 @@
      This makes sense and we'll do the same.
      */
 
-  if (isinf(_nextFrameTime))
+  if (isinf(_nextFrameTime) && _previousFrameWasANoop)
     return _updateBounds;
 
   /* for the time being, we return entire renderer as needing a redraw. */
@@ -428,7 +430,6 @@
 
           glClearColor(0.0, 0.0, 0.0, 0.0);
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
           /* Render second pass */
           [_blurVertProgram use];
@@ -664,7 +665,7 @@
   // apply opacity to white color
   for (int i = 0; i < 6; i++)
     {
-        whiteColor[i*4 + 3] *= [layer opacity];
+      whiteColor[i*4 + 3] *= [layer opacity];
     }
 
   // apply background color
@@ -677,7 +678,7 @@
       components[0] = componentsCG[0];
       components[1] = componentsCG[1];
       components[2] = componentsCG[2];
-      if (CGColorGetNumberOfComponents == 4)
+      if (CGColorGetNumberOfComponents([layer backgroundColor]) == 4)
         components[3] = componentsCG[3];
       
       // apply opacity
@@ -695,6 +696,7 @@
       glColorPointer(4, GL_FLOAT, 0, backgroundColor);
       
       glDrawArrays(GL_TRIANGLES, 0, 6);
+  
     }
 
   // if there are some contents, draw them
@@ -710,7 +712,7 @@
           texture = [backingStore contentsTexture];
         }
 #if GNUSTEP
-      else if ([layerContents isKindOfClass: [CGImage class]])
+      else if ([layerContents isKindOfClass: NSClassFromString(@"CGImage")])
 #else
       else if ([layerContents isKindOfClass: NSClassFromString(@"__NSCFType")] &&
                CFGetTypeID(layerContents) == CGImageGetTypeID())
@@ -797,7 +799,7 @@
   CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: rasterize_w height: rasterize_h];
   [framebuffer setDepthBufferEnabled: YES];
   [framebuffer bind];
-    
+  
   glDisable([[framebuffer texture] textureTarget]);
 
   glClearColor(0.0, 0.0, 0.0, 0.0);

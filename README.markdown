@@ -50,6 +50,7 @@ implementation.
     * Supports `backgroundColor`.
     * Supports setting `contents` to `CGImageRef`.
     * Supports painting into `contents` via a delegate.
+    * Supports transforms and sublayer transforms.
     * Partial support for offscreen rendering triggered by 
       `shadowOpacity > 0` or `shouldRasterize == YES`. Texture is currently
       always 512x512, so your total layer contents in its local coordinate
@@ -60,6 +61,10 @@ implementation.
       `-[CARenderer beginFrameAtTime:timeStamp:`
     * Setting `contents` is not animated, since currently there is no
       support for `CATransition`s.
+    * Hosting `CGImageRef`s with indexed colorspace, or any other aside from
+      RGBA, is not supported.
+    * No support for layouts
+    * No support for autoresizing
 
 * **`CABasicAnimation`**: The only supported animation type.
 
@@ -191,7 +196,7 @@ We also retain it in an i-var. Note that since this code is placed inside an
 `NSOpenGLView` subclass, `self` refers to an instance of an `NSOpenGLView` 
 subclass.
 
-    _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]]
+    _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                                 options: nil];
     [_renderer retain];
 
@@ -257,6 +262,8 @@ after setting the delegate.
 
     [layer setNeedsDisplay];
 
+(This would not be necessary if image was set as the layer contents.)
+
 That's about it! We still need to do a few things before leaving
 `-prepareOpenGL`, however, such as clearing out the render area. We want
 to do this because this might be the last time we'll do it. We don't need to
@@ -283,6 +290,9 @@ no API for notifying the main app code about changes to `nextFrameTime` value.
                                             userInfo: nil
                                              repeats: YES];
 
+(You could separate this into `-startAnimation`, and timer invalidation into
+`-stopAnimation`.)
+
 That's it for `-prepareOpenGL`! There is no need to release the `layer`,
 since it's autoreleased already. If you wanted to keep it in an i-var,
 you may want to `retain` it. (But strictly speaking, it's not necessary,
@@ -300,7 +310,6 @@ the value of current time from `CACurrentMediaTime()`).
 
     - (void) timerAnimation: (NSTimer *)aTimer
     {
-      [super timerAnimation: aTimer];
       [[self openGLContext] makeCurrentContext];
       
       glViewport(0, 0, [self frame].size.width, [self frame].size.height);
@@ -318,7 +327,8 @@ the value of current time from `CACurrentMediaTime()`).
       [self clearBounds: [_renderer updateBounds]];
       [_renderer render];
       [_renderer endFrame];
-    
+      /* */
+      
       glFlush();
       
       [[self openGLContext] flushBuffer];

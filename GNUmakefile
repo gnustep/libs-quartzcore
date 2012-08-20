@@ -28,6 +28,7 @@ SVN_BASE_URL = svn+ssh://svn.gna.org/svn/gnustep/libs
 
 SUBPROJECTS = Source
 SUBPROJECTS += Tests
+SUBPROJECTS += Demo
 
 #ifneq ($(strip `which makeinfo`),)
 #ifneq ($(strip `which texi2pdf`),)
