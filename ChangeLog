@@ -1,5 +1,16 @@
 2012-08-20  Ivan Vučica  <ivan@vucica.net>
 
+	* Demo/TextLayer.m:
+	Using Core Text the recommended way doesn't seem to work with Opal.
+	For the time being, we'll paint the text via non-recommended methods
+	in Core Graphics (limiting ourselves to MacRoman encoding), at least
+	when on GNUstep.
+
+	* Source/CALayer.m:
+	Disabled block of code for synthesizing @dynamic properties.
+
+2012-08-20  Ivan Vučica  <ivan@vucica.net>
+
 	* Demo/DemoOpenGLView.m:
 	Added title. Added 3d animation of logo. Added menu buttons.
 	

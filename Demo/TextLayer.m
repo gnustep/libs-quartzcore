@@ -49,6 +49,16 @@
 
 - (void) drawInContext: (CGContextRef)context
 {
+#if !(GNUSTEP)
+  // Cocoa-provided Core Graphics
+  [self drawInContextCoreText: context];
+#else
+  // Opal doesn't work with -drawInContextCoreText:.
+  [self drawInContextElementary: context];
+#endif
+}
+- (void) drawInContextCoreText: (CGContextRef)context
+{
   /* Requires CoreText */
   
   if (!_text)
@@ -83,12 +93,16 @@
 {
   /* Lacks support for UTF-8 */
   
-	CGContextSaveGState(ctx);
+  CGContextSaveGState(ctx);
 
   //CGContextSetGrayFillColor(ctx, 0, 1);
-  CGContextSetRGBFillColor(ctx, 1, 0, 0, 1);
-  CGContextSelectFont(ctx, "Times-Roman", 20, kCGEncodingMacRoman);
-  CGContextShowTextAtPoint(ctx, 5, 15, "GNUstep", 7);
+  CGContextSetRGBFillColor(ctx, 0, 0, 0, 1);
+  if (_color)
+    CGContextSetFillColorWithColor(ctx, _color);
+  else
+    NSLog(@"Nil color");
+  CGContextSelectFont(ctx, "Helvetica-Bold", _fontSize, kCGEncodingMacRoman);
+  CGContextShowTextAtPoint(ctx, 5, 15, [_text UTF8String], [_text length]);
   
   CGContextRestoreGState(ctx);
 }

@@ -117,6 +117,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize backingStore=_backingStore;
 
 /* *** dynamic synthesis of properties *** */
+#if 0
 + (void) initialize
 {
      
@@ -150,6 +151,9 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
     
   free(properties);
 }
+#else
+#warning Disabled dynamic synthesis of properties
+#endif
 
 /* *** class methods *** */
 + (id) layer
