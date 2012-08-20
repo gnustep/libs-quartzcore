@@ -59,6 +59,12 @@
 - (void) _scheduleRasterization: (CALayer *) layer;
 - (void) _rasterize: (NSDictionary *) rasterizationSpec;
 - (void) _rasterizeAll;
+- (void) _updateLayer: (CALayer *)layer
+               atTime: (CFTimeInterval)theTime;
+- (void) _renderLayer: (CALayer *)layer
+        withTransform: (CATransform3D)transform;
+- (id) initWithNSOpenGLContext: (NSOpenGLContext*)ctx
+                       options: options;
 @end
 
 @implementation CARenderer

@@ -396,7 +396,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
 /* *** properties *** */
 #if GNUSTEP
-#warning KVO under GNUstep doesn't work without custom setters for any struct type!
+#warning KVO under GNUstep does not work without custom setters for any struct type!
 /* For more info, refer to NSKeyValueObserving.m. */
 /* Once we implement @dynamic generation, this won't be important, but
    it's still a GNUstep bug. */

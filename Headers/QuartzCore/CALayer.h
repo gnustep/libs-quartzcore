@@ -159,7 +159,12 @@ NSString *const kCATransition;
 @property (copy)                     NSDictionary *actions;
 /* TODO: Style property is unimplemented */
 @property (copy)                     NSDictionary *style;
+#if __clang__
 @property (retain, readonly)         NSArray *animationKeys;
+#else
+#warning GCC workaround: CALayer.animationKeys publicly defined as NSMutableArray although it should not be.
+@property (retain, readonly)         NSMutableArray *animationKeys;
+#endif
 
 - (id) init;
 - (id) initWithLayer: (CALayer *)layer;
@@ -188,6 +193,7 @@ NSString *const kCATransition;
 - (BOOL) needsDisplay;
 - (void) setNeedsDisplay;
 - (void) setNeedsDisplayInRect: (CGRect)r;
+- (void) drawInContext: (CGContextRef)context;
 - (BOOL) needsLayout;
 - (void) setNeedsLayout;
 - (void) layoutIfNeeded;

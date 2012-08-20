@@ -166,7 +166,7 @@
 #if !GNUSTEP
   CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB(); //CGImageGetColorSpace(image); // if we get indexed-colorspace image, creation of bitmap context will fail. also, we load image into OpenGL as RGB. so, force RGB
 #else
-#warning Opal doesn't like CGColorSpaceCreateDeviceRGB() passed as colorpsace for bitmap context
+#warning Opal does not like CGColorSpaceCreateDeviceRGB() passed as colorpsace for bitmap context
   CGColorSpaceRef space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
 #endif
 

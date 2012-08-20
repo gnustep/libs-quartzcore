@@ -36,72 +36,70 @@
 + (void) _dynamicallyCreateProperty: (objc_property_t)property
 {
     
-    NSString* name = [NSString stringWithCString:property_getName(property)
-                                        encoding:NSASCIIStringEncoding];
+  NSString* name = [NSString stringWithCString: property_getName(property)
+                                      encoding: NSASCIIStringEncoding];
+  
+  NSDictionary* attributes = [self _dynamicPropertyProcessAttributes: property];
+  
+  // create the method names
+  NSString* getterName = [attributes valueForKey: @"getter"];   
+  if (getterName == nil)
+    {
+      getterName = name;
+    }
+  
+  NSString* setterName = [attributes valueForKey: @"setter"];
+  
+  if (setterName == nil)
+    {
+      setterName = [NSString stringWithFormat: @"set%@%@:",
+                    [[name substringToIndex: 1] uppercaseString],
+                    [name substringFromIndex: 1]];
+    }
     
-    NSDictionary* attributes = [self _dynamicPropertyProcessAttributes: property];
     
-    // create the method names
-    NSString* getterName = [attributes valueForKey:@"getter"];
+  // Set the types
+  NSString* type = [attributes valueForKey: @"type"];
+  NSString* getterTypes = [NSString stringWithFormat: @"%@@:", type];
+  NSString* setterTypes = [NSString stringWithFormat: @"v@:%@", type];
     
-    if (getterName == nil)
-      {
-        getterName = name;
-      }
-    
-    NSString* setterName = [attributes valueForKey:@"setter"];
-    
-    if (setterName == nil)
-      {
-        setterName = [NSString stringWithFormat:@"set%@%@:",
-                      [[name substringToIndex: 1] uppercaseString],
-                      [name substringFromIndex: 1]];
-      }
-    
-    
-    // Set the types
-    NSString* type = [attributes valueForKey:@"type"];
-    NSString* getterTypes = [NSString stringWithFormat:@"%@@:", type];
-    NSString* setterTypes = [NSString stringWithFormat:@"v@:%@", type];
-    
-    NSString* key = [NSString stringWithFormat:@"dynamicproperty_%@_%@",
-                     NSStringFromClass([self class]),
-                     name];
+  NSString* key = [NSString stringWithFormat: @"dynamicproperty_%@_%@",
+                   NSStringFromClass([self class]),
+                   name];
         
-    IMP getter =  [self _getterForKey: key type: type];
-    IMP setter = [self _setterForKey: key type: type];
+  IMP getter =  [self _getterForKey: key type: type];
+  IMP setter = [self _setterForKey: key type: type];
     
-    // Add getter
-    BOOL success;
-    success = class_addMethod([self class],
-                              NSSelectorFromString(getterName),
-                              getter,
-                              [getterTypes cStringUsingEncoding:NSASCIIStringEncoding]);
+  // Add getter
+  BOOL success;
+  success = class_addMethod([self class],
+                            NSSelectorFromString(getterName),
+                            getter,
+                            [getterTypes cStringUsingEncoding: NSASCIIStringEncoding]);
+  
+  if (!success)
+    {
+      [NSException raise: NSGenericException 
+                  format: @"Could not add method %@", getterName];
+    }
+  
+  // Add setter
+  success = class_addMethod([self class],
+                            NSSelectorFromString(setterName),
+                            setter,
+                            [setterTypes cStringUsingEncoding: NSASCIIStringEncoding]);
     
-    if (!success)
-      {
-        [NSException raise:NSGenericException 
-                    format:@"Could not add method %@", getterName];
-
-      }
-    
-    // Add setter
-    success = class_addMethod([self class],
-                              NSSelectorFromString(setterName),
-                              setter,
-                              [setterTypes cStringUsingEncoding:NSASCIIStringEncoding]);
-    
-    if (!success)
-      {
-        [NSException raise:NSGenericException 
-                    format:@"Could not add method %@", setterName];
-        
-      }
-    
+  if (!success)
+    {
+      [NSException raise: NSGenericException 
+                  format: @"Could not add method %@", setterName];
+    }
+  
 }
 
 
-+ (NSDictionary *) _dynamicPropertyProcessAttributes: (objc_property_t)property {
++ (NSDictionary *) _dynamicPropertyProcessAttributes: (objc_property_t)property
+{
     
     NSString * attributes = [NSString stringWithCString: property_getAttributes(property)
                                                encoding: NSASCIIStringEncoding];

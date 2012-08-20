@@ -7,4 +7,6 @@ syntax: glob
 */*.xcworkspace/*
 Tests/CATransform3D/catransform3d*
 Tests/CAMediaTimingFunction/camediatimingfunction*
+Tests/*.app/*
 _notes/*
+

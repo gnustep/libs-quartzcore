@@ -1,5 +1,33 @@
 2012-08-20  Ivan Vučica  <ivan@vucica.net>
 
+	* Headers/QuartzCore/CALayer.h:
+	GCC doesn't like that we declare a property as NSMutableArray
+	in public header and then override that with a NSArray in
+	class extension.
+
+	Added missing method declaration.
+
+	* Source/CAImplicitAnimationObserver.m:
+	Making a call to -isEqual: instead of -isEqualTo:.
+	Fixed a possible problem if actionForKey: returns nil or NSNull.
+
+	* Source/CALayer+DynamicProperties.h:
+	* Source/CARenderer.m:
+	Added missing method declarations.
+
+	* Source/CALayer+DynamicProperties.m:
+	Style fixes.
+
+	* Source/CALayer.m:
+	* Source/GLHelpers/CAGLTexture.m:
+	Resolved warnings.
+	
+	* Source/Shaders/simple.fsh:
+	Commented out textureSize() function which broke compiling on
+	some GPUs.
+
+2012-08-20  Ivan Vučica  <ivan@vucica.net>
+
 	* INSTALL:
 	* README:
 	* INSTALL.markdown:

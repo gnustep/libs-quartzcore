@@ -29,4 +29,8 @@
 
 @interface CALayer (DynamicProperties)
 + (void)_dynamicallyCreateProperty:(objc_property_t)property;
+
++ (NSDictionary *) _dynamicPropertyProcessAttributes: (objc_property_t)property;
++ (IMP) _getterForKey: (NSString *)key type: (NSString *)type;
++ (IMP) _setterForKey: (NSString *)key type: (NSString *)type;
 @end

@@ -30,7 +30,7 @@ varying mediump vec2 fragmentTextureCoordinates;
 varying vec2 fragmentTextureCoordinates;
 #endif
 
-
+/*
 vec2 textureSize(sampler2DRect sampler, int lod)
 {
   // function unavailable before GLSL 1.30!
@@ -41,6 +41,7 @@ vec2 textureSize(sampler2DRect sampler, int lod)
   
   return vec2(512.0, 512.0);
 }
+*/
 
 void main()
 {

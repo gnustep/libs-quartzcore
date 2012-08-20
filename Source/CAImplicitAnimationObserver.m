@@ -76,10 +76,12 @@ static CAImplicitAnimationObserver * sharedObserver;
   /* Implicit animation must not be launched if model tree value
      is equal to the new value, even if the presentation tree value
      is not equal. */
-  if ([to isEqualTo: from])
+  if ([to isEqual: from])
     return;
   
   NSObject<CAAction>* action = (id)[object actionForKey: keyPath];
+  if (!action || [action isKindOfClass: [NSNull class]])
+    return;
   [[CATransaction topTransaction] registerAction: action
                                         onObject: object
                                          keyPath: keyPath];
