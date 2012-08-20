@@ -1,0 +1,332 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7F19ECAA15E27FCA00D53ED8 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F19ECA915E27FCA00D53ED8 /* Cocoa.framework */; };
+		7F19ECB615E27FCA00D53ED8 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F19ECB515E27FCA00D53ED8 /* main.m */; };
+		7F19ECD115E2807000D53ED8 /* AppController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F19ECCC15E2807000D53ED8 /* AppController.m */; };
+		7F19ECD215E2807000D53ED8 /* DemoOpenGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F19ECCE15E2807000D53ED8 /* DemoOpenGLView.m */; };
+		7F19ECD315E2807000D53ED8 /* GNUstep.png in Resources */ = {isa = PBXBuildFile; fileRef = 7F19ECCF15E2807000D53ED8 /* GNUstep.png */; };
+		7F19ECD415E2807000D53ED8 /* GNUstep.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 7F19ECD015E2807000D53ED8 /* GNUstep.tiff */; };
+		7F19ECD715E2807A00D53ED8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 7F19ECD515E2807A00D53ED8 /* InfoPlist.strings */; };
+		7F19ECD815E2807A00D53ED8 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F19ECD615E2807A00D53ED8 /* MainMenu.xib */; };
+		7F19ECFE15E2826D00D53ED8 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F19ECFD15E2826D00D53ED8 /* OpenGL.framework */; };
+		7F19ED0015E2827300D53ED8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F19ECFF15E2827300D53ED8 /* QuartzCore.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		7F19ECA515E27FCA00D53ED8 /* QuartzCoreDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuartzCoreDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F19ECA915E27FCA00D53ED8 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		7F19ECAC15E27FCA00D53ED8 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		7F19ECAD15E27FCA00D53ED8 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		7F19ECAE15E27FCA00D53ED8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		7F19ECB115E27FCA00D53ED8 /* QuartzCoreDemo-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "QuartzCoreDemo-Info.plist"; sourceTree = "<group>"; };
+		7F19ECB515E27FCA00D53ED8 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		7F19ECCB15E2807000D53ED8 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = SOURCE_ROOT; };
+		7F19ECCC15E2807000D53ED8 /* AppController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppController.m; sourceTree = SOURCE_ROOT; };
+		7F19ECCD15E2807000D53ED8 /* DemoOpenGLView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DemoOpenGLView.h; sourceTree = SOURCE_ROOT; };
+		7F19ECCE15E2807000D53ED8 /* DemoOpenGLView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DemoOpenGLView.m; sourceTree = SOURCE_ROOT; };
+		7F19ECCF15E2807000D53ED8 /* GNUstep.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GNUstep.png; sourceTree = SOURCE_ROOT; };
+		7F19ECD015E2807000D53ED8 /* GNUstep.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = GNUstep.tiff; sourceTree = SOURCE_ROOT; };
+		7F19ECD515E2807A00D53ED8 /* InfoPlist.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = Mac/InfoPlist.strings; sourceTree = SOURCE_ROOT; };
+		7F19ECD615E2807A00D53ED8 /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = MainMenu.xib; path = Mac/MainMenu.xib; sourceTree = SOURCE_ROOT; };
+		7F19ECFD15E2826D00D53ED8 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		7F19ECFF15E2827300D53ED8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7F19ECA215E27FCA00D53ED8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F19ED0015E2827300D53ED8 /* QuartzCore.framework in Frameworks */,
+				7F19ECFE15E2826D00D53ED8 /* OpenGL.framework in Frameworks */,
+				7F19ECAA15E27FCA00D53ED8 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7F19EC9A15E27FCA00D53ED8 = {
+			isa = PBXGroup;
+			children = (
+				7F19ECFF15E2827300D53ED8 /* QuartzCore.framework */,
+				7F19ECFD15E2826D00D53ED8 /* OpenGL.framework */,
+				7F19ECAF15E27FCA00D53ED8 /* QuartzCoreDemo */,
+				7F19ECA815E27FCA00D53ED8 /* Frameworks */,
+				7F19ECA615E27FCA00D53ED8 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7F19ECA615E27FCA00D53ED8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7F19ECA515E27FCA00D53ED8 /* QuartzCoreDemo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7F19ECA815E27FCA00D53ED8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F19ECA915E27FCA00D53ED8 /* Cocoa.framework */,
+				7F19ECAB15E27FCA00D53ED8 /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7F19ECAB15E27FCA00D53ED8 /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7F19ECAC15E27FCA00D53ED8 /* AppKit.framework */,
+				7F19ECAD15E27FCA00D53ED8 /* CoreData.framework */,
+				7F19ECAE15E27FCA00D53ED8 /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		7F19ECAF15E27FCA00D53ED8 /* QuartzCoreDemo */ = {
+			isa = PBXGroup;
+			children = (
+				7F19ECCB15E2807000D53ED8 /* AppController.h */,
+				7F19ECCC15E2807000D53ED8 /* AppController.m */,
+				7F19ECCD15E2807000D53ED8 /* DemoOpenGLView.h */,
+				7F19ECCE15E2807000D53ED8 /* DemoOpenGLView.m */,
+				7F19ECCF15E2807000D53ED8 /* GNUstep.png */,
+				7F19ECD015E2807000D53ED8 /* GNUstep.tiff */,
+				7F19ECB015E27FCA00D53ED8 /* Supporting Files */,
+			);
+			name = QuartzCoreDemo;
+			sourceTree = "<group>";
+		};
+		7F19ECB015E27FCA00D53ED8 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				7F19ECD515E2807A00D53ED8 /* InfoPlist.strings */,
+				7F19ECD615E2807A00D53ED8 /* MainMenu.xib */,
+				7F19ECB115E27FCA00D53ED8 /* QuartzCoreDemo-Info.plist */,
+				7F19ECB515E27FCA00D53ED8 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7F19ECA415E27FCA00D53ED8 /* QuartzCoreDemo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7F19ECC315E27FCB00D53ED8 /* Build configuration list for PBXNativeTarget "QuartzCoreDemo" */;
+			buildPhases = (
+				7F19ECA115E27FCA00D53ED8 /* Sources */,
+				7F19ECA215E27FCA00D53ED8 /* Frameworks */,
+				7F19ECA315E27FCA00D53ED8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = QuartzCoreDemo;
+			productName = QuartzCoreDemo;
+			productReference = 7F19ECA515E27FCA00D53ED8 /* QuartzCoreDemo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7F19EC9C15E27FCA00D53ED8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0440;
+				ORGANIZATIONNAME = GNUstep;
+			};
+			buildConfigurationList = 7F19EC9F15E27FCA00D53ED8 /* Build configuration list for PBXProject "QuartzCoreDemo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7F19EC9A15E27FCA00D53ED8;
+			productRefGroup = 7F19ECA615E27FCA00D53ED8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7F19ECA415E27FCA00D53ED8 /* QuartzCoreDemo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7F19ECA315E27FCA00D53ED8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F19ECD315E2807000D53ED8 /* GNUstep.png in Resources */,
+				7F19ECD415E2807000D53ED8 /* GNUstep.tiff in Resources */,
+				7F19ECD715E2807A00D53ED8 /* InfoPlist.strings in Resources */,
+				7F19ECD815E2807A00D53ED8 /* MainMenu.xib in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7F19ECA115E27FCA00D53ED8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F19ECB615E27FCA00D53ED8 /* main.m in Sources */,
+				7F19ECD115E2807000D53ED8 /* AppController.m in Sources */,
+				7F19ECD215E2807000D53ED8 /* DemoOpenGLView.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		7F19ECC115E27FCB00D53ED8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		7F19ECC215E27FCB00D53ED8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		7F19ECC415E27FCB00D53ED8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/QuartzCoreDemo-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		7F19ECC515E27FCB00D53ED8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/QuartzCoreDemo-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		7F19ECDE15E2812A00D53ED8 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					"GSIMPL_UNDER_COCOA=1",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-framework",
+					GSQuartzCore,
+				);
+				SDKROOT = macosx;
+			};
+			name = UsingGNUstepImpl;
+		};
+		7F19ECDF15E2812A00D53ED8 /* UsingGNUstepImpl */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../Headers",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/QuartzCoreDemo-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = UsingGNUstepImpl;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7F19EC9F15E27FCA00D53ED8 /* Build configuration list for PBXProject "QuartzCoreDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F19ECC115E27FCB00D53ED8 /* Debug */,
+				7F19ECDE15E2812A00D53ED8 /* UsingGNUstepImpl */,
+				7F19ECC215E27FCB00D53ED8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7F19ECC315E27FCB00D53ED8 /* Build configuration list for PBXNativeTarget "QuartzCoreDemo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F19ECC415E27FCB00D53ED8 /* Debug */,
+				7F19ECDF15E2812A00D53ED8 /* UsingGNUstepImpl */,
+				7F19ECC515E27FCB00D53ED8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 7F19EC9C15E27FCA00D53ED8 /* Project object */;
+}

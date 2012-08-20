@@ -76,6 +76,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		7F19ECE415E2813200D53ED8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7F19ECE015E2813200D53ED8 /* QuartzCoreDemo.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7F19ECA515E27FCA00D53ED8;
+			remoteInfo = QuartzCoreDemo;
+		};
 		7F7422AC1594C32000AEB117 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
@@ -107,6 +114,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7F19ECE015E2813200D53ED8 /* QuartzCoreDemo.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = QuartzCoreDemo.xcodeproj; path = Demo/QuartzCoreDemo.xcodeproj; sourceTree = "<group>"; };
 		7F1DE5A215D6EBAC00C2AE2A /* CAGLShader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGLShader.h; sourceTree = "<group>"; };
 		7F1DE5A315D6EBAC00C2AE2A /* CAGLShader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CAGLShader.m; sourceTree = "<group>"; };
 		7F1DE5A615D6F35D00C2AE2A /* CAGLProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CAGLProgram.h; sourceTree = "<group>"; };
@@ -195,6 +203,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7F19ECE115E2813200D53ED8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7F19ECE515E2813200D53ED8 /* QuartzCoreDemo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		7F1DE5AA15D6FD4C00C2AE2A /* Shaders */ = {
 			isa = PBXGroup;
 			children = (
@@ -237,6 +253,7 @@
 			isa = PBXGroup;
 			children = (
 				7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */,
+				7F19ECE015E2813200D53ED8 /* QuartzCoreDemo.xcodeproj */,
 				7F74229D1594C2A400AEB117 /* OpenGL.framework */,
 				7F7751681594AE2A00F56E92 /* GSQuartzCore */,
 				7F7751611594AE2A00F56E92 /* Frameworks */,
@@ -454,6 +471,10 @@
 					ProductGroup = 7F7422A31594C32000AEB117 /* Products */;
 					ProjectRef = 7F7422A21594C32000AEB117 /* GNUstepQuartzCoreTests.xcodeproj */;
 				},
+				{
+					ProductGroup = 7F19ECE115E2813200D53ED8 /* Products */;
+					ProjectRef = 7F19ECE015E2813200D53ED8 /* QuartzCoreDemo.xcodeproj */;
+				},
 			);
 			projectRoot = "";
 			targets = (
@@ -463,6 +484,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		7F19ECE515E2813200D53ED8 /* QuartzCoreDemo.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = QuartzCoreDemo.app;
+			remoteRef = 7F19ECE415E2813200D53ED8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		7F7422AD1594C32000AEB117 /* hello.app */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.application;

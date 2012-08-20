@@ -327,16 +327,19 @@
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
   
+  // apply transform and translate to position
+  transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
+  transform = CATransform3DConcat([layer transform], transform);
+  
+  if (sizeof(transform.m11) == sizeof(GLdouble))
+    glLoadMatrixd((GLdouble*)&transform);
+  else
+    glLoadMatrixf((GLfloat*)&transform);
+
   // if the layer was offscreen-rendered, render just the texture
   CAGLTexture * texture = [[layer backingStore] offscreenRenderTexture];
   if (texture)
     {
-      transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
-      if (sizeof(transform.m11) == sizeof(GLdouble))
-        glLoadMatrixd((GLdouble*)&transform);
-      else
-        glLoadMatrixf((GLfloat*)&transform);
-
       /* have to paint shadow? */
       if ([layer shadowOpacity] > 0.0)
         {
@@ -448,7 +451,7 @@
               components[3] *= [layer shadowOpacity];
             }
           else if (CGColorGetNumberOfComponents([layer shadowColor]) == 3)
-	    {
+            {
               static BOOL warned = NO;
               if (!warned)
                 {
@@ -461,8 +464,8 @@
               components[2] = componentsOrig[2];
               components[3] = 1.0;
               components[3] *= [layer shadowOpacity]; 
-	    }
-	  else
+            }
+          else
             {
               NSLog(@"Invalid number of color components in shadowColor");
             }
@@ -600,17 +603,6 @@
       
       return;
     }
-
-
-  
-  // apply transform and translate to position
-  transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
-  transform = CATransform3DConcat([layer transform], transform);
-  
-  if (sizeof(transform.m11) == sizeof(GLdouble))
-    glLoadMatrixd((GLdouble*)&transform);
-  else
-    glLoadMatrixf((GLfloat*)&transform);
 
   [layer displayIfNeeded];
 

@@ -163,6 +163,7 @@ Class classOfTestOpenGLView()
     [testsMenu addItemWithTitle:@"Animation 6" action:@selector(animation6:) keyEquivalent:@"6"];
     [testsMenu addItemWithTitle:@"Animation 7" action:@selector(animation7:) keyEquivalent:@"7"];
     [testsMenu addItemWithTitle:@"Animation 8" action:@selector(animation8:) keyEquivalent:@"8"];
+    [testsMenu addItemWithTitle:@"Animation 9" action:@selector(animation9:) keyEquivalent:@"9"];
     [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
   
@@ -221,7 +222,7 @@ Class classOfTestOpenGLView()
   static BOOL toggle = NO;
   CALayer * layer = [_renderer layer];
   if (!toggle)
-    [layer setTransform: CATransform3DMakeRotation(M_PI_4/2, 0, 0, 1)];
+    [layer setTransform: CATransform3DMakeRotation(M_PI_4, 0, 0, 1)];
   else
     [layer setTransform: CATransform3DIdentity];
   
@@ -262,6 +263,22 @@ Class classOfTestOpenGLView()
   else
     [layer setOpacity: 1.0];
   
+  toggle = !toggle;
+}
+
+- (void) animation9:sender
+{
+  static BOOL toggle = NO;
+  CALayer * layer = _theSublayer;
+  CATransform3D t3d = CATransform3DMakeRotation(M_PI_4, 0, 1, 0);
+  if (!toggle)
+  {
+    [layer setTransform: t3d];
+  }
+  else
+  {
+    [layer setTransform: CATransform3DIdentity];
+  }
   toggle = !toggle;
 }
 
@@ -341,8 +358,14 @@ Class classOfTestOpenGLView()
   [layer addSublayer: layer2];
   _theSublayer = [layer2 retain];
   
+  #if 0
   [layer setSublayerTransform: CATransform3DMakeRotation(M_PI_2 * 0.25 /* 45 deg */, 0, 0, 1)];
-
+  #else
+  CATransform3D perspectiveTransform = CATransform3DIdentity;
+  perspectiveTransform.m34 = 1. / 500.;
+  [layer setSublayerTransform: perspectiveTransform];
+  #endif
+  
   CGColorRelease(yellowColor);
   CGColorRelease(greenColor);
 }
@@ -365,7 +388,7 @@ Class classOfTestOpenGLView()
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -1, 1);
+  glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -500, 500);
     
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();

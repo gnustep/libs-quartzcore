@@ -32,9 +32,19 @@
 #else
 #import <OpenGL/gl.h>
 #endif
-#import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
+
+#if !(GSIMPL_UNDER_COCOA)
+#import <AppKit/AppKit.h>
 #import <QuartzCore/QuartzCore.h>
+#else
+#import <AppKit/NSOpenGL.h>
+#import <AppKit/NSButton.h>
+#import <AppKit/NSApplication.h>
+#import <AppKit/NSMenu.h>
+#import <GSQuartzCore/AppleSupport.h>
+#import <GSQuartzCore/QuartzCore.h>
+#endif
 
 #if 0
 CATransform3D frustumTransform(float left, float right, float bottom, float top, float znear, float zfar)
@@ -136,8 +146,13 @@ CATransform3D frustumTransform(float left, float right, float bottom, float top,
   CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);
   
   /* Create renderer */
+#if GNUSTEP || GSIMPL_UNDER_COCOA
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                               options: nil];
+#else
+  _renderer = [CARenderer rendererWithCGLContext: [self openGLContext].CGLContextObj
+                                         options: nil];
+#endif
   [_renderer retain];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
 
@@ -170,11 +185,11 @@ CATransform3D frustumTransform(float left, float right, float bottom, float top,
                                               ofType: @"png"];
     if (!image)
       {
-	NSLog(@"Could not load GNUstep logo image.");
-	// FIXME: Opal crashes on CGImageGetWidth()/Height() for NULL arg
-	exit(-1);
+        NSLog(@"Could not load GNUstep logo image.");
+        // FIXME: Opal crashes on CGImageGetWidth()/Height() for NULL arg
+        exit(-1);
       }
-    [gnustepLogoLayer setContents: image];
+    [gnustepLogoLayer setContents: (id)image];
     [gnustepLogoLayer setBounds: CGRectMake(0, 0,
                                             CGImageGetWidth(image),
                                             CGImageGetHeight(image))];

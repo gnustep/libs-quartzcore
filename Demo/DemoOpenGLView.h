@@ -25,6 +25,12 @@
 */
 
 #import <AppKit/NSOpenGLView.h>
+
+#if !(GSIMPL_UNDER_COCOA)
+#else
+#import <GSQuartzCore/AppleSupport.h>
+#endif
+
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CGGeometry.h>
 
