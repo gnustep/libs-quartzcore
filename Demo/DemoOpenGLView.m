@@ -46,34 +46,9 @@
 #import <GSQuartzCore/QuartzCore.h>
 #endif
 
-#if 0
-CATransform3D frustumTransform(float left, float right, float bottom, float top, float znear, float zfar)
-{
-  CATransform3D frustumTransform;
+#import "TextLayer.h"
+#import "GradientLayer.h"
 
-  frustumTransform.m11 = (2.0 * znear) / (right - left);
-  frustumTransform.m12 = 0.0;
-  frustumTransform.m13 = (right + left) / (right - left);
-  frustumTransform.m14 = 0.0;
-
-  frustumTransform.m21 = 0.0;
-  frustumTransform.m22 = (2.0 * znear) / (top - bottom);
-  frustumTransform.m23 = (top + bottom) / (top - bottom);
-  frustumTransform.m24 = 0.0;
-
-  frustumTransform.m31 = 0.0;
-  frustumTransform.m32 = 0.0;
-  frustumTransform.m33 = (-zfar - znear) / (zfar - znear);
-  frustumTransform.m34 = (left - right) * zfar / (zfar - znear);
-
-  frustumTransform.m41 = 0.0;
-  frustumTransform.m42 = 0.0;
-  frustumTransform.m43 = -1.0;
-  frustumTransform.m44 = 0.0;
-
-  return frustumTransform;
-}
-#endif
 
 @implementation DemoOpenGLView
 
@@ -144,7 +119,9 @@ CATransform3D frustumTransform(float left, float right, float bottom, float top,
   [super prepareOpenGL];
   CGColorRef whiteColor = CGColorCreateGenericRGB(1, 1, 1, 1);
   CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);
-  
+  CGColorRef blackColor = CGColorCreateGenericRGB(0, 0, 0, 1);
+  CGColorRef grayColor = CGColorCreateGenericRGB(0.4, 0.4, 0.4, 1);
+
   /* Create renderer */
 #if GNUSTEP || GSIMPL_UNDER_COCOA
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
@@ -198,7 +175,7 @@ CATransform3D frustumTransform(float left, float right, float bottom, float top,
 
     [CATransaction flush];
     
-#if GNUSTEP
+#if GNUSTEP || GSIMPL_UNDER_COCOA
     // Implicit animation can't pick up the current time unless the
     // current time has been calculated. This is a bug in QuartzCore.
 
@@ -215,13 +192,42 @@ CATransform3D frustumTransform(float left, float right, float bottom, float top,
     
     [self performSelector: @selector(gnustepLogoLayerStage2:)
                withObject: gnustepLogoLayer 
-               afterDelay: 0];
+               afterDelay: 3];
     
   }
+  {
+    TextLayer * gnustepTitleLayer = [TextLayer layer];
+    [_rootLayer addSublayer: gnustepTitleLayer];
+    [gnustepTitleLayer setText: @"GNUstep"];
+    [gnustepTitleLayer setBounds: CGRectMake(0, 0, 250, 50)];
+    [gnustepTitleLayer setPosition: CGPointMake(300, [self frame].size.height - 100)];
+    [gnustepTitleLayer setColor: grayColor];
+    [gnustepTitleLayer setShadowColor: blackColor];
+    [gnustepTitleLayer setShadowOpacity: 1.0];
+    [gnustepTitleLayer setShadowOffset: CGSizeMake(0, 0)];
+    [gnustepTitleLayer setOpacity: 0];
+    [gnustepTitleLayer setFontSize: 48];
+    [gnustepTitleLayer setNeedsDisplay];
+    
+    /* After layer is displayed, shrink it */
+    [self performSelector: @selector(gnustepTitleLayerStage1:)
+               withObject: gnustepTitleLayer
+               afterDelay: 0.1];
+    
+    [self performSelector: @selector(gnustepTitleLayerStage2:)
+               withObject: gnustepTitleLayer
+               afterDelay: 3];
+
+
+  }
+  
+  
   [self startAnimation];
   
   CGColorRelease(yellowColor);
   CGColorRelease(whiteColor);
+  CGColorRelease(blackColor);
+  CGColorRelease(grayColor);
 
   glViewport(0, 0, [self frame].size.width, [self frame].size.height);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -231,41 +237,137 @@ CATransform3D frustumTransform(float left, float right, float bottom, float top,
 - (void) gnustepLogoLayerStage2: (CALayer *)gnustepLogoLayer
 {
   [CATransaction begin];
-  [CATransaction setAnimationDuration: 3];
-  CATransform3D transform = CATransform3DMakeRotation(-M_PI, 0, 1, 0);
-//  transform = CATransform3DTranslate(transform, 0, 0, -300);
+  [CATransaction setAnimationDuration: 1];
+  CATransform3D transform = CATransform3DIdentity;
+  /*
+  transform = CATransform3DTranslate(transform, -100, 50, 0);
+  We will perform setPosition instead.
+  */
+  
+  /*
+  transform = CATransform3DScale(transform, 0.4, 0.4, 1.0);
+  Scaling is broken.
+  We will perform setBounds instead.
+  */
+  transform = CATransform3DRotate(transform,  M_PI_4, 0, 1, 0);
   [gnustepLogoLayer setTransform: transform];
+  
+  [gnustepLogoLayer setPosition: CGPointMake(150,
+                                             [self frame].size.height - 100)];
+  [gnustepLogoLayer setBounds: CGRectMake(0, 0,
+                                          [gnustepLogoLayer bounds].size.width * 0.7,
+                                          [gnustepLogoLayer bounds].size.height * 0.7)];
+
   [CATransaction commit];
 
-  [self performSelector: @selector(gnustepLogoLayerStage3:)
-             withObject: gnustepLogoLayer
-             afterDelay: 3];
+  [self performSelector: @selector(presentMenu:)
+             withObject: nil
+             afterDelay: 1];
 }
-- (void) gnustepLogoLayerStage3: (CALayer *)gnustepLogoLayer
+
+- (void) gnustepTitleLayerStage1: (TextLayer *)gnustepTitleLayer
 {
   [CATransaction begin];
-  [CATransaction setAnimationDuration: 1.5];
-  CATransform3D transform = CATransform3DMakeRotation(-M_PI_2*3, 0, 1, 0);
-//  transform = CATransform3DTranslate(transform, 0, 0, -300);
-  [gnustepLogoLayer setTransform: transform];
-  [CATransaction commit];
+  [CATransaction setAnimationDuration: 0.01];
 
-  [self performSelector: @selector(gnustepLogoLayerStage4:)
-             withObject: gnustepLogoLayer
-             afterDelay: 1.5];
+  [gnustepTitleLayer setBounds: CGRectMake(0, 0, 1, 50)];
+  [gnustepTitleLayer setPosition: CGPointMake([gnustepTitleLayer position].x - 250/2, [gnustepTitleLayer position].y)];
+  [gnustepTitleLayer setContentsRect: CGRectMake(0, 0, 1./250., 1.)];
+  
+  [CATransaction commit];
 }
-- (void) gnustepLogoLayerStage4: (CALayer *)gnustepLogoLayer
+- (void) gnustepTitleLayerStage2: (TextLayer *)gnustepTitleLayer
 {
+
   [CATransaction begin];
-  [CATransaction setAnimationDuration: 1.5];
-  CATransform3D transform = CATransform3DMakeRotation(0, 0, 1, 0);
-//  transform = CATransform3DTranslate(transform, 0, 0, -300);
-  [gnustepLogoLayer setTransform: transform];
+  /* No support for disabling actions through CATransaction yet... */
+  [CATransaction setAnimationDuration: 0.001];
+
+  [gnustepTitleLayer setOpacity: 1];
+  
+  [CATransaction commit],
+
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 1];
+
+  [gnustepTitleLayer setBounds: CGRectMake(0, 0, 250, 50)];
+  [gnustepTitleLayer setPosition: CGPointMake([gnustepTitleLayer position].x + 250/2, [gnustepTitleLayer position].y)];
+  [gnustepTitleLayer setContentsRect: CGRectMake(0, 0, 1., 1.)];
+  
   [CATransaction commit];
 
-  [self performSelector: @selector(gnustepLogoLayerStage2:)
-             withObject: gnustepLogoLayer
-             afterDelay: 1.5];
+}
+
+- (void) presentMenu: (id)object
+{
+#define MENU_ITEM(name) [NSDictionary dictionaryWithObjectsAndKeys: name, @"name", nil]
+  NSArray * items = [NSArray arrayWithObjects:
+   MENU_ITEM(@"Welcome to"),
+   MENU_ITEM(@"GNUstep"),
+   MENU_ITEM(@"QuartzCore"),
+   MENU_ITEM(@"Core Animation"),
+   nil];
+   
+  
+  int index = 0;
+  for (id item in items)
+    {
+      /* Problems with setTimeOffset:, in both Cocoa and GNUstep.
+         So we'll just add the object at different times.
+         */
+      [self performSelector: @selector(presentMenuItem:)
+                 withObject: item
+                 afterDelay: index * 0.5];
+                 
+      index++;
+    }
+}
+- (void) presentMenuItem: (id) item
+{
+  static int index = 0;
+  
+  CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);
+  CGColorRef blackColor = CGColorCreateGenericRGB(0, 0, 0, 1);
+
+  /* Create a background gradient layer */
+  GradientLayer * backgroundLayer = [GradientLayer layer];
+  [backgroundLayer setBounds: CGRectMake(0, 0, 200, 50)];
+  [backgroundLayer setPosition: CGPointMake([_rootLayer bounds].size.width - [backgroundLayer bounds].size.width/2, [_rootLayer bounds].size.height/2 - index * 50)];
+  [backgroundLayer setNeedsDisplay];
+  [_rootLayer addSublayer: backgroundLayer];
+  
+  /* Create text layer */
+  TextLayer * textLayer = [TextLayer layer];
+  [textLayer setBounds: [backgroundLayer bounds]];
+  [textLayer setPosition: CGPointMake([backgroundLayer bounds].size.width/2, [backgroundLayer bounds].size.height/2)];
+  [textLayer setText: [item valueForKey: @"name"]];
+  [textLayer setColor: blackColor];
+  [textLayer setShadowRadius: 1.0];
+  [textLayer setShadowOpacity: 1.0];
+  [textLayer setShadowOffset: CGSizeZero];
+  [textLayer setFontSize: 16];
+  [textLayer setNeedsDisplay];
+  [backgroundLayer addSublayer: textLayer];
+  
+  CABasicAnimation * slideIn = [CABasicAnimation animationWithKeyPath: @"position"];
+  CGPoint fromPt = CGPointMake([_rootLayer bounds].size.width + [backgroundLayer bounds].size.width/2, [backgroundLayer position].y);
+  CGPoint toPt = [backgroundLayer position];
+  [slideIn setFromValue: [NSValue valueWithBytes: &fromPt objCType: @encode(CGPoint)]];
+  [slideIn setToValue: [NSValue valueWithBytes: &toPt objCType: @encode(CGPoint)]];
+  [slideIn setTimingFunction: [CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault]];
+  [slideIn setDuration: 1];
+  //[slideIn setFillMode: kCAFillModeBackwards];
+  [slideIn setSpeed: 1];
+  
+  [backgroundLayer addAnimation: slideIn forKey: @"position"];
+  
+  CGColorRelease(blackColor);
+  CGColorRelease(yellowColor);
+  
+  index ++;
+  
+  /* Force update of painted content. Not needed under Cocoa. */
+  [_renderer addUpdateRect: [_renderer bounds]];
 }
 
 - (void) timerAnimation: (NSTimer *)timer
@@ -303,6 +405,50 @@ CATransform3D frustumTransform(float left, float right, float bottom, float top,
   glVertex2f(bounds.origin.x+bounds.size.width, bounds.origin.y+bounds.size.height);
   glVertex2f(bounds.origin.x, bounds.origin.y+bounds.size.height);
   glEnd();
+}
+
+- (void) mouseDown:(NSEvent *)theEvent
+{
+  /* We don't yet have coordinate system conversion in GNUstep QuartzCore */
+  /* Let's perform it manually. */
+  NSPoint curPoint = [self convertPoint:[theEvent locationInWindow] fromView:nil];
+  //curPoint.x -= [_renderer bounds].size.width/2;
+  //curPoint.y -= [_renderer bounds].size.height/2;
+  
+  /* No support for frame. This means we can play only with immediate nontransformed
+     sublayers of the root layer, and only after applying positions to rects. */
+  for (CALayer * sublayer in [_rootLayer sublayers])
+    {
+      /* A primitive way to calculate frame */
+      CGRect frame = [sublayer bounds];
+      frame.origin = CGPointMake([sublayer position].x - frame.size.width/2, [sublayer position].y - frame.size.height/2);
+      if ([sublayer isKindOfClass: [GradientLayer class]])
+        {
+          /* CGRectContainsPoint: done this way, a primitive way of detecting clickable 'buttons' on the right side. */
+          
+          /*
+          Broken under GNUstep:
+          if (CGRectContainsPoint(frame, NSPointToCGPoint(curPoint)))
+            {
+              [sublayer setTransform: CATransform3DMakeTranslation(-10, 0, 0)];
+            }
+          else
+            {
+              [sublayer setTransform: CATransform3DIdentity];
+            }
+            */
+            
+            
+          if (CGRectContainsPoint(frame, NSPointToCGPoint(curPoint)))
+            {
+              [sublayer setBounds: CGRectMake(0, 0, 300, 50)];
+            }
+          else
+            {
+              [sublayer setBounds: CGRectMake(0, 0, 200, 50)];
+            }
+        }
+    }
 }
 
 @end

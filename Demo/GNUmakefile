@@ -5,7 +5,9 @@ APP_NAME = QuartzCoreDemo
 QuartzCoreDemo_OBJC_FILES = \
 	main.m \
 	AppController.m \
-	DemoOpenGLView.m
+	DemoOpenGLView.m \
+	TextLayer.m \
+	GradientLayer.m
 	
 QuartzCoreDemo_RESOURCE_FILES = \
 	GNUstep.tiff \

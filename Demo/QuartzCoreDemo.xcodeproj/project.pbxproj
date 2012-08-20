@@ -17,6 +17,8 @@
 		7F19ECD815E2807A00D53ED8 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F19ECD615E2807A00D53ED8 /* MainMenu.xib */; };
 		7F19ECFE15E2826D00D53ED8 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F19ECFD15E2826D00D53ED8 /* OpenGL.framework */; };
 		7F19ED0015E2827300D53ED8 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7F19ECFF15E2827300D53ED8 /* QuartzCore.framework */; };
+		7F19ED0315E292B000D53ED8 /* TextLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F19ED0215E292B000D53ED8 /* TextLayer.m */; };
+		7F19ED0715E2A21900D53ED8 /* GradientLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F19ED0615E2A21800D53ED8 /* GradientLayer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +39,11 @@
 		7F19ECD615E2807A00D53ED8 /* MainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = MainMenu.xib; path = Mac/MainMenu.xib; sourceTree = SOURCE_ROOT; };
 		7F19ECFD15E2826D00D53ED8 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		7F19ECFF15E2827300D53ED8 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		7F19ED0115E292B000D53ED8 /* TextLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextLayer.h; sourceTree = "<group>"; };
+		7F19ED0215E292B000D53ED8 /* TextLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextLayer.m; sourceTree = "<group>"; };
+		7F19ED0415E292BB00D53ED8 /* GNUmakefile */ = {isa = PBXFileReference; lastKnownFileType = text; path = GNUmakefile; sourceTree = "<group>"; };
+		7F19ED0515E2A21800D53ED8 /* GradientLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GradientLayer.h; sourceTree = "<group>"; };
+		7F19ED0615E2A21800D53ED8 /* GradientLayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GradientLayer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +105,10 @@
 				7F19ECCC15E2807000D53ED8 /* AppController.m */,
 				7F19ECCD15E2807000D53ED8 /* DemoOpenGLView.h */,
 				7F19ECCE15E2807000D53ED8 /* DemoOpenGLView.m */,
+				7F19ED0115E292B000D53ED8 /* TextLayer.h */,
+				7F19ED0215E292B000D53ED8 /* TextLayer.m */,
+				7F19ED0515E2A21800D53ED8 /* GradientLayer.h */,
+				7F19ED0615E2A21800D53ED8 /* GradientLayer.m */,
 				7F19ECCF15E2807000D53ED8 /* GNUstep.png */,
 				7F19ECD015E2807000D53ED8 /* GNUstep.tiff */,
 				7F19ECB015E27FCA00D53ED8 /* Supporting Files */,
@@ -108,6 +119,7 @@
 		7F19ECB015E27FCA00D53ED8 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				7F19ED0415E292BB00D53ED8 /* GNUmakefile */,
 				7F19ECD515E2807A00D53ED8 /* InfoPlist.strings */,
 				7F19ECD615E2807A00D53ED8 /* MainMenu.xib */,
 				7F19ECB115E27FCA00D53ED8 /* QuartzCoreDemo-Info.plist */,
@@ -143,7 +155,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0440;
-				ORGANIZATIONNAME = GNUstep;
+				ORGANIZATIONNAME = "Free Software Foundation";
 			};
 			buildConfigurationList = 7F19EC9F15E27FCA00D53ED8 /* Build configuration list for PBXProject "QuartzCoreDemo" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -184,6 +196,8 @@
 				7F19ECB615E27FCA00D53ED8 /* main.m in Sources */,
 				7F19ECD115E2807000D53ED8 /* AppController.m in Sources */,
 				7F19ECD215E2807000D53ED8 /* DemoOpenGLView.m in Sources */,
+				7F19ED0315E292B000D53ED8 /* TextLayer.m in Sources */,
+				7F19ED0715E2A21900D53ED8 /* GradientLayer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

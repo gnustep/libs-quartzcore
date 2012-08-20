@@ -1,5 +1,23 @@
 2012-08-20  Ivan Vučica  <ivan@vucica.net>
 
+	* Demo/DemoOpenGLView.m:
+	Added title. Added 3d animation of logo. Added menu buttons.
+	
+	* Demo/GNUmakefile:
+	* Demo/QuartzCoreDemo.xcodeproj/project.pbxproj:
+	* Demo/GradientLayer.h:
+	* Demo/GradientLayer.m:
+	* Demo/TextLayer.h
+	* Demo/TextLayer.m:
+	Wrote basic gradient and text layer. Text layer uses CoreText
+	for painting.
+
+	* README.markdown:
+	Noted that scaling transform does not animate correctly,  and that 
+	the frame property of CALayer is unsupported.
+
+2012-08-20  Ivan Vučica  <ivan@vucica.net>
+
 	* Demo/DemoOpenGLView.h:
 	* Demo/DemoOpenGLView.m:
 	Added support for running under OS X, but with GNUstep implementation.

@@ -65,6 +65,7 @@ implementation.
       RGBA, is not supported.
     * No support for layouts
     * No support for autoresizing
+    * `frame` property is unsupported.
 
 * **`CABasicAnimation`**: The only supported animation type.
 
@@ -79,6 +80,7 @@ implementation.
     * `byValue` is not supported.
     * Timing functions are supported.
     * Value functions are not supported at this time.
+    * Animating a `CATransform3D` with a scale component is broken.
 
 * **`CARenderer`**: The only supported way of rendering. This means layers
   cannot be hosted in an `NSView` at this time.
