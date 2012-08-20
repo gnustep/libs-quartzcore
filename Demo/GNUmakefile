@@ -13,7 +13,7 @@ QuartzCoreDemo_RESOURCE_FILES = \
 	GNUstep.tiff \
 	GNUstep.png
 
-ADDITIONAL_LDFLAGS += $(shell pkg-config --libs cairo)
+ADDITIONAL_LDFLAGS += $(shell pkg-config --libs cairo) -L../Source/QuartzCore.framework
 
 ADDITIONAL_OBJCFLAGS += -Wall -g -O0 -std=gnu99
 ADDITIONAL_CFLAGS += -Wall -g -O0 -std=gnu99

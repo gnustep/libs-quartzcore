@@ -36,6 +36,11 @@
 #import <GSQuartzCore/QuartzCore.h>
 #endif
 
+#if GNUSTEP
+#import <CoreText/CoreText.h>
+#import <CoreText/CTFont.h>
+#endif
+
 @interface TextLayer : CALayer
 {
   NSString * _text;
