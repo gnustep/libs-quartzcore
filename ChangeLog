@@ -1,4 +1,19 @@
 2012-10-18  Ivan Vučica  <ivan@vucica.net>
+
+	* Demo/DemoOpenGLView.m:
+	Resolved a bug with animating 'buttons' via setTransform:. Verified
+	correctness of a few other setTransform:-involving pieces of code
+	that was marked as broken.
+
+	* Source/CAAnimation.m:
+	Fixed linearInterpolationQuaternion() to avoid returning NaN values
+	in case input quaternions are the same.
+
+	* Source/CATransform3D.m:
+	In a debug piece of code, replaced GLfloat with CGFloat.
+
+2012-10-18  Ivan Vučica  <ivan@vucica.net>
+
 	* Demo/DemoOpenGLView.m:
 	* Headers/QuartzCore/CATransaction.h:
 	* Source/CATransaction.m:

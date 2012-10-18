@@ -507,10 +507,34 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
     // slerp
 	GSQuartzCoreQuaternion qr;
     
+    /* reduction of calculations */
+    if (!memcmp(&a, &b, sizeof(a)))
+      {
+        /* aside from making less calculations, this will also
+           fix NaNs that would be returned if quaternions are equal */
+        return a;
+      }
+    if (fraction == 0.)
+      {
+        return a;
+      }
+    if (fraction == 1.)
+      {
+        return b;
+      }
+    
     CGFloat dotproduct = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 	CGFloat theta, st, sut, sout, coeff1, coeff2;
 
 	theta = acos(dotproduct);
+    if (theta == 0.0)
+      {
+        /* shouldn't happen, since we already checked for equality of 
+           inbound quaternions */
+        /* if we didn't make this check, we'd get a lot of NaNs. */
+        return a;
+      }
+    
 	if (theta<0.0)
       theta=-theta;
 	
