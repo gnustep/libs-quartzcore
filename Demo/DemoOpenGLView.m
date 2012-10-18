@@ -280,9 +280,8 @@
 {
 
   [CATransaction begin];
-  /* No support for disabling actions through CATransaction yet... */
-  [CATransaction setAnimationDuration: 0.001];
-
+  [CATransaction setDisableActions: YES];
+  
   [gnustepTitleLayer setOpacity: 1];
   
   [CATransaction commit],

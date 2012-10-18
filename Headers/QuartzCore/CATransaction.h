@@ -33,6 +33,7 @@
 {
   CFTimeInterval _animationDuration;
   CAMediaTimingFunction *_animationTimingFunction;
+  BOOL _disableActions;
   
   NSMutableArray *_actions;
   BOOL _implicit;
@@ -54,12 +55,16 @@
 + (CAMediaTimingFunction *) animationTimingFunction;
 + (void) setAnimationTimingFunction: (CAMediaTimingFunction *)function;
 
++ (BOOL) disableActions;
++ (void) setDisableActions: (BOOL)disableActions;
+
 @end
 
+extern NSString *kCATransactionAnimationDuration;
+extern NSString *kCATransactionAnimationTimingFunction;
+extern NSString *kCATransactionDisableActions;
+
 // TODO: setValue:forKey: for constants:
-// - kCATransactionAnimationDuration
-// - kCATransactionDisableActions
-// - kCATransactionAnimationTimingFunction
 // - kCATransactionCompletionBlock
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

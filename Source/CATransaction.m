@@ -31,6 +31,10 @@
 #import "CATransaction+FrameworkPrivate.h"
 #import "CALayer+FrameworkPrivate.h"
 
+NSString *kCATransactionAnimationDuration = @"animationDuration";
+NSString *kCATransactionAnimationTimingFunction= @"animationTimingFunction";
+NSString *kCATransactionDisableActions = @"disableActions";
+
 static NSMutableArray *transactionStack = nil;
 
 @interface CATransaction ()
@@ -39,6 +43,7 @@ static NSMutableArray *transactionStack = nil;
 
 @property (assign) CFTimeInterval animationDuration;
 @property (retain) CAMediaTimingFunction *animationTimingFunction;
+@property (assign) BOOL disableActions;
 @property (retain) NSMutableArray *actions;
 @property (assign, getter=isImplicit) BOOL implicit;
 @end
@@ -46,6 +51,7 @@ static NSMutableArray *transactionStack = nil;
 @implementation CATransaction
 @synthesize animationDuration=_animationDuration;
 @synthesize animationTimingFunction=_animationTimingFunction;
+@synthesize disableActions=_disableActions;
 @synthesize actions=_actions;
 @synthesize implicit=_implicit;
 
@@ -107,6 +113,16 @@ static NSMutableArray *transactionStack = nil;
   [[self topTransaction] setAnimationTimingFunction: function];
 }
 
++ (BOOL) disableActions
+{
+    return [[self topTransaction] disableActions];
+}
+
++ (void) setDisableActions: (BOOL)disableActions
+{
+    [[self topTransaction] setDisableActions: disableActions];
+}
+
 + (id) valueForKey: (NSString *)key
 {
   return [[self topTransaction] valueForKey: key];
@@ -141,7 +157,8 @@ static NSMutableArray *transactionStack = nil;
   _actions = [[NSMutableArray alloc] init];
   _animationDuration = 0.25;
   _animationTimingFunction = [[CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault] retain];
-
+  _disableActions = NO;
+    
   return self;
 }
 
