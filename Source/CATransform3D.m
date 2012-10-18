@@ -242,7 +242,7 @@ CATransform3D CATransform3DInvert(CATransform3D t)
 /* code for debug output:
   for (int i = 0; i < 16; i++)
     {
-      printf("%g ", ((GLfloat*)&transform)[i]);
+      printf("%g ", ((CGFloat*)&transform)[i]);
       if (i%4 == 3) 
 	printf("\n");
     }

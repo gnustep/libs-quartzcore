@@ -239,31 +239,41 @@
   [CATransaction begin];
   [CATransaction setAnimationDuration: 1];
   CATransform3D transform = CATransform3DIdentity;
-  /*
-  transform = CATransform3DTranslate(transform, -100, 50, 0);
-  We will perform setPosition instead.
-  */
-  
-  /*
-  transform = CATransform3DScale(transform, 0.4, 0.4, 1.0);
-  Scaling is broken.
-  We will perform setBounds instead.
-  */
+  transform = CATransform3DTranslate(transform, -130, 100, 0);
+  transform = CATransform3DScale(transform, 0.7, 0.7, 1.0);
+
   transform = CATransform3DRotate(transform,  M_PI_4, 0, 1, 0);
   [gnustepLogoLayer setTransform: transform];
-  
-  [gnustepLogoLayer setPosition: CGPointMake(150,
-                                             [self frame].size.height - 100)];
-  [gnustepLogoLayer setBounds: CGRectMake(0, 0,
-                                          [gnustepLogoLayer bounds].size.width * 0.7,
-                                          [gnustepLogoLayer bounds].size.height * 0.7)];
-
   [CATransaction commit];
 
   [self performSelector: @selector(presentMenu:)
              withObject: nil
              afterDelay: 1];
 }
+
+- (void) gnustepLogoLayerStage2_lessTransforms: (CALayer *)gnustepLogoLayer
+{
+  /* Same as gnustepLogoLayerStage2:, except with less transforms and more
+     use of other properties for animation. */
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 1];
+  CATransform3D transform = CATransform3DIdentity;
+
+  transform = CATransform3DRotate(transform,  M_PI_4, 0, 1, 0);
+  [gnustepLogoLayer setTransform: transform];
+  [gnustepLogoLayer setPosition: CGPointMake(150,
+                                             [self frame].size.height - 100)];
+  [gnustepLogoLayer setBounds: CGRectMake(0, 0,
+                                          [gnustepLogoLayer bounds].size.width * 0.7,
+                                          [gnustepLogoLayer bounds].size.height * 0.7)];
+  [CATransaction commit];
+
+  [self performSelector: @selector(presentMenu:)
+             withObject: nil
+             afterDelay: 1];
+}
+
+
 
 - (void) gnustepTitleLayerStage1: (TextLayer *)gnustepTitleLayer
 {
@@ -330,8 +340,8 @@
 
   /* Create a background gradient layer */
   GradientLayer * backgroundLayer = [GradientLayer layer];
-  [backgroundLayer setBounds: CGRectMake(0, 0, 200, 50)];
-  [backgroundLayer setPosition: CGPointMake([_rootLayer bounds].size.width - [backgroundLayer bounds].size.width/2, [_rootLayer bounds].size.height/2 - index * 50)];
+  [backgroundLayer setBounds: CGRectMake(0, 0, 300, 50)];
+  [backgroundLayer setPosition: CGPointMake([_rootLayer bounds].size.width - [backgroundLayer bounds].size.width/2 + 50, [_rootLayer bounds].size.height/2 - index * 50)];
   [backgroundLayer setNeedsDisplay];
   [_rootLayer addSublayer: backgroundLayer];
   
@@ -423,21 +433,23 @@
       frame.origin = CGPointMake([sublayer position].x - frame.size.width/2, [sublayer position].y - frame.size.height/2);
       if ([sublayer isKindOfClass: [GradientLayer class]])
         {
-          /* CGRectContainsPoint: done this way, a primitive way of detecting clickable 'buttons' on the right side. */
-          
-          /*
-          Broken under GNUstep:
+          /* CGRectContainsPoint() is a primitive way of detecting clickable 'buttons' on the right side. */
+
+          /* Here we have two possible implementations of animating the button clicked on.
+             We can do it either via transforms or via changing bounds. We could also use 
+             setPosition:. */
+#if 1
           if (CGRectContainsPoint(frame, NSPointToCGPoint(curPoint)))
             {
-              [sublayer setTransform: CATransform3DMakeTranslation(-10, 0, 0)];
+              [sublayer setTransform: CATransform3DMakeTranslation(-50, 0, 0)];
             }
           else
             {
               [sublayer setTransform: CATransform3DIdentity];
             }
-            */
-            
-            
+
+#else
+
           if (CGRectContainsPoint(frame, NSPointToCGPoint(curPoint)))
             {
               [sublayer setBounds: CGRectMake(0, 0, 300, 50)];
@@ -446,6 +458,7 @@
             {
               [sublayer setBounds: CGRectMake(0, 0, 200, 50)];
             }
+#endif
         }
     }
 }
