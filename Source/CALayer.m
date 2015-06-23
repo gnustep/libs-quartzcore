@@ -73,6 +73,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize delegate=_delegate;
 @synthesize contents=_contents;
 @synthesize layoutManager=_layoutManager;
+@synthesize renderer=_renderer;
 @synthesize superlayer=_superlayer;
 @synthesize sublayers=_sublayers;
 @synthesize frame=_frame;
@@ -115,6 +116,30 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize animations=_animations;
 @synthesize animationKeys=_animationKeys;
 @synthesize backingStore=_backingStore;
+
+- (void) setBeginTime:(CFTimeInterval)beginTime
+{
+  _beginTime = beginTime;
+  [self takeNoteThatNextFrameTimeChanged];
+}
+
+- (void) takeNoteThatNextFrameTimeChanged
+{
+  if (_renderer != nil)
+      [_renderer takeNoteThatNextFrameTimeChanged];
+  else
+      [_superlayer takeNoteThatNextFrameTimeChanged];
+}
+
+- (void) addRenderer:(GSCARenderer *)renderer
+{
+  if(renderer != _renderer)
+    {
+      CARenderer * temp = _renderer;
+      _renderer = renderer;
+      [temp release];
+    }
+}
 
 /* *** dynamic synthesis of properties *** */
 #if 0

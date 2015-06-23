@@ -55,6 +55,30 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 @synthesize fillMode=_fillMode;
 @synthesize duration=_duration;
 @synthesize speed=_speed;
+@synthesize layers=_layers;
+
+- (void) setBeginTime:(CFTimeInterval)beginTime
+{
+  _beginTime = beginTime;
+  [self takeNoteThatNextFrameTimeChanged];
+}
+
+- (void) addLayer:(GSCALayer *)layer
+{
+  
+  if (![_layers containsObject:layer])
+    {
+      [_layers addObject:layer];
+    }
+}
+
+- (void) takeNoteThatNextFrameTimeChanged
+{
+  for (CALayer *layer in _layers)
+    {
+      [layer takeNoteThatNextFrameTimeChanged];
+    }
+}
 
 + (id) animation
 {
@@ -122,6 +146,8 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
                   forKey:keys[i]];
         }
     }
+    
+  _layers = [[NSMutableArray alloc] init];
   
   return self;
 }
@@ -187,6 +213,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 {
   [_timingFunction release];
   [_fillMode release];
+  [_layers release];
   
   [super dealloc];
 }

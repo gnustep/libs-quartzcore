@@ -70,8 +70,26 @@
 @implementation CARenderer
 @synthesize layer=_layer;
 @synthesize bounds=_bounds;
+@synthesize delegate;
 
 @synthesize GLContext=_GLContext;
+
+- (void) setLayer:(GSCALayer *)layer
+{
+  if (_layer != layer)
+    {
+      [_layer addRenderer: nil];
+      [layer addRenderer:self];
+        
+      [_layer release];
+      _layer = [layer retain];
+    }
+}
+
+- (void) takeNoteThatNextFrameTimeChanged
+{
+  [self.delegate calculateNewNextFrameTime];
+}
 
 /* *** class methods *** */
 /* Creates a renderer which renders into an OpenGL context. */

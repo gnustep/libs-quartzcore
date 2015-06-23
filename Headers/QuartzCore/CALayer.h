@@ -49,6 +49,7 @@ NSString *const kCAGravityBottomRight;
 NSString *const kCATransition;
 
 @class CAAnimation;
+@class CARenderer;
 
 #import "QuartzCore/CAAction.h"
 
@@ -67,6 +68,7 @@ NSString *const kCATransition;
   id _delegate;
   id _contents;
   id _layoutManager;
+  CARenderer * _renderer;
   CALayer * _superlayer;
   NSArray * _sublayers;
   CGRect _frame;
@@ -130,6 +132,7 @@ NSString *const kCATransition;
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
 @property (retain)                   id layoutManager;
+@property (retain)                   CARenderer *renderer;
 @property (nonatomic,readonly)       CALayer *superlayer;
 @property (nonatomic,copy)           NSArray *sublayers;
 @property (assign)                   CGRect frame;
@@ -175,6 +178,9 @@ NSString *const kCATransition;
 - (void) removeAnimationForKey: (NSString *)key;
 - (CAAnimation *) animationForKey:( NSString *)key;
 
+
+- (void) addRenderer: (CARenderer *)renderer;
+- (void) takeNoteThatNextFrameTimeChanged;
 - (void) addSublayer: (CALayer *)layer;
 - (void) removeFromSuperlayer;
 - (void) insertSublayer: (CALayer *)layer atIndex: (unsigned)index;

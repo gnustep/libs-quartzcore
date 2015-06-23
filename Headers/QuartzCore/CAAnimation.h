@@ -53,6 +53,7 @@
   NSString* _fillMode;
   CFTimeInterval _duration;
   float _speed;
+  NSMutableArray * _layers;
 
 }
 
@@ -62,6 +63,10 @@
 @property (retain) id delegate; /* note: it's not a bug that the delegate is retained */
 @property (retain) CAMediaTimingFunction *timingFunction;
 @property BOOL removedOnCompletion;
+@property (retain) NSMutableArray *layers;
+
+- (void) addLayer:(CALayer *) layer;
+- (void) takeNoteThatNextFrameTimeChanged;
 
 @end
 
