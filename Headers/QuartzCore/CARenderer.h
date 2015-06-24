@@ -82,7 +82,7 @@ typedef struct _CVTimeStamp
 + (CARenderer*)rendererWithNSOpenGLContext: (NSOpenGLContext *)context
                                    options: (NSDictionary *)options;
 
-@property (nonatomic, retain) CALayer *layer; /* root layer */
+@property (retain) CALayer *layer; /* root layer */
 @property (nonatomic, assign) CGRect bounds;
 @property (assign) id<GSCARendererDelegate> delegate;
 

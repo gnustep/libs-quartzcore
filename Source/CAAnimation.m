@@ -63,13 +63,16 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   [self takeNoteThatNextFrameTimeChanged];
 }
 
-- (void) addLayer: (GSCALayer *)layer
+- (void) addLayer: (CALayer *)layer
 {
-  
-  if (![_layers containsObject:layer])
+  for (CALayer *layerInArray in _layers)
     {
-      [_layers addObject:layer];
+      if(layer == layerInArray)
+        [NSException raise:NSGenericException
+                    format:@"Layer already added to animation"];
     }
+  
+  [_layers addPointer:layer];
 }
 
 - (void) takeNoteThatNextFrameTimeChanged
@@ -147,7 +150,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
         }
     }
     
-  _layers = [[NSMutableArray alloc] init];
+  _layers = [[NSPointerArray weakObjectsPointerArray] retain];
   
   return self;
 }
