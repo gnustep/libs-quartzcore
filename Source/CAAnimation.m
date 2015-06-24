@@ -39,6 +39,7 @@
 NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
 @interface CAAnimation ()
+@property (retain) NSPointerArray *layers;
 - (id) init;
 @end
 
@@ -63,7 +64,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   [self takeNoteThatNextFrameTimeChanged];
 }
 
-- (void) addLayer: (CALayer *)layer
+- (void) handleAddedToLayer: (CALayer *)layer
 {
   for (CALayer *layerInArray in _layers)
     {

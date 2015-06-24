@@ -86,7 +86,6 @@ typedef struct _CVTimeStamp
 @property (nonatomic, assign) CGRect bounds;
 @property (assign) id<GSCARendererDelegate> delegate;
 
-- (void) takeNoteThatNextFrameTimeChanged;
 - (void) addUpdateRect: (CGRect)updateRect;
 - (void) beginFrameAtTime: (CFTimeInterval)timeInterval
                 timeStamp: (CVTimeStamp *)timeStamp;

@@ -132,7 +132,6 @@ NSString *const kCATransition;
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
 @property (retain)                   id layoutManager;
-@property (retain)                   CARenderer *renderer;
 @property (nonatomic,readonly)       CALayer *superlayer;
 @property (nonatomic,copy)           NSArray *sublayers;
 @property (assign)                   CGRect frame;
@@ -179,7 +178,6 @@ NSString *const kCATransition;
 - (CAAnimation *) animationForKey:( NSString *)key;
 
 
-- (void) addRenderer: (CARenderer *)renderer;
 - (void) takeNoteThatNextFrameTimeChanged;
 - (void) addSublayer: (CALayer *)layer;
 - (void) removeFromSuperlayer;

@@ -29,5 +29,6 @@
 @class CALayer;
 
 @interface CAPropertyAnimation (FrameworkPrivate)
+- (void) handleAddedToLayer: (CALayer *)layer;
 - (void) applyToLayer: (CALayer *)layer;
 @end

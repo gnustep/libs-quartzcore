@@ -65,6 +65,7 @@
         withTransform: (CATransform3D)transform;
 - (id) initWithNSOpenGLContext: (NSOpenGLContext*)ctx
                        options: options;
+- (void) takeNoteThatNextFrameTimeChanged;
 @end
 
 @implementation CARenderer
@@ -74,12 +75,12 @@
 
 @synthesize GLContext=_GLContext;
 
-- (void) setLayer: (GSCALayer *)layer
+- (void) setLayer: (CALayer *)layer
 {
   if (_layer != layer)
     {
-      [_layer addRenderer: nil];
-      [layer addRenderer:self];
+      [_layer setRenderer: nil];
+      [layer setRenderer:self];
         
       [_layer release];
       _layer = [layer retain];

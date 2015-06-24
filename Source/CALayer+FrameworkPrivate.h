@@ -45,4 +45,5 @@
 - (CFTimeInterval) localTime;
 
 @property (retain) CABackingStore * backingStore;
+@property (assign) CARenderer * renderer;
 @end

@@ -64,6 +64,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @property (nonatomic, retain) NSMutableDictionary * animations;
 @property (retain) NSMutableArray * animationKeys;
 @property (retain) CABackingStore * backingStore;
+@property (assign) CARenderer * renderer;
 
 - (void)setModelLayer: (id)modelLayer;
 @end
@@ -131,7 +132,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       [_superlayer takeNoteThatNextFrameTimeChanged];
 }
 
-- (void) addRenderer: (GSCARenderer *)renderer
+- (void) setRenderer: (CARenderer *)renderer
 {
   if(renderer != _renderer)
     {
@@ -665,7 +666,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [_animationKeys addObject: key];
   [key release];
   
-  [anim addLayer:self];
+  [anim handleAddedToLayer:self];
   
   if (![anim duration])
     [anim setDuration: [CATransaction animationDuration]];

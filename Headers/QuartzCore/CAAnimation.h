@@ -63,10 +63,6 @@
 @property (retain) id delegate; /* note: it's not a bug that the delegate is retained */
 @property (retain) CAMediaTimingFunction *timingFunction;
 @property BOOL removedOnCompletion;
-@property (retain) NSPointerArray *layers;
-
-- (void) addLayer: (CALayer *)layer;
-- (void) takeNoteThatNextFrameTimeChanged;
 
 @end
 
