@@ -665,6 +665,8 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [_animationKeys addObject: key];
   [key release];
   
+  [anim addLayer:self];
+  
   if (![anim duration])
     [anim setDuration: [CATransaction animationDuration]];
   /* Timing function intentionally set ONLY within transaction. */

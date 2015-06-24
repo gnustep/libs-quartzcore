@@ -116,7 +116,7 @@
 
 /* ******************** */
 
-@interface HelloAnimationOpenGLView : QCTestOpenGLView
+@interface HelloAnimationOpenGLView : QCTestOpenGLView <GSCARendererDelegate>
 {
   CARenderer * _renderer;
   HelloAnimationLayerDelegate * _layerDelegate;
@@ -342,6 +342,7 @@ Class classOfTestOpenGLView()
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
+  [_renderer setDelegate:self];
   
   CALayer * layer2 = [CALayer layer];
   [layer2 setDelegate: _layerDelegate];
@@ -422,6 +423,11 @@ Class classOfTestOpenGLView()
                                           selector: @selector(timerAnimation:)
                                           userInfo: nil
                                            repeats: NO];
+}
+
+-(void) calculateNewNextFrameTime
+{
+  NSLog(@"GSCARendererDelegate delegator has been called");
 }
 
 
