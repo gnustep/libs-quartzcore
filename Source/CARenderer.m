@@ -74,7 +74,7 @@
 
 @synthesize GLContext=_GLContext;
 
-- (void) setLayer:(GSCALayer *)layer
+- (void) setLayer: (GSCALayer *)layer
 {
   if (_layer != layer)
     {

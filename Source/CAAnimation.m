@@ -57,13 +57,13 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 @synthesize speed=_speed;
 @synthesize layers=_layers;
 
-- (void) setBeginTime:(CFTimeInterval)beginTime
+- (void) setBeginTime: (CFTimeInterval)beginTime
 {
   _beginTime = beginTime;
   [self takeNoteThatNextFrameTimeChanged];
 }
 
-- (void) addLayer:(GSCALayer *)layer
+- (void) addLayer: (GSCALayer *)layer
 {
   
   if (![_layers containsObject:layer])

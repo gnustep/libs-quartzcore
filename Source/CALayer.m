@@ -117,7 +117,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize animationKeys=_animationKeys;
 @synthesize backingStore=_backingStore;
 
-- (void) setBeginTime:(CFTimeInterval)beginTime
+- (void) setBeginTime: (CFTimeInterval)beginTime
 {
   _beginTime = beginTime;
   [self takeNoteThatNextFrameTimeChanged];
@@ -131,7 +131,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       [_superlayer takeNoteThatNextFrameTimeChanged];
 }
 
-- (void) addRenderer:(GSCARenderer *)renderer
+- (void) addRenderer: (GSCARenderer *)renderer
 {
   if(renderer != _renderer)
     {
