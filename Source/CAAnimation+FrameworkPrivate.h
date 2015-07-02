@@ -28,6 +28,11 @@
 
 @class CALayer;
 
+@interface CAAnimation (FrameworkPrivate)
+- (void) handleAddedToLayer: (CALayer *)layer;
+- (void) handleRemovedFromLayer: (CALayer *)layer;
+@end
+
 @interface CAPropertyAnimation (FrameworkPrivate)
 - (void) applyToLayer: (CALayer *)layer;
 @end

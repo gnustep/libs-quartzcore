@@ -34,6 +34,12 @@
 @class CALayer;
 @class NSOpenGLContext;
 
+@protocol GSCARendererDelegate <NSObject>
+
+- (void) nextFrameTimeDidChange;
+
+@end
+
 typedef struct _CVTimeStamp
 {
   uint32_t version; /* zero */
@@ -59,7 +65,7 @@ typedef struct _CVTimeStamp
   CFTimeInterval _firstRender;
   CFTimeInterval _currentTime;
   CFTimeInterval _nextFrameTime;
-  
+
   NSMutableArray * _rasterizationSchedule;
 
   /* a temporary optimization hack */
@@ -69,13 +75,16 @@ typedef struct _CVTimeStamp
   CAGLProgram * _simpleProgram;
   CAGLProgram * _blurHorizProgram;
   CAGLProgram * _blurVertProgram;
+
+  id<GSCARendererDelegate> delegate;
 }
 
 + (CARenderer*)rendererWithNSOpenGLContext: (NSOpenGLContext *)context
                                    options: (NSDictionary *)options;
 
-@property (retain) CALayer *layer; /* root layer */
+@property (nonatomic, retain) CALayer *layer; /* root layer */
 @property (nonatomic, assign) CGRect bounds;
+@property (assign) id<GSCARendererDelegate> delegate;
 
 - (void) addUpdateRect: (CGRect)updateRect;
 - (void) beginFrameAtTime: (CFTimeInterval)timeInterval

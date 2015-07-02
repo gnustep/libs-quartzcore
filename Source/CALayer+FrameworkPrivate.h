@@ -32,6 +32,8 @@
    CARenderer) */
 + (void) setCurrentFrameBeginTime: (CFTimeInterval)frameTime;
 
+- (void) takeNoteThatNextFrameTimeChanged;
+
 - (CALayer *) rootLayer;
 - (NSArray *) allAncestorLayers;
 - (CALayer *) nextAncestorOf: (CALayer *)layer;
@@ -45,4 +47,5 @@
 - (CFTimeInterval) localTime;
 
 @property (retain) CABackingStore * backingStore;
+@property (assign) CARenderer * renderer;
 @end

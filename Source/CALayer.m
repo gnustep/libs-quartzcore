@@ -38,6 +38,7 @@
 #import "CALayer+DynamicProperties.h"
 #import "QuartzCore/CATransaction.h"
 #import "CABackingStore.h"
+#import "CARenderer+FrameworkPrivate.h"
 
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
@@ -64,6 +65,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @property (nonatomic, retain) NSMutableDictionary * animations;
 @property (retain) NSMutableArray * animationKeys;
 @property (retain) CABackingStore * backingStore;
+@property (nonatomic, assign) CARenderer * renderer;
 
 - (void)setModelLayer: (id)modelLayer;
 @end
@@ -73,6 +75,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize delegate=_delegate;
 @synthesize contents=_contents;
 @synthesize layoutManager=_layoutManager;
+@synthesize renderer=_renderer;
 @synthesize superlayer=_superlayer;
 @synthesize sublayers=_sublayers;
 @synthesize frame=_frame;
@@ -115,6 +118,30 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize animations=_animations;
 @synthesize animationKeys=_animationKeys;
 @synthesize backingStore=_backingStore;
+
+- (void) setBeginTime: (CFTimeInterval)beginTime
+{
+  _beginTime = beginTime;
+  [self takeNoteThatNextFrameTimeChanged];
+}
+
+- (void) takeNoteThatNextFrameTimeChanged
+{
+  if (_renderer != nil)
+      [_renderer takeNoteThatNextFrameTimeChanged];
+  else
+      [_superlayer takeNoteThatNextFrameTimeChanged];
+}
+
+- (void) setRenderer: (CARenderer *)renderer
+{
+  if(renderer != _renderer)
+    {
+      CARenderer * temp = _renderer;
+      _renderer = renderer;
+      [temp release];
+    }
+}
 
 /* *** dynamic synthesis of properties *** */
 #if 0
@@ -639,6 +666,8 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [_animationKeys removeObject: key];
   [_animationKeys addObject: key];
   [key release];
+
+  [anim handleAddedToLayer: self];
   
   if (![anim duration])
     [anim setDuration: [CATransaction animationDuration]];
@@ -664,6 +693,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (void) removeAnimationForKey: (NSString *)key
 {
+  [[self animationForKey:key] handleRemovedFromLayer: self];
   [_animations removeObjectForKey: key];
   [_animationKeys removeObject: key];
 }

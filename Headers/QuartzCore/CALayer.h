@@ -49,6 +49,7 @@ NSString *const kCAGravityBottomRight;
 NSString *const kCATransition;
 
 @class CAAnimation;
+@class CARenderer;
 
 #import "QuartzCore/CAAction.h"
 
@@ -67,6 +68,7 @@ NSString *const kCATransition;
   id _delegate;
   id _contents;
   id _layoutManager;
+  CARenderer * _renderer;
   CALayer * _superlayer;
   NSArray * _sublayers;
   CGRect _frame;

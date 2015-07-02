@@ -53,6 +53,7 @@
   NSString* _fillMode;
   CFTimeInterval _duration;
   float _speed;
+  NSPointerArray * _layers;
 
 }
 

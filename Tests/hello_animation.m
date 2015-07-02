@@ -116,7 +116,7 @@
 
 /* ******************** */
 
-@interface HelloAnimationOpenGLView : QCTestOpenGLView
+@interface HelloAnimationOpenGLView : QCTestOpenGLView <GSCARendererDelegate>
 {
   CARenderer * _renderer;
   HelloAnimationLayerDelegate * _layerDelegate;
@@ -197,9 +197,9 @@ Class classOfTestOpenGLView()
   [animation setDuration: 1];
   [animation setFromValue: [NSValue valueWithPoint: NSMakePoint(400, 150)]];
   [animation setToValue: [NSValue valueWithPoint: NSMakePoint(400, 250)]];
-  
+
   [[_renderer layer] addAnimation: animation forKey:@"thePositionAnimation"];
-    
+
   [self printPos: [_renderer layer]];
   [self performSelector:@selector(printPos:) withObject: [_renderer layer] afterDelay:0.5];
 }
@@ -342,7 +342,8 @@ Class classOfTestOpenGLView()
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
-  
+  [_renderer setDelegate:self];
+
   CALayer * layer2 = [CALayer layer];
   [layer2 setDelegate: _layerDelegate];
   [layer2 setBounds: CGRectMake (0, 0, 100, 100)];
@@ -422,6 +423,11 @@ Class classOfTestOpenGLView()
                                           selector: @selector(timerAnimation:)
                                           userInfo: nil
                                            repeats: NO];
+}
+
+-(void) nextFrameTimeDidChange
+{
+  NSLog(@"GSCARendererDelegate - next frame time did change: next frame time is %g", [_renderer nextFrameTime]);
 }
 
 

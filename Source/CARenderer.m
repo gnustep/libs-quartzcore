@@ -32,6 +32,7 @@
 #import "CALayer+FrameworkPrivate.h"
 #import "CATransaction+FrameworkPrivate.h"
 #import "CABackingStore.h"
+#import "CARenderer+FrameworkPrivate.h"
 #if !(__APPLE__)
 #define GL_GLEXT_PROTOTYPES 1
 #import <GL/gl.h>
@@ -70,15 +71,33 @@
 @implementation CARenderer
 @synthesize layer=_layer;
 @synthesize bounds=_bounds;
+@synthesize delegate;
 
 @synthesize GLContext=_GLContext;
+
+- (void) setLayer: (CALayer *)layer
+{
+  if (_layer != layer)
+    {
+      [_layer setRenderer: nil];
+      [layer setRenderer:self];
+
+      [_layer release];
+      _layer = [layer retain];
+    }
+}
+
+- (void) takeNoteThatNextFrameTimeChanged
+{
+  [self.delegate nextFrameTimeDidChange];
+}
 
 /* *** class methods *** */
 /* Creates a renderer which renders into an OpenGL context. */
 + (CARenderer*) rendererWithNSOpenGLContext: (NSOpenGLContext*)ctx
                                     options: (NSDictionary*)options;
 {
-  return [[[self alloc] initWithNSOpenGLContext: ctx 
+  return [[[self alloc] initWithNSOpenGLContext: ctx
 	                                options: options] autorelease];
 }
 

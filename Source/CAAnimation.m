@@ -39,6 +39,7 @@
 NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
 @interface CAAnimation ()
+@property (retain) NSPointerArray *layers;
 - (id) init;
 @end
 
@@ -55,6 +56,43 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 @synthesize fillMode=_fillMode;
 @synthesize duration=_duration;
 @synthesize speed=_speed;
+@synthesize layers=_layers;
+
+- (void) setBeginTime: (CFTimeInterval)beginTime
+{
+  _beginTime = beginTime;
+  [self takeNoteThatNextFrameTimeChanged];
+}
+
+- (void) handleAddedToLayer: (CALayer *)layer
+{
+  for (int index = 0, len = [_layers count]; index < len; index++)
+    {
+      if(layer == [_layers pointerAtIndex: index])
+        [NSException raise:NSGenericException
+                    format:@"Animation already added to this layer"];
+    }
+
+  [_layers addPointer:layer];
+}
+
+- (void) handleRemovedFromLayer: (CALayer *)layer
+{
+  for (int index = 0, len = [_layers count]; index < len; index++)
+    {
+      if(layer == [_layers pointerAtIndex: index])
+        [_layers removePointerAtIndex: index];
+    }
+}
+
+- (void) takeNoteThatNextFrameTimeChanged
+{
+  for (int index = 0, len = [_layers count]; index < len; index++)
+    {
+      CALayer *layer = [_layers pointerAtIndex: index];
+      [layer takeNoteThatNextFrameTimeChanged];
+    }
+}
 
 + (id) animation
 {
@@ -122,7 +160,9 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
                   forKey:keys[i]];
         }
     }
-  
+
+  _layers = [[NSPointerArray weakObjectsPointerArray] retain];
+
   return self;
 }
 
@@ -131,7 +171,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
   self = [self init];
   if (!self)
     return nil;
-    
+
   static NSString * keys[] = {
     @"delegate", @"removedOnCompletion", @"timingFunction", 
     @"duration", @"speed", @"autoreverses", @"repeatCount"};
@@ -143,7 +183,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
                   forKey: keys[i]];
         }
     }
-  
+
   return self;
 }
 
@@ -187,7 +227,8 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 {
   [_timingFunction release];
   [_fillMode release];
-  
+  [_layers release];
+
   [super dealloc];
 }
 
@@ -195,7 +236,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 {
   /* Slides */
   CFTimeInterval activeTime = (timeAuthorityLocalTime - [self beginTime]) * [self speed] + [self timeOffset];
-  
+
   /* FIXME: should not be necessary */
   if (activeTime < 0)
     activeTime = 0;
