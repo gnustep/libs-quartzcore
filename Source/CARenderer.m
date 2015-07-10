@@ -64,6 +64,7 @@
                atTime: (CFTimeInterval)theTime;
 - (void) _renderLayer: (CALayer *)layer
         withTransform: (CATransform3D)transform;
+- (void) calculateNewNextFrameTime;
 - (id) initWithNSOpenGLContext: (NSOpenGLContext*)ctx
                        options: options;
 @end
@@ -89,7 +90,15 @@
 
 - (void) takeNoteThatNextFrameTimeChanged
 {
+  [self calculateNewNextFrameTime];
+  if (_takeNoteThatNextFrameTimeChangeIsExecuting)
+    {
+      return;
+    }
+
+  _takeNoteThatNextFrameTimeChangeIsExecuting = YES;
   [self.delegate nextFrameTimeDidChange];
+  _takeNoteThatNextFrameTimeChangeIsExecuting = NO;
 }
 
 /* *** class methods *** */
@@ -835,13 +844,18 @@
   {
     [self _rasterize: rasterizationSpec];
   }
-  
+
   /* Release rasterization schedule */
   [_rasterizationSchedule release];
   _rasterizationSchedule = nil;
 }
 
-
+- (void) calculateNewNextFrameTime
+{
+  CFTimeInterval newNextFrameTime = [_layer calculatedNextFrameTime];
+  if (newNextFrameTime < _nextFrameTime)
+    _nextFrameTime = newNextFrameTime;
+}
 
 @end
 

@@ -74,6 +74,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     }
 
   [_layers addPointer:layer];
+  [self takeNoteThatNextFrameTimeChanged];
 }
 
 - (void) handleRemovedFromLayer: (CALayer *)layer
@@ -83,6 +84,8 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
       if(layer == [_layers pointerAtIndex: index])
         [_layers removePointerAtIndex: index];
     }
+
+  [self takeNoteThatNextFrameTimeChanged];
 }
 
 - (void) takeNoteThatNextFrameTimeChanged

@@ -418,7 +418,7 @@ Class classOfTestOpenGLView()
 
   [[self openGLContext] flushBuffer];
   
-  _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60 //[_renderer nextFrameTime]-CACurrentMediaTime()
+  _timer = [NSTimer scheduledTimerWithTimeInterval: [_renderer nextFrameTime]-CACurrentMediaTime()
                                             target: self
                                           selector: @selector(timerAnimation:)
                                           userInfo: nil
@@ -427,7 +427,25 @@ Class classOfTestOpenGLView()
 
 -(void) nextFrameTimeDidChange
 {
+  CFTimeInterval currentTime = CACurrentMediaTime();
+  NSLog(@"Current time %g", currentTime);
   NSLog(@"GSCARendererDelegate - next frame time did change: next frame time is %g", [_renderer nextFrameTime]);
+
+  // TODO: Remove once implicit animations are properly integrated into NSRunLoop.
+  if ([[CATransaction topTransaction] isImplicit])
+    {
+      [CATransaction commit];
+    }
+
+  if (isinf([_renderer nextFrameTime]) || [_renderer nextFrameTime] < currentTime)
+    {
+      [_timer invalidate];
+      _timer = [NSTimer scheduledTimerWithTimeInterval: [_renderer nextFrameTime]-currentTime
+                                                target: self
+                                              selector: @selector(timerAnimation:)
+                                              userInfo: nil
+                                               repeats: NO];
+    }
 }
 
 

@@ -65,6 +65,7 @@ typedef struct _CVTimeStamp
   CFTimeInterval _firstRender;
   CFTimeInterval _currentTime;
   CFTimeInterval _nextFrameTime;
+  BOOL _takeNoteThatNextFrameTimeChangeIsExecuting;
 
   NSMutableArray * _rasterizationSchedule;
 

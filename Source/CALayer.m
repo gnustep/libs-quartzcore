@@ -932,6 +932,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   /* Just make use of convertTime:toLayer: instead of reimplementing */
   return [layer convertTime: theTime toLayer: self];
 }
+
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime toLayer: (CALayer *)layer
 {
   /* Method used to convert 'activeTime' of self into 'activeTime' 
@@ -954,27 +955,52 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       /* layer was one of our ancestors? great! */
       if (layer == l)
         return theTime;
-      
+
       /* For each layer, we invert the formula in -activeTime. */
       theTime -= [l timeOffset];
       theTime /= [l speed];
       theTime += [l beginTime];
     }
-  
+
   if (layer == nil)
     {
       /* We were requested time in "media time" timespace. */
       return theTime;
     }
-  
+
   /* Use activeTime/localTime mechanism to convert media time into 
      layer time */
   CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
   currentFrameBeginTime = theTime;
   theTime = [layer activeTime];
   currentFrameBeginTime = oldFrameBeginTime;
-  
+
   return theTime;
+}
+
+- (CFTimeInterval) calculatedNextFrameTime
+{
+  CFTimeInterval lowestNextFrameTime = __builtin_inf();
+
+  for (NSString * animationKey in [self animationKeys])
+    {
+      CAAnimation * animation = [_animations objectForKey: animationKey];
+
+      CFTimeInterval nextFrameTime = [animation beginTime];
+      nextFrameTime = [self convertTime: nextFrameTime toLayer: nil];
+
+      if(nextFrameTime < lowestNextFrameTime)
+        lowestNextFrameTime = nextFrameTime;
+    }
+
+  for (CALayer * sublayer in [self sublayers])
+    {
+      CFTimeInterval nextFrameTime = [sublayer calculatedNextFrameTime];
+      if (nextFrameTime < lowestNextFrameTime)
+        lowestNextFrameTime = nextFrameTime;
+    }
+
+  return lowestNextFrameTime;
 }
 
 /* *************** */

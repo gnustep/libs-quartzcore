@@ -42,6 +42,7 @@
 
 - (void) discardPresentationLayer;
 - (CFTimeInterval) applyAnimationsAtTime: (CFTimeInterval)time;
+- (CFTimeInterval) calculatedNextFrameTime;
 
 - (CFTimeInterval) activeTime;
 - (CFTimeInterval) localTime;

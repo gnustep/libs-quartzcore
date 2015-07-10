@@ -85,6 +85,13 @@ static CAImplicitAnimationObserver * sharedObserver;
   [[CATransaction topTransaction] registerAction: action
                                         onObject: object
                                          keyPath: keyPath];
+
+  // TODO: Remove once implicit animations are properly integrated into NSRunLoop.
+  if ([object isKindOfClass: [CALayer class]])
+    {
+      CALayer * layer = (CALayer *)object;
+      [layer takeNoteThatNextFrameTimeChanged];
+    }
 }
 
 @end

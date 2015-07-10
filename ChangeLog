@@ -1,19 +1,33 @@
+2015-07-09  Filip Zelic <zelic.filip@gmail.com>
+
+	* Headers/QuartzCore/CARenderer.h:
+	* Source/CAAnimation.m:
+	* Source/CAImplicitAnimationObserver.m:
+	* Source/CALayer+FrameworkPrivate.h:
+	* Source/CALayer.m:
+	* Source/CARenderer.m:
+	Now renderer can calculate delay before next frame needs to be rendered.
+
+	* Tests/hello_animation.m:
+	Animations updated to use method nextFrameTime to render only as needed
+	instead 60 frames per second.
+
 2015-07-02  Filip Zelic <zelic.filip@gmail.com>
 
-	* Headers/QuartzCore/CAAnimation.h
-	* Headers/QuartzCore/CALayer.h
-	* Headers/QuartzCore/CARenderer.h
-	* Source/CAAnimation+FrameworkPrivate.h
-	* Source/CAAnimation.m
-	* Source/CALayer+FrameworkPrivate.h
-	* Source/CALayer.m
-	* Source/CARenderer+FrameworkPrivate.h
-	* Source/CARenderer.m
+	* Headers/QuartzCore/CAAnimation.h:
+	* Headers/QuartzCore/CALayer.h:
+	* Headers/QuartzCore/CARenderer.h:
+	* Source/CAAnimation+FrameworkPrivate.h:
+	* Source/CAAnimation.m:
+	* Source/CALayer+FrameworkPrivate.h:
+	* Source/CALayer.m:
+	* Source/CARenderer+FrameworkPrivate.h:
+	* Source/CARenderer.m:
 	Layers and animations now can notify renderer about changes that
-	have influence on the next frame time
+	have influence on the next frame time.
 
-	* Tests/hello_animation.m
-	Added delegation method that is notified when next frame time changes
+	* Tests/hello_animation.m:
+	Added delegation method that is notified when next frame time changes.
 
 2012-10-18  Ivan Vučica  <ivan@vucica.net>
 
