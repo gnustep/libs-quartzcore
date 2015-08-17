@@ -61,6 +61,24 @@
 
 #import "QCTestOpenGLView.h"
 
+@interface CALayerTestSubclass : CALayer
+@property (nonatomic,
+           retain,
+           getter=manualTempDynamicPropertyTestGetter,
+           setter=setDynamicPropertyDifferentName:) NSString *dynamicPropertyObject;
+@property (assign) float dynamicPropertyFloat;
+@property (assign) BOOL dynamicPropertyBool;
+@property (assign) char dynamicPropertyChar;
+@property (assign) double dynamicPropertyDouble;
+@end
+@implementation CALayerTestSubclass
+@dynamic dynamicPropertyObject;
+@dynamic dynamicPropertyFloat;
+@dynamic dynamicPropertyBool;
+@dynamic dynamicPropertyChar;
+@dynamic dynamicPropertyDouble;
+@end
+
 @interface HelloAnimationCustomBasicAnimation : CABasicAnimation
 @end
 @implementation HelloAnimationCustomBasicAnimation
@@ -143,14 +161,14 @@ Class classOfTestOpenGLView()
 - (void)viewDidMoveToSuperview
 {
   [super viewDidMoveToSuperview];
-  
+
   static BOOL ranOnce = NO;
   if (ranOnce)
     return;
   ranOnce = YES;
 
   NSMenu * mainMenu = [[NSApplication sharedApplication] mainMenu];
-  
+
   NSMenuItem * testsMenuItem = [[NSMenuItem alloc] init];
   [testsMenuItem setTitle: @"Tests"]; /* Note: needed only under GNUstep */
   NSMenu * testsMenu = [[NSMenu alloc] initWithTitle: @"Tests"];
@@ -166,13 +184,13 @@ Class classOfTestOpenGLView()
     [testsMenu addItemWithTitle:@"Animation 9" action:@selector(animation9:) keyEquivalent:@"9"];
     [testsMenu addItemWithTitle:@"Set Needs Display" action:@selector(layerSetNeedsDisplay:) keyEquivalent:@"d"];
   }
-  
+
   [testsMenuItem setSubmenu:testsMenu];
   [testsMenu release];
-  
+
   [mainMenu insertItem:testsMenuItem atIndex:1];
   [testsMenuItem release];
-  
+
 }
 
 - (void) animation1:sender
@@ -225,7 +243,7 @@ Class classOfTestOpenGLView()
     [layer setTransform: CATransform3DMakeRotation(M_PI_4, 0, 0, 1)];
   else
     [layer setTransform: CATransform3DIdentity];
-  
+
   toggle = !toggle;
 }
 
@@ -242,15 +260,15 @@ Class classOfTestOpenGLView()
   [animation setToValue: [NSValue valueWithCATransform3D: CATransform3DTranslate(CATransform3DRotate([_theSublayer transform], M_PI, 0, 0, 1), -150, 0, 0)]];
   [animation setDuration: 2];
   [animation setAutoreverses: YES];
-  
+
   [_theSublayer addAnimation: animation forKey: @"doABarrelRoll"];
-  
+
   CABasicAnimation * opacity = [CABasicAnimation animationWithKeyPath:@"opacity"];
   [opacity setFromValue: [NSNumber numberWithFloat: [_theSublayer opacity]]];
   [opacity setToValue: [NSNumber numberWithFloat: 0.5]];
   [opacity setDuration: 2];
   [opacity setAutoreverses: YES];
-  
+
   [_theSublayer addAnimation: opacity forKey: @"pulse"];
 }
 
@@ -262,7 +280,7 @@ Class classOfTestOpenGLView()
     [layer setOpacity: 0.2];
   else
     [layer setOpacity: 1.0];
-  
+
   toggle = !toggle;
 }
 
@@ -286,7 +304,7 @@ Class classOfTestOpenGLView()
 {
   CALayer * layer = [_renderer layer];
   [layer setNeedsDisplay];
-  
+
   [self printPos: layer];
 }
 
@@ -297,7 +315,7 @@ Class classOfTestOpenGLView()
   CALayer * presLayer = [layer presentationLayer];
   NSLog(@"modelpos: %g %g", [layer position].x, [layer position].y);
   NSLog(@"pres pos: %g %g", [presLayer position].x, [presLayer position].y);
-  
+
   NSLog(@"modelani: %@", [layer animationKeys]);
   for (NSString * ani in [layer animationKeys])
     {
@@ -331,7 +349,7 @@ Class classOfTestOpenGLView()
   [layer setBackgroundColor: yellowColor];
   [layer setDelegate: _layerDelegate];
   [layer setNeedsDisplay];
-  
+
 #if GNUSTEP || GSIMPL_UNDER_COCOA
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                               options: nil];
@@ -349,6 +367,32 @@ Class classOfTestOpenGLView()
   [layer2 setBounds: CGRectMake (0, 0, 100, 100)];
   [layer2 setBackgroundColor: greenColor];
   [layer2 setSpeed: 2];
+
+
+  CALayerTestSubclass * testLayer = [CALayerTestSubclass layer];
+
+  testLayer.dynamicPropertyObject = @"Good news, everyone! Dynamic accessors work.";
+  NSLog(@"%@", testLayer.dynamicPropertyObject);
+
+  /* TODO: Calling [GSKVOCALayerTestSubclass -setDynamicPropertyDifferentName:]
+   with incorrect signature.  Method has v@:@"NSString", selector has v24@0:8@16 */
+  [testLayer setDynamicPropertyDifferentName: @"Custom getter/setter name for dynamic properties also work."];
+  /* TODO: Calling [GSKVOCALayerTestSubclass -manualTempDynamicPropertyTestGetter]
+   with incorrect signature.  Method has @"NSString"@:, selector has @16@0:8 */
+  NSLog(@"%@", [testLayer manualTempDynamicPropertyTestGetter]);
+
+  [testLayer setDynamicPropertyFloat: 20.0];
+  NSLog(@"%f", [testLayer dynamicPropertyFloat]);
+
+  [testLayer setDynamicPropertyBool: YES];
+  NSLog(@"%d", [testLayer dynamicPropertyBool]);
+
+  [testLayer setDynamicPropertyDouble: 3.141592653589793238];
+  NSLog(@"%f", [testLayer dynamicPropertyDouble]);
+
+
+
+
   /*
   [layer2 setDuration: __builtin_inf()];
   [layer2 setBeginTime: CACurrentMediaTime()*[layer speed]+1];
@@ -358,7 +402,7 @@ Class classOfTestOpenGLView()
   [layer2 setNeedsDisplay];
   [layer addSublayer: layer2];
   _theSublayer = [layer2 retain];
-  
+
   #if 0
   [layer setSublayerTransform: CATransform3DMakeRotation(M_PI_2 * 0.25 /* 45 deg */, 0, 0, 1)];
   #else
@@ -366,7 +410,7 @@ Class classOfTestOpenGLView()
   perspectiveTransform.m34 = 1. / 500.;
   [layer setSublayerTransform: perspectiveTransform];
   #endif
-  
+
   CGColorRelease(yellowColor);
   CGColorRelease(greenColor);
 }
@@ -390,10 +434,10 @@ Class classOfTestOpenGLView()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -500, 500);
-    
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  
+
   #if 0
   NSLog(@"Time conversion of layer: %g %g", CACurrentMediaTime(), [[_renderer layer] convertTime: CACurrentMediaTime() fromLayer: nil]);
   NSLog(@"Time conversion of sublayer: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: nil]);
@@ -408,16 +452,16 @@ Class classOfTestOpenGLView()
   #if 0
   NSLog(@"Time conversion of layer - postrender: %g %g", CACurrentMediaTime(), [[_renderer layer] convertTime: CACurrentMediaTime() fromLayer: nil]);
   NSLog(@"Time conversion of sublayer to layer - postrender: %g", [_theSublayer convertTime: CACurrentMediaTime() fromLayer: [_renderer layer]]);
-  
+
   NSLog(@"Experimenting: %g", [[_renderer layer] convertTime: CACurrentMediaTime() toLayer: _theSublayer]);
   if ([[[_renderer layer] animationKeys] count])
     NSLog(@"Experimenting2: %g", [[[_renderer layer] animationForKey:[[[_renderer layer] animationKeys] objectAtIndex:0]] beginTime]);
   #endif
-  
+
   glFlush();
 
   [[self openGLContext] flushBuffer];
-  
+
   _timer = [NSTimer scheduledTimerWithTimeInterval: [_renderer nextFrameTime]-CACurrentMediaTime()
                                             target: self
                                           selector: @selector(timerAnimation:)

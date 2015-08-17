@@ -1,3 +1,18 @@
+2015-07-28  Filip Zelic <zelic.filip@gmail.com>
+
+	* Headers/QuartzCore/CALayer.h:
+	* Source/CALayer+DynamicProperties.m:
+	* Source/CALayer.m:
+	Dynamic properties now support integers, doubles, floats, booleans and
+	objects.
+	Not supported:
+	- CGImageRef, CGColorRef and others
+	- data structs like CGRect, CGPoint, CGSize
+	- properties with assign attribute that refer to objects
+
+	* Tests/hello_animation.m:
+	Added some tests for getting and setting @dynamic properties.
+
 2015-07-09  Filip Zelic <zelic.filip@gmail.com>
 
 	* Headers/QuartzCore/CARenderer.h:

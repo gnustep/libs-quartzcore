@@ -90,15 +90,16 @@ NSString *const kCATransition;
   CGFloat _zPosition;
   NSDictionary *_actions;
   NSDictionary *_style;
+  NSMutableDictionary *_dynamicPropertyValueDict;
   id _presentationLayer;
   id _modelLayer;
-  
+
   CGColorRef _shadowColor;
   CGSize _shadowOffset;
   float _shadowOpacity;
   CGPathRef _shadowPath;
   CGFloat _shadowRadius;
-  
+
   /* media timing i-vars */
   CFTimeInterval _beginTime;
   CFTimeInterval _timeOffset;
@@ -108,7 +109,7 @@ NSString *const kCATransition;
   NSString* _fillMode;
   CFTimeInterval _duration;
   float _speed;
-  
+
   /* i-vars */
   BOOL _needsDisplay;
   BOOL _needsLayout;
@@ -116,7 +117,7 @@ NSString *const kCATransition;
   NSMutableArray *_animationKeys;
   NSMutableArray *_observedKeyPaths;
   CABackingStore * _backingStore;
-  
+
   /* TODO: add CAGLSimpleFramebuffer ivars for storing:
      - offscreen rendering framebuffer
      - shadow framebuffer

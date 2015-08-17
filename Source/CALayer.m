@@ -66,6 +66,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @property (retain) NSMutableArray * animationKeys;
 @property (retain) CABackingStore * backingStore;
 @property (nonatomic, assign) CARenderer * renderer;
+@property (nonatomic, retain) NSMutableDictionary *dynamicPropertyValueDict;
 
 - (void)setModelLayer: (id)modelLayer;
 @end
@@ -118,6 +119,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize animations=_animations;
 @synthesize animationKeys=_animationKeys;
 @synthesize backingStore=_backingStore;
+@synthesize dynamicPropertyValueDict=_dynamicPropertyValueDict;
 
 - (void) setBeginTime: (CFTimeInterval)beginTime
 {
@@ -144,29 +146,27 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 }
 
 /* *** dynamic synthesis of properties *** */
-#if 0
 + (void) initialize
 {
-     
   unsigned int count;
   objc_property_t * properties = class_copyPropertyList([self class], &count);
-    
+
   for (unsigned int i = 0; i < count; i++)
     {
-        
+
       objc_property_t property = properties[i];
-      
+
       const char * attributesC = property_getAttributes(property);
       if(!attributesC)
-	{
-	  NSLog(@"Property %s could not be examined", property_getName(property));
-	  continue;
-	}
+        {
+          NSLog(@"Property %s could not be examined", property_getName(property));
+          continue;
+        }
       NSString * attributes = [NSString stringWithCString: attributesC
                                                  encoding: NSASCIIStringEncoding];
-        
+
       NSArray* components = [attributes componentsSeparatedByString: @","];
-        
+
       for (NSString* component in components)
         {
           if ([component isEqualToString:@"D"])
@@ -175,12 +175,9 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
             }
         }
     }
-    
+
   free(properties);
 }
-#else
-#warning Disabled dynamic synthesis of properties
-#endif
 
 /* *** class methods *** */
 + (id) layer
@@ -237,7 +234,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
     {
       return [NSNumber numberWithFloat: 3.0];
     }
-    
+
   /* CAMediaTiming */
   if ([key isEqualToString:@"duration"])
     {
@@ -272,30 +269,31 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       _animationKeys = [[NSMutableArray alloc] init];
       _sublayers = [[NSMutableArray alloc] init];
       _observedKeyPaths = [[NSMutableArray alloc] init];
+      _dynamicPropertyValueDict = [[NSMutableDictionary alloc] init];
 
       /* TODO: list all properties below */
       static NSString * keys[] = {
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
         @"backgroundColor",
-        
+
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
-        
+
         @"shadowColor", @"shadowOffset", @"shadowOpacity",
         @"shadowPath", @"shadowRadius",
 
         @"bounds", @"position" };
-      
+
       for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
         {
           id defaultValue = [[self class] defaultValueForKey: keys[i]];
           if (defaultValue)
             {
-            
+
               #if 0
               NSString * setter = [NSString stringWithFormat:@"set%@%@:", [[keys[i] substringToIndex: 1] uppercaseString], [keys[i] substringFromIndex: 1]];
-              
+
               if (![self respondsToSelector: NSSelectorFromString(setter)])
                 {
                   NSLog(@"Key %@ is missing setter", keys[i]);
@@ -305,7 +303,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
                   NSLog(@"setter %@ found", setter);
                 }
               #endif
-              
+
               [self setValue: defaultValue
                       forKey: keys[i]];
             }
@@ -370,12 +368,12 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       [self setShadowOpacity: [layer shadowOpacity]];
       [self setShadowPath: [layer shadowPath]];
       [self setShadowRadius: [layer shadowRadius]];
-      
+
       /* FIXME
-         setting contents currently needs to be below setting bounds, 
+         setting contents currently needs to be below setting bounds,
          because setting the bounds currently destroys the contents. */
-      [self setContents: [layer contents]]; 
-      
+      [self setContents: [layer contents]];
+
       /* properties in protocol CAMediaTiming */
       [self setBeginTime: [layer beginTime]];
       [self setTimeOffset: [layer timeOffset]];
@@ -385,7 +383,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       [self setFillMode: [layer fillMode]];
       [self setDuration: [layer duration]];
       [self setSpeed: [layer speed]];
-      
+
       /* private or publicly read-only properties */
       [self setAnimations: [layer animations]];
       [self setAnimationKeys: [layer animationKeys]];
@@ -409,11 +407,11 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   CGColorRelease(_backgroundColor);
   [_contentsGravity release];
   [_fillMode release];
-  
+
   [_backingStore release];
   [_animations release];
   [_animationKeys release];
-  
+
   [super dealloc];
 }
 
@@ -454,7 +452,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   if (CGRectEqualToRect(bounds, _bounds))
     return;
-  
+
 #if !GNUSTEP
   _bounds = bounds;
 #else
@@ -498,7 +496,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   if (shadowPath == _shadowPath)
     return;
-  
+
   [self willChangeValueForKey: @"shadowPath"];
   CGPathRetain(shadowPath);
   CGPathRelease(_shadowPath);
@@ -518,16 +516,16 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   else
     {
       /* By default, uses -drawInContext: to update the 'contents' property. */
-    
+
       CGRect bounds = [self bounds];
-      
+
       if (!_backingStore ||
           [_backingStore width] != bounds.size.width ||
           [_backingStore height] != bounds.size.height)
       {
         [self setBackingStore: [CABackingStore backingStoreWithWidth: bounds.size.width height: bounds.size.height]];
       }
-      
+
       CGContextSaveGState ([_backingStore context]);
       CGContextClipToRect ([_backingStore context], [self bounds]);
       [self drawInContext: [_backingStore context]];
@@ -536,7 +534,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       /* Call -refresh on backing store to fill its texture */
       if (![self contents])
         [self setContents: [self backingStore]];
-      
+
       [self.backingStore refresh];
     }
 }
@@ -578,7 +576,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 /* ********************** */
 /* MARK: - Layout methods */
 - (void) layoutIfNeeded
-{ 
+{
 }
 
 - (void) layoutSublayers
@@ -601,7 +599,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       _presentationLayer = [[CALayer alloc] initWithLayer: self];
       [_presentationLayer setModelLayer: self];
       assert([_presentationLayer isPresentationLayer]);
-      
+
     }
   return _presentationLayer;
 }
@@ -668,24 +666,24 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [key release];
 
   [anim handleAddedToLayer: self];
-  
+
   if (![anim duration])
     [anim setDuration: [CATransaction animationDuration]];
   /* Timing function intentionally set ONLY within transaction. */
-  
+
   if ([anim isKindOfClass: [CABasicAnimation class]])
     {
       CABasicAnimation * basicAnimation = (id)anim;
       CALayer * layer = self;
       if (![layer isPresentationLayer])
         layer = [layer presentationLayer];
-      
+
       if (![basicAnimation fromValue])
         {
           /* Should not be using setFromValue: since this method is not
              triggered under Cocoa either when we offer it a CABasicAnimation
              subclass. */
-          
+
           [basicAnimation setFromValue: [layer valueForKeyPath: [basicAnimation keyPath]]];
         }
     }
@@ -715,10 +713,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
         }
       return [[self presentationLayer] applyAnimationsAtTime: theTime];
     }
-    
+
   NSMutableArray * animationKeysToRemove = [NSMutableArray new];
   CFTimeInterval lowestNextFrameTime = __builtin_inf();
-  
+
   for (NSString * animationKey in [self animationKeys])
     {
       CAAnimation * animation = [_animations objectForKey: animationKey];
@@ -729,7 +727,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
           // it must be done by the animation itself!
           // alternatively, this needs to be applied to the
           // animation upon +[CATransaction commit]
-          
+
           // Additional observed behavior:
           // beginTime appears to be applied not to the original
           // animation object, but to the presentationLayer replica's
@@ -738,7 +736,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
           // beginTime. Original object should still have 0 as beginTime,
           // but the replica's animation object should now have the calculated
           // begin time.
-            
+
           CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
           currentFrameBeginTime = CACurrentMediaTime();
           [animation setBeginTime: [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]]];
@@ -747,39 +745,39 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
       CFTimeInterval nextFrameTime = [animation beginTime];
       nextFrameTime = [self convertTime: nextFrameTime toLayer: nil];
-      
+
       if(nextFrameTime < lowestNextFrameTime)
         lowestNextFrameTime = nextFrameTime;
-      
+
       if (nextFrameTime > CACurrentMediaTime())
         {
           /* TODO: update for correctness once we support fillMode */
           /* TODO: take into account animation groups once we support them */
-          
+
           continue;
         }
-      
+
       if ([animation isKindOfClass: [CAPropertyAnimation class]])
         {
           CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
-                        
+
           if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
             {
               /* FIXME: doesn't take into account speed */
-                
+
               [animationKeysToRemove addObject: animationKey];
               continue; /* Prevents animation from applying for one frame longer than its duration */
             }
-            
+
           [propertyAnimation applyToLayer: self];
-            
+
         }
     }
-    
+
   [_animations removeObjectsForKeys: animationKeysToRemove];
   [_animationKeys removeObjectsInArray: animationKeysToRemove];
   [animationKeysToRemove release];
-  
+
   return lowestNextFrameTime;
 }
 
@@ -788,7 +786,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) addSublayer: (CALayer *)layer
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
-  
+
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
 }
@@ -796,7 +794,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void)removeFromSuperlayer
 {
   NSMutableArray * mutableSublayersOfSuperlayer = (NSMutableArray*)[[self superlayer] sublayers];
-  
+
   [mutableSublayersOfSuperlayer removeObject: self];
   [self setSuperlayer: nil];
 }
@@ -804,7 +802,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer atIndex: (unsigned)index
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
-  
+
   [mutableSublayers insertObject: layer atIndex: index];
   [layer setSuperlayer: self];
 }
@@ -812,7 +810,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
-  
+
   NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex];
   [layer setSuperlayer: self];
@@ -821,7 +819,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
-  
+
   NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
@@ -832,7 +830,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   CALayer * layer = self;
   while([layer superlayer])
     layer = [layer superlayer];
-  
+
   return layer;
 }
 
@@ -840,9 +838,9 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   /* This could be cached. It could even be updated at 
     -addSublayer: and -insertSublayer:... methods. */
-  
+
   NSMutableArray * allAncestorLayers = [NSMutableArray array];
-  
+
   CALayer * layer = self;
   while([layer superlayer])
     {
@@ -850,7 +848,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       if (layer)
         [allAncestorLayers addObject: layer];
     }
-  
+
   return allAncestorLayers;
 }
 
@@ -858,13 +856,13 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   if ([[self sublayers] containsObject: layer])
     return self;
-    
+
   for (id i in [self sublayers])
     {
       if ([i nextAncestorOf: layer])
         return i;
     }
-  
+
   return nil;
 }
 
@@ -890,18 +888,18 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   CFTimeInterval timeAuthorityLocalTime = [timeAuthority localTime];
   if (!timeAuthority)
     timeAuthorityLocalTime = currentFrameBeginTime ? currentFrameBeginTime : CACurrentMediaTime();
-  
+
   CFTimeInterval activeTime = [self activeTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
   if (isinf([self duration]))
     return activeTime;
-  
+
   NSInteger k = floor(activeTime / [self duration]);
   CFTimeInterval localTime = activeTime - k * [self duration];
   if ([self autoreverses] && k % 2 == 1)
     {
       localTime = [self duration] - localTime;
     }
-    
+
   return localTime;
 }
 
@@ -943,7 +941,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
   /* First, convert theTime to the "media time" timespace, the 
      timespace returned by CACurrentMediaTime(). */
-     
+
   /* For self, invert formula in theTime. */
   theTime -= [self timeOffset];
   theTime /= [self speed];
@@ -1017,7 +1015,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   if ([[self delegate] respondsToSelector: @selector(actionForLayer:forKey:)])
     {
       NSObject<CAAction>* returnValue = (NSObject<CAAction>*)[[self delegate] actionForLayer: self forKey: key];
-      
+
       if ([returnValue isKindOfClass: [NSNull class]])
         {
           /* Abort search */
@@ -1028,10 +1026,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
           /* Return the value */
           return returnValue;
         }
-      
+
       /* It's nil? Continue the search */
     }
-  
+
   NSObject<CAAction>* dictValue = [[self actions] objectForKey: key];
   if ([dictValue isKindOfClass: [NSNull class]])
     {
@@ -1043,10 +1041,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       /* Return the value */
       return dictValue;
     }
-  
+
   /* It's nil? Continue the search */
-  
-  
+
+
   NSDictionary* styleActions = [[self style] objectForKey: @"actions"];
   if (styleActions)
   {
@@ -1062,14 +1060,14 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
         /* Return the value */
         return dictValue;
       }
-  
+
     /* It's nil? Continue the search */
   }
-  
+
   /* Before generating an action, let's also see if 
      defaultActionForKey: has an offering to make to us. */
   NSObject<CAAction>* action = (NSObject<CAAction>*)[[self class] defaultActionForKey: key];
-    
+
   if ([action isKindOfClass: [NSNull class]])
     {
       /* Abort search */
@@ -1083,7 +1081,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   /* It's nil? That's it. Now we can only generate our own animation. */
 
   /***********************/
-  
+
   /* construct new animation */
   CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath: key];
   if ([self isPresentationLayer])
@@ -1097,7 +1095,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (id)valueForUndefinedKey: (NSString *)key
 {
   /* Core Graphics types apparently are not KVC-compliant under Cocoa. */
-  
+
   if ([key isEqualToString: @"backgroundColor"])
     {
       return (id)[self backgroundColor];
@@ -1110,7 +1108,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     {
       return (id)[self shadowColor];
     }
-  
+
   return [super valueForUndefinedKey: key];
 }
 
@@ -1118,7 +1116,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
  forUndefinedKey: (NSString *)key
 {
   /* Core Graphics types apparently are not KVC-compliant under Cocoa. */
-  
+
   if ([key isEqualToString: @"backgroundColor"])
     {
       [self setBackgroundColor: (CGColorRef)value];
@@ -1134,7 +1132,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       [self setShadowPath: (CGPathRef)value];
       return;
     }
-  
+
   [super setValue: value forUndefinedKey: key];
 }
 
