@@ -42,11 +42,13 @@
 #import <QuartzCore/CARenderer.h>
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CABase.h>
+#import <QuartzCore/CATransaction.h>
 #else
 #import <GSQuartzCore/AppleSupport.h>
 #import <GSQuartzCore/CARenderer.h>
 #import <GSQuartzCore/CALayer.h>
 #import <GSQuartzCore/CABase.h>
+#import <GSQuartzCore/CATransaction.h>
 #endif
 
 #import "QCTestOpenGLView.h"
@@ -77,7 +79,7 @@
 
 /* ******************** */
 
-@interface HelloCARendererOpenGLView : QCTestOpenGLView
+@interface HelloCARendererOpenGLView : QCTestOpenGLView <GSCARendererDelegate>
 {
   CARenderer * _renderer;
   HelloCARendererLayerDelegate * _layerDelegate;
@@ -113,7 +115,7 @@ Class classOfTestOpenGLView()
   [layer setBackgroundColor: yellowColor];
   [layer setDelegate: _layerDelegate];
   [layer setNeedsDisplay];
-  
+
 #if GNUSTEP || GSIMPL_UNDER_COCOA
   _renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext]
                                               options: nil];
@@ -124,7 +126,9 @@ Class classOfTestOpenGLView()
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
-  
+  //NOTE: Setting a delegate only because of -nextFrameTime
+  [_renderer setDelegate: self];
+
   CGColorRelease(yellowColor);
 }
 
@@ -145,10 +149,10 @@ Class classOfTestOpenGLView()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -1, 1);
-    
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  
+
   /* */
   [_renderer beginFrameAtTime: CACurrentMediaTime()
                     timeStamp: NULL];
@@ -156,7 +160,7 @@ Class classOfTestOpenGLView()
   [_renderer render];
   [_renderer endFrame];
   /* */
-  
+
   {
 #if GNUSTEP || GSIMPL_UNDER_COCOA
     // FIXME: this is unneeded under cocoa and should be unnecessary with GS
@@ -174,20 +178,42 @@ Class classOfTestOpenGLView()
     glColor3f(0.0, 0.0, 1.0);
     glVertex2f(100.0, 100.0);
     glEnd();
-    
+
   }
-    
+
   glFlush();
 
   [[self openGLContext] flushBuffer];
-  
-  _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60 //[_renderer nextFrameTime]-CACurrentMediaTime()
+
+  _timer = [NSTimer scheduledTimerWithTimeInterval: [_renderer nextFrameTime]-CACurrentMediaTime()
                                             target: self
                                           selector: @selector(timerAnimation:)
                                           userInfo: nil
                                            repeats: NO];
 }
 
+-(void) nextFrameTimeDidChange
+{
+  CFTimeInterval currentTime = CACurrentMediaTime();
+  NSLog(@"Current time %g", currentTime);
+  NSLog(@"GSCARendererDelegate - next frame time did change: next frame time is %g", [_renderer nextFrameTime]);
+
+  // TODO: Remove once implicit animations are properly integrated into NSRunLoop.
+  if ([[CATransaction topTransaction] isImplicit])
+  {
+    [CATransaction commit];
+  }
+
+  if (isinf([_renderer nextFrameTime]) || [_renderer nextFrameTime] < currentTime)
+  {
+    [_timer invalidate];
+    _timer = [NSTimer scheduledTimerWithTimeInterval: [_renderer nextFrameTime]-currentTime
+                                              target: self
+                                            selector: @selector(timerAnimation:)
+                                            userInfo: nil
+                                             repeats: NO];
+  }
+}
 
 @end
 

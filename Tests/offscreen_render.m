@@ -91,7 +91,7 @@
 
 /* ******************** */
 
-@interface OffscreenRenderOpenGLView : QCTestOpenGLView
+@interface OffscreenRenderOpenGLView : QCTestOpenGLView <GSCARendererDelegate>
 {
   CARenderer * _renderer;
   CALayer * _theSublayer;
@@ -280,7 +280,8 @@ Class classOfTestOpenGLView()
   [_renderer retain];
   [_renderer setLayer: layer];
   [_renderer setBounds: NSRectToCGRect([self bounds])];
-  
+  [_renderer setDelegate:self];
+
   OffscreenRenderCustomLayer * layer2 = [OffscreenRenderCustomLayer layer];
   [layer2 setBounds: CGRectMake (0, 0, 100, 100)];
   [layer2 setBackgroundColor: greenColor];
@@ -289,8 +290,8 @@ Class classOfTestOpenGLView()
   [layer2 setNeedsDisplay];
   [layer addSublayer: layer2];
   _theSublayer = [layer2 retain];
-  
-  
+
+
   OffscreenRenderCustomLayer * layer3 = [OffscreenRenderCustomLayer layer];
   [layer3 setBounds: CGRectMake (0, 0, 125, 125)];
   [layer3 setValue:(id)blueColor forKey:@"backgroundColor"]; // testing KVC for colors
@@ -300,15 +301,15 @@ Class classOfTestOpenGLView()
   [layer3 setShadowOpacity: 1.0];
   [layer addSublayer: layer3];
   _theShadowedSublayer = [layer3 retain];
-  
-  
+
+
   OffscreenRenderCustomLayer * layer4 = [OffscreenRenderCustomLayer layer];
   [layer4 setBounds: CGRectMake (0, 0, 125, 125)];
   [layer4 setSize: CGSizeMake(100, 100)];
   [layer4 setNeedsDisplay];
   [layer4 setPosition: CGPointMake (0, [layer bounds].size.height)];
   [layer addSublayer: layer4];
-  
+
   CFURLRef poweredByGNUstepURL = (CFURLRef)[[NSBundle mainBundle] URLForResource:@"PoweredByGNUstep" withExtension:@"tiff"];
   CGImageSourceRef poweredByGNUstepSource = CGImageSourceCreateWithURL(poweredByGNUstepURL, NULL);
   CGImageRef poweredByGNUstepImage = CGImageSourceCreateImageAtIndex(poweredByGNUstepSource, 0, NULL);
@@ -374,10 +375,10 @@ Class classOfTestOpenGLView()
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, [self frame].size.width, 0, [self frame].size.height, -1, 1);
-        
+
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
-  
+
   /* */
   [_renderer beginFrameAtTime: CACurrentMediaTime()
                     timeStamp: NULL];
@@ -385,18 +386,40 @@ Class classOfTestOpenGLView()
   [_renderer render];
   [_renderer endFrame];
   /* */
-  
+
   glFlush();
 
   [[self openGLContext] flushBuffer];
-  
-  _timer = [NSTimer scheduledTimerWithTimeInterval: 1./60 //[_renderer nextFrameTime]-CACurrentMediaTime()
+
+  _timer = [NSTimer scheduledTimerWithTimeInterval: [_renderer nextFrameTime]-CACurrentMediaTime()
                                             target: self
                                           selector: @selector(timerAnimation:)
                                           userInfo: nil
                                            repeats: NO];
 }
 
+-(void) nextFrameTimeDidChange
+{
+  CFTimeInterval currentTime = CACurrentMediaTime();
+  NSLog(@"Current time %g", currentTime);
+  NSLog(@"GSCARendererDelegate - next frame time did change: next frame time is %g", [_renderer nextFrameTime]);
+
+  // TODO: Remove once implicit animations are properly integrated into NSRunLoop.
+  if ([[CATransaction topTransaction] isImplicit])
+  {
+    [CATransaction commit];
+  }
+
+  if (isinf([_renderer nextFrameTime]) || [_renderer nextFrameTime] < currentTime)
+  {
+    [_timer invalidate];
+    _timer = [NSTimer scheduledTimerWithTimeInterval: [_renderer nextFrameTime]-currentTime
+                                              target: self
+                                            selector: @selector(timerAnimation:)
+                                            userInfo: nil
+                                             repeats: NO];
+  }
+}
 
 @end
 
