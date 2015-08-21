@@ -61,24 +61,6 @@
 
 #import "QCTestOpenGLView.h"
 
-@interface CALayerTestSubclass : CALayer
-@property (nonatomic,
-           retain,
-           getter=manualTempDynamicPropertyTestGetter,
-           setter=setDynamicPropertyDifferentName:) NSString *dynamicPropertyObject;
-@property (assign) float dynamicPropertyFloat;
-@property (assign) BOOL dynamicPropertyBool;
-@property (assign) char dynamicPropertyChar;
-@property (assign) double dynamicPropertyDouble;
-@end
-@implementation CALayerTestSubclass
-@dynamic dynamicPropertyObject;
-@dynamic dynamicPropertyFloat;
-@dynamic dynamicPropertyBool;
-@dynamic dynamicPropertyChar;
-@dynamic dynamicPropertyDouble;
-@end
-
 @interface HelloAnimationCustomBasicAnimation : CABasicAnimation
 @end
 @implementation HelloAnimationCustomBasicAnimation
@@ -367,31 +349,6 @@ Class classOfTestOpenGLView()
   [layer2 setBounds: CGRectMake (0, 0, 100, 100)];
   [layer2 setBackgroundColor: greenColor];
   [layer2 setSpeed: 2];
-
-
-  CALayerTestSubclass * testLayer = [CALayerTestSubclass layer];
-
-  testLayer.dynamicPropertyObject = @"Good news, everyone! Dynamic accessors work.";
-  NSLog(@"%@", testLayer.dynamicPropertyObject);
-
-  /* TODO: Calling [GSKVOCALayerTestSubclass -setDynamicPropertyDifferentName:]
-   with incorrect signature.  Method has v@:@"NSString", selector has v24@0:8@16 */
-  [testLayer setDynamicPropertyDifferentName: @"Custom getter/setter name for dynamic properties also work."];
-  /* TODO: Calling [GSKVOCALayerTestSubclass -manualTempDynamicPropertyTestGetter]
-   with incorrect signature.  Method has @"NSString"@:, selector has @16@0:8 */
-  NSLog(@"%@", [testLayer manualTempDynamicPropertyTestGetter]);
-
-  [testLayer setDynamicPropertyFloat: 20.0];
-  NSLog(@"%f", [testLayer dynamicPropertyFloat]);
-
-  [testLayer setDynamicPropertyBool: YES];
-  NSLog(@"%d", [testLayer dynamicPropertyBool]);
-
-  [testLayer setDynamicPropertyDouble: 3.141592653589793238];
-  NSLog(@"%f", [testLayer dynamicPropertyDouble]);
-
-
-
 
   /*
   [layer2 setDuration: __builtin_inf()];

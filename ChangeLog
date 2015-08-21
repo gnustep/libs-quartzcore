@@ -1,3 +1,17 @@
+2015-08-13  Filip Zelic <zelic.filip@gmail.com>
+
+	* Headers/QuartzCore/CAMediaTiming.h
+	* Source/CAMediaTiming.m
+	* Tests/CALayer/GNUmakefile
+	* Tests/CALayer/Makefile.gs.mac
+	* Tests/CALayer/Makefile.mac
+	* Tests/CALayer/calayer.m
+	* Tests/CALayer/run_tests.sh
+	Implemented unit tests for CALayer dynamic properties.
+
+	* Tests/hello_animation.m
+	Removed previously used tests from demo application.
+
 2015-07-28  Filip Zelic <zelic.filip@gmail.com>
 
 	* Headers/QuartzCore/CALayer.h:

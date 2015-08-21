@@ -1,0 +1,10 @@
+
+all: calayer
+
+calayer.o: ../Testing.h
+
+calayer: calayer.o ../Testing.h
+	$(CC) calayer.o -o calayer -framework QuartzCore && ./calayer
+
+clean:
+	-rm calayer.o calayer

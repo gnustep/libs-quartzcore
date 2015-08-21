@@ -1,0 +1,14 @@
+
+CFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+CXXFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+OBJCFLAGS+=-DGSIMPL_UNDER_COCOA=1 -arch i386
+
+all: calayer
+
+calayer.o: ../Testing.h
+
+calayer: calayer.o ../Testing.h
+	$(CC) -arch i386 calayer.o -o calayer -framework GSQuartzCore && ./calayer
+
+clean:
+	-rm calayer.o calayer
