@@ -438,6 +438,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
     [self willChangeValueForKey: @ #prop]; \
     _ ## prop = prop; \
     [self didChangeValueForKey: @ #prop]; \
+    [self takeNoteThatNextFrameTimeChanged]; \
   }
 
 GSCA_OBSERVABLE_SETTER(setPosition, CGPoint, position, CGPointEqualToPoint)
@@ -446,8 +447,16 @@ GSCA_OBSERVABLE_SETTER(setTransform, CATransform3D, transform, CATransform3DEqua
 GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
+#else
+
+- (void) setPosition: (CGPoint)position
+{
+  _position = position;
+  [self takeNoteThatNextFrameTimeChanged];
+}
 
 #endif
+
 - (void) setBounds: (CGRect)bounds
 {
   if (CGRectEqualToRect(bounds, _bounds))
@@ -472,24 +481,30 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   if (backgroundColor == _backgroundColor)
     return;
-  
+
   [self willChangeValueForKey: @"backgroundColor"];
   CGColorRetain(backgroundColor);
   CGColorRelease(_backgroundColor);
   _backgroundColor = backgroundColor;
   [self didChangeValueForKey: @"backgroundColor"];
+  // NOTE: -takeNoteThatNextFrameTime is called due to the application not redrawing when
+  // implicit animations are not created.
+  [self takeNoteThatNextFrameTimeChanged];
 }
 
 - (void)setShadowColor: (CGColorRef)shadowColor
 {
   if (shadowColor == _shadowColor)
     return;
-  
+
   [self willChangeValueForKey: @"shadowColor"];
   CGColorRetain(shadowColor);
   CGColorRelease(_shadowColor);
   _shadowColor = shadowColor;
   [self didChangeValueForKey: @"shadowColor"];
+  // NOTE: -takeNoteThatNextFrameTime is called due to the application not redrawing when
+  // implicit animations are not created.
+  [self takeNoteThatNextFrameTimeChanged];
 }
 
 - (void)setShadowPath: (CGPathRef)shadowPath
@@ -502,6 +517,9 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   CGPathRelease(_shadowPath);
   _shadowPath = shadowPath;
   [self didChangeValueForKey: @"shadowPath"];
+  // NOTE: -takeNoteThatNextFrameTime is called due to the application not redrawing when
+  // implicit animations are not created.
+  [self takeNoteThatNextFrameTimeChanged];
 }
 
 /* ***************** */
@@ -1049,7 +1067,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   if (styleActions)
   {
     NSObject<CAAction>* dictValue = [styleActions objectForKey: key];
-    
+
     if ([dictValue isKindOfClass: [NSNull class]])
       {
         /* Abort search */
