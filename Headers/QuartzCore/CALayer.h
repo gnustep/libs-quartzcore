@@ -34,19 +34,19 @@
 #import <CoreGraphics/CoreGraphics.h>
 #endif
 
-NSString *const kCAGravityResize;
-NSString *const kCAGravityResizeAspect;
-NSString *const kCAGravityResizeAspectFill;
-NSString *const kCAGravityCenter;
-NSString *const kCAGravityTop;
-NSString *const kCAGravityBottom;
-NSString *const kCAGravityLeft;
-NSString *const kCAGravityRight;
-NSString *const kCAGravityTopLeft;
-NSString *const kCAGravityTopRight;
-NSString *const kCAGravityBottomLeft;
-NSString *const kCAGravityBottomRight;
-NSString *const kCATransition;
+extern NSString *const kCAGravityResize;
+extern NSString *const kCAGravityResizeAspect;
+extern NSString *const kCAGravityResizeAspectFill;
+extern NSString *const kCAGravityCenter;
+extern NSString *const kCAGravityTop;
+extern NSString *const kCAGravityBottom;
+extern NSString *const kCAGravityLeft;
+extern NSString *const kCAGravityRight;
+extern NSString *const kCAGravityTopLeft;
+extern NSString *const kCAGravityTopRight;
+extern NSString *const kCAGravityBottomLeft;
+extern NSString *const kCAGravityBottomRight;
+extern NSString *const kCATransition;
 
 @class CAAnimation;
 @class CARenderer;

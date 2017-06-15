@@ -24,9 +24,14 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import "QuartzCore/CABase.h"
+
 #if GNUSTEP
 #import <CoreGraphics/CGBase.h>
 #endif
+
+CA_EXTERN_C_BEGIN
+
 typedef struct CATransform3D
 {
   CGFloat m11, m12, m13, m14;
@@ -61,6 +66,8 @@ CATransform3D CATransform3DInvert(CATransform3D t);
 + (NSValue *) valueWithCATransform3D: (CATransform3D)transform;
 - (CATransform3D) CATransform3DValue;
 @end
+
+CA_EXTERN_C_END
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
 

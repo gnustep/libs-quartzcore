@@ -111,7 +111,7 @@
 @end
 
 /* calculationMode constants */
-NSString *const kCAAnimationDiscrete;
+extern NSString *const kCAAnimationDiscrete;
 
 /* *********************************** */
 
@@ -126,13 +126,13 @@ NSString *const kCAAnimationDiscrete;
 @end
 
 /* transition types */
-NSString *const kCATransitionMoveIn;
+extern NSString *const kCATransitionMoveIn;
 
 /* transition subtypes */
-NSString *const kCATransitionFromTop;
-NSString *const kCATransitionFromBottom;
-NSString *const kCATransitionFromLeft;
-NSString *const kCATransitionFromRight;
+extern NSString *const kCATransitionFromTop;
+extern NSString *const kCATransitionFromBottom;
+extern NSString *const kCATransitionFromLeft;
+extern NSString *const kCATransitionFromRight;
 
 /* *********************************** */
 

@@ -25,4 +25,16 @@
 
 #import <CoreFoundation/CoreFoundation.h>
 
-CFTimeInterval CACurrentMediaTime(void);
+#ifdef __cplusplus
+#define CA_EXTERN_C_BEGIN extern "C" {
+#define CA_EXTERN_C_END }
+#else
+#define CA_EXTERN_C_BEGIN
+#define CA_EXTERN_C_END
+#endif
+
+CA_EXTERN_C_BEGIN
+
+extern CFTimeInterval CACurrentMediaTime(void);
+
+CA_EXTERN_C_END
