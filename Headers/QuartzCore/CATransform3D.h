@@ -26,6 +26,10 @@
 
 #import "QuartzCore/CABase.h"
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #if GNUSTEP
 #import <CoreGraphics/CGBase.h>
 #endif
@@ -42,9 +46,9 @@ typedef struct CATransform3D
 
 extern const CATransform3D CATransform3DIdentity;
 
-BOOL CATransform3DIsIdentity(CATransform3D t);
+bool CATransform3DIsIdentity(CATransform3D t);
 
-BOOL CATransform3DEqualToTransform(CATransform3D a, CATransform3D b);
+bool CATransform3DEqualToTransform(CATransform3D a, CATransform3D b);
 
 CATransform3D CATransform3DMakeTranslation(CGFloat tx, CGFloat ty, CGFloat tz);
 
