@@ -22,3 +22,46 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <QuartzCore/CALayer.h>
+#import <CoreGraphics/CoreGraphics.h>
+
+@interface CAShapeLayer : CALayer {
+  CGPathRef _path;
+  CGColorRef _fillColor;
+  NSString *_fillRule;
+  CGColorRef _strokeColor;
+  CGFloat _strokeStart;
+  CGFloat _strokeEnd;
+  CGFloat _lineWidth;
+  CGFloat _miterLimit;
+  NSString *_lineCap;
+  NSString *_lineJoin;
+  CGFloat _lineDashPhase;
+  NSArray *_lineDashPattern;
+}
+
+@property CGPathRef path;
+@property CGColorRef fillColor;
+@property(copy) NSString *fillRule;
+@property CGColorRef strokeColor;
+@property CGFloat strokeStart;
+@property CGFloat strokeEnd;
+@property CGFloat lineWidth;
+@property CGFloat miterLimit;
+@property(copy) NSString *lineCap;
+@property(copy) NSString *lineJoin;
+@property CGFloat lineDashPhase;
+@property(copy) NSArray *lineDashPattern;
+@end
+
+extern NSString *const kCAFillRuleNonZero;
+extern NSString *const kCAFillRuleEvenOdd;
+
+extern NSString *const kCALineJoinMiter;
+extern NSString *const kCALineJoinRound;
+extern NSString *const kCALineJoinBevel;
+
+extern NSString *const kCALineCapButt;
+extern NSString *const kCALineCapRound;
+extern NSString *const kCALineCapSquare;

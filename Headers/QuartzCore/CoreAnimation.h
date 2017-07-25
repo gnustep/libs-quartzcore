@@ -35,4 +35,5 @@
 #import "QuartzCore/CAMediaTiming.h"
 #import "QuartzCore/CAMediaTimingFunction.h"
 #import "QuartzCore/CARenderer.h"
+#import "QuartzCore/CAShapeLayer.h"
 #import "QuartzCore/CATransaction.h"
