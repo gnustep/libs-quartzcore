@@ -93,6 +93,7 @@ extern NSString *const kCATransition;
   NSMutableDictionary *_dynamicPropertyValueDict;
   id _presentationLayer;
   id _modelLayer;
+  CGColorRef _borderColor;
 
   CGColorRef _shadowColor;
   CGSize _shadowOffset;
@@ -207,6 +208,10 @@ extern NSString *const kCATransition;
 - (CGAffineTransform) affineTransform;
 - (void) setAffineTransform: (CGAffineTransform)affineTransform;
 
+@property (nonatomic, assign) CGColorRef borderColor;
+
+@property (nonatomic, assign) CGFloat contentsScale;
+@property (nonatomic, assign) CGFloat anchorPointZ;
 @end
 
 @interface NSObject (CALayerActions)

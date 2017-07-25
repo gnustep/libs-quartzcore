@@ -98,6 +98,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize zPosition=_zPosition;
 @synthesize actions=_actions;
 @synthesize style=_style;
+@synthesize borderColor=_borderColor;
 
 @synthesize shadowColor=_shadowColor;
 @synthesize shadowOffset=_shadowOffset;
@@ -275,7 +276,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       static NSString * keys[] = {
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
-        @"backgroundColor",
+        @"backgroundColor", @"borderColor",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
@@ -356,6 +357,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       [self setOpaque: [layer isOpaque]];
       [self setGeometryFlipped: [layer isGeometryFlipped]];
       [self setBackgroundColor: [layer backgroundColor]];
+      [self setBorderColor: [layer borderColor]];
       [self setMasksToBounds: [layer masksToBounds]];
       [self setContentsRect: [layer contentsRect]];
       [self setHidden: [layer isHidden]];
@@ -405,6 +407,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   [_contents release];
   [_sublayers release];
   CGColorRelease(_backgroundColor);
+  CGColorRelease(_borderColor);
   [_contentsGravity release];
   [_fillMode release];
 
@@ -487,6 +490,21 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   CGColorRelease(_backgroundColor);
   _backgroundColor = backgroundColor;
   [self didChangeValueForKey: @"backgroundColor"];
+  // NOTE: -takeNoteThatNextFrameTime is called due to the application not redrawing when
+  // implicit animations are not created.
+  [self takeNoteThatNextFrameTimeChanged];
+}
+
+- (void)setBorderColor: (CGColorRef)borderColor
+{
+  if (borderColor == _borderColor)
+    return;
+
+  [self willChangeValueForKey: @"borderColor"];
+  CGColorRetain(borderColor);
+  CGColorRelease(_borderColor);
+  _borderColor = borderColor;
+  [self didChangeValueForKey: @"borderColor"];
   // NOTE: -takeNoteThatNextFrameTime is called due to the application not redrawing when
   // implicit animations are not created.
   [self takeNoteThatNextFrameTimeChanged];
@@ -1122,6 +1140,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     {
       return (id)[self shadowColor];
     }
+  if ([key isEqualToString: @"borderColor"])
+    {
+      return (id)[self borderColor];
+    }
   if ([key isEqualToString: @"shadowPath"])
     {
       return (id)[self shadowColor];
@@ -1138,6 +1160,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   if ([key isEqualToString: @"backgroundColor"])
     {
       [self setBackgroundColor: (CGColorRef)value];
+      return;
+    }
+  if ([key isEqualToString: @"borderColor"])
+    {
+      [self setborderColor: (CGColorRef)value];
       return;
     }
   if ([key isEqualToString: @"shadowColor"])
