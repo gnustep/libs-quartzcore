@@ -31,6 +31,7 @@ QuartzCore_HEADER_FILES = \
 	CALayer.h \
 	CAMediaTimingFunction.h \
 	CAMediaTiming.h \
+	CAOpenGLLayer.h \
 	CARenderer.h \
 	CAReplicatorLayer.h \
 	CAScrollLayer.h \

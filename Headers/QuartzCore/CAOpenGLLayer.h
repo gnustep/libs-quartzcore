@@ -1,13 +1,9 @@
-/* 
-   CoreAnimation.h
+/* CAOpenGLLayer.h
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2017 Free Software Foundation, Inc.
 
-   Author: Amr Aboelela <amraboelela@gmail.com>
-   Date: January 2012
-   
-   Author: Ivan Vučica <ivan@vucica.net>
-   Date: June 2012
+   Author: Daniel Ferreira <dtf@stanford.edu>
+   Date: July 2017
 
    This file is part of QuartzCore.
 
@@ -28,16 +24,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "QuartzCore/CABase.h"
-#import "QuartzCore/CAAction.h"
-#import "QuartzCore/CAFilter.h"
-#import "QuartzCore/CALayer.h"
-#import "QuartzCore/CAAnimation.h"
-#import "QuartzCore/CAMediaTiming.h"
-#import "QuartzCore/CAMediaTimingFunction.h"
-#import "QuartzCore/CAOpenGLLayer.h"
-#import "QuartzCore/CARenderer.h"
-#import "QuartzCore/CAShapeLayer.h"
-#import "QuartzCore/CATransaction.h"
-#import "QuartzCore/CATransformLayer.h"
-#import "QuartzCore/CAValueFunction.h"
+#import <QuartzCore/CALayer.h>
+
+@interface CAOpenGLLayer : CALayer
+@end
