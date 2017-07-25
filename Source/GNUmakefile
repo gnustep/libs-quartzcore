@@ -26,6 +26,7 @@ QuartzCore_HEADER_FILES = \
 	CABase.h \
 	CADisplayLink.h \
 	CAEAGLLayer.h \
+	CAFilter.h \
 	CAGradientLayer.h \
 	CALayer.h \
 	CAMediaTimingFunction.h \
