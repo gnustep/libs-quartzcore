@@ -62,10 +62,13 @@ CATransform3D CATransform3DConcat(CATransform3D a, CATransform3D b);
 
 CATransform3D CATransform3DInvert(CATransform3D t);
 
+#ifdef __OBJC__
+#import <Foundation/NSValue.h>
 @interface NSValue (CATransform3D)
 + (NSValue *) valueWithCATransform3D: (CATransform3D)transform;
 - (CATransform3D) CATransform3DValue;
 @end
+#endif
 
 CA_EXTERN_C_END
 
