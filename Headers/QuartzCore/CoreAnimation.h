@@ -38,3 +38,4 @@
 #import "QuartzCore/CAShapeLayer.h"
 #import "QuartzCore/CATransaction.h"
 #import "QuartzCore/CATransformLayer.h"
+#import "QuartzCore/CAValueFunction.h"

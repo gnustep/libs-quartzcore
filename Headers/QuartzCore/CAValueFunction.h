@@ -28,3 +28,17 @@
 @interface CAValueFunction : NSObject
 
 @end
+
+extern NSString *const kCAValueFunctionRotateX;
+extern NSString *const kCAValueFunctionRotateY;
+extern NSString *const kCAValueFunctionRotateZ;
+
+extern NSString *const kCAValueFunctionScale;
+extern NSString *const kCAValueFunctionScaleX;
+extern NSString *const kCAValueFunctionScaleY;
+extern NSString *const kCAValueFunctionScaleZ;
+
+extern NSString *const kCAValueFunctionTranslate;
+extern NSString *const kCAValueFunctionTranslateX;
+extern NSString *const kCAValueFunctionTranslateY;
+extern NSString *const kCAValueFunctionTranslateZ;
