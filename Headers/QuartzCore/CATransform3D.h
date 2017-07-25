@@ -30,9 +30,9 @@
 #include <stdbool.h>
 #endif
 
-#if GNUSTEP
+//#if GNUSTEP
 #import <CoreGraphics/CGBase.h>
-#endif
+//#endif
 
 CA_EXTERN_C_BEGIN
 

@@ -26,9 +26,9 @@
 */
 
 #import "CABase.h"
-#if GNUSTEP
+//#if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
-#endif
+//#endif
 
 @class CAAnimation;
 @class CALayer;

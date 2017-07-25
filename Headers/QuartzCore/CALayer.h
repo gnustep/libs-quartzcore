@@ -30,9 +30,9 @@
 #import "QuartzCore/CABase.h"
 #import "QuartzCore/CAMediaTiming.h"
 #import "QuartzCore/CATransform3D.h"
-#if GNUSTEP
+//#if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
-#endif
+//#endif
 
 extern NSString *const kCAGravityResize;
 extern NSString *const kCAGravityResizeAspect;
@@ -53,11 +53,11 @@ extern NSString *const kCATransition;
 
 #import "QuartzCore/CAAction.h"
 
-#if GNUSTEP
+//#if GNUSTEP
 #define NONATOMIC_GSONLY nonatomic
-#else
-#define NONATOMIC_GSONLY atomic
-#endif
+//#else
+//#define NONATOMIC_GSONLY atomic
+//#endif
 
 @class CABackingStore;
 @class CAGLSimpleFramebuffer;
