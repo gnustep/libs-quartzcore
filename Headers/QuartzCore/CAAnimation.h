@@ -110,6 +110,21 @@
 
 @end
 
+@interface CASpringAnimation : CABasicAnimation
+{
+  CGFloat _mass;
+  CGFloat _stiffness;
+  CGFloat _damping;
+  CGFloat _initialVelocity;
+  CFTimeInterval _settlingDuration;
+}
+@property CGFloat mass;
+@property CGFloat stiffness;
+@property CGFloat damping;
+@property CGFloat initialVelocity;
+@property(readonly) CFTimeInterval settlingDuration;
+@end
+
 /* calculationMode constants */
 extern NSString *const kCAAnimationDiscrete;
 

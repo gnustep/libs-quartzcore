@@ -961,6 +961,14 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 
 @end
 
+@implementation CASpringAnimation
+@synthesize mass = _mass;
+@synthesize stiffness = _stiffness;
+@synthesize damping = _damping;
+@synthesize initialVelocity = _initialVelocity;
+@synthesize settlingDuration = _settlingDuration;
+@end
+
 @implementation CATransition
 @synthesize type=_type;
 @synthesize subtype=_subtype;
