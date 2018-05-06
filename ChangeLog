@@ -1,3 +1,16 @@
+2018-05-06  Ivan Vučica <ivan@vucica.net>
+
+	* Demo/QuartzCoreDemo.xcodeproj/project.pbxproj:
+	Enable C/Objective-C modules on Mac, to fix compatibility with newer
+	OS X SDKs. (Error manifests by mentioning "Expected parameter
+	declarator" on CA_CLASS_AVAILABLE macro in Apple's CAOpenGLLayer.h.)
+
+	Switched to framework search path in place of header search path to
+	fix an error mentioning type redefinition of struct _CVTimeStamp in
+	place of struct CVTimeStamp.
+
+	This is a partial fix of QuartzCoreDemo.
+
 2015-08-19  Filip Zelic <zelic.filip@gmail.com>
 
 	* Source/CALayer.m
