@@ -1,4 +1,4 @@
-/* 
+/*
    CABackingStore.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
@@ -36,10 +36,10 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   void *          bitmapData;
   int             bitmapByteCount;
   int             bitmapBytesPerRow;
-  
+
   bitmapBytesPerRow   = (pixelsWide * 4);
   bitmapByteCount     = (bitmapBytesPerRow * pixelsHigh);
-  
+
   colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);// 2
 
   // Let CGBitmapContextCreate() allocate the memory.
@@ -79,10 +79,10 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   CGContextClearRect (context, CGRectInfinite);
 #else
 #warning Opal bug: CGContextClearRect() permanently whacks the context
-  memset (CGBitmapContextGetData (context), 
+  memset (CGBitmapContextGetData (context),
           0, bitmapBytesPerRow * pixelsHigh);
 #endif
-#endif  
+#endif
   return context;
 }
 
@@ -102,12 +102,12 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   self = [super init];
   if (!self)
     return nil;
-  
+
   CGContextRef context = createCGBitmapContext(width, height);
   [self setContext: context];
   [self setContentsTexture: [CAGLTexture texture]];
   [self setOffscreenRenderTexture: nil]; /* set at a later time by layer */
-  
+
   CGContextRelease(context);
 
   return self;
@@ -117,7 +117,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [_offscreenRenderTexture release];
   [_contentsTexture release];
   CGContextRelease (_context);
-  
+
   [super dealloc];
 }
 
@@ -130,17 +130,17 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 {
   if (context == _context)
     return;
-  
+
   /* We must invalidate the texture data, in case
      we use client storage extension. */
   [_contentsTexture loadEmptyImageWithWidth: 0
                                      height: 0];
-  
+
   /* Now replace data... */
   CGContextRetain(context);
   CGContextRelease(_context);
   _context = context;
-  
+
   /* Refresh */
   [self refresh];
 }
@@ -158,7 +158,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 {
   if (!_context)
     return;
-  
+
 #if __APPLE__
   /* Since we retain contents in the CGContext, we can use the
      client storage extension to avoid a copy. */
@@ -168,7 +168,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   [_contentsTexture loadRGBATexImage: CGBitmapContextGetData(_context)
                                width: (GLuint)CGBitmapContextGetWidth(_context)
                               height: (GLuint)CGBitmapContextGetHeight(_context)];
-                      
+
 #if __APPLE__
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
 #endif

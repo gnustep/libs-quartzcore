@@ -48,7 +48,7 @@
 - (id) initWithArrayOfShaders: (NSArray *)shaders;
 - (void) bindAttrib: (NSString *)name
          toLocation: (GLuint)location;
-         
+
 - (void) validate;
 - (GLint) validateStatus;
 - (void) printValidateLog;

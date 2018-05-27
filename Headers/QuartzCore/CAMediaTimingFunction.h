@@ -4,7 +4,7 @@
 
    Author: Ivan Vučica <ivan@vucica.net>
    Date: July 2012
-   
+
    Author: Amr Aboelela <amraboelela@gmail.com>
    Date: January 2012
 
@@ -27,7 +27,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <Foundation/NSObject.h> 
+#import <Foundation/NSObject.h>
 
 extern NSString *const kCAMediaTimingFunctionDefault;
 extern NSString *const kCAMediaTimingFunctionEaseInEaseOut;
@@ -39,7 +39,7 @@ extern NSString *const kCAMediaTimingFunctionLinear;
 {
   float _c1x, _c1y;
   float _c2x, _c2y;
-  
+
   CGFloat _coefficientsX[4];
   CGFloat _coefficientsY[4];
 }

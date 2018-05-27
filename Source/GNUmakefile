@@ -48,7 +48,7 @@ QuartzCore_RESOURCE_FILES = \
 
 QuartzCore_OBJC_FILES = $(wildcard *.m) $(wildcard GLHelpers/*.m)
 
-QuartzCore_OBJCFLAGS += $(WARN_FLAGS) 
+QuartzCore_OBJCFLAGS += $(WARN_FLAGS)
 # Treat warnings as errors unless someone chooses to ignore them.
 #ifneq ($(nonstrict), yes)
 #QuartzCore_OBJCFLAGS += -Werror

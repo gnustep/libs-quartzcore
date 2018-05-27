@@ -1,4 +1,4 @@
-/* 
+/*
    AppleSupport.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
@@ -28,7 +28,7 @@
 /* This file renames the Core Animation classes that we implement so they
    don't conflict with Apple's implementation when testing under Cocoa. This
    is desirable so the implementations can quickly and easily be compared.
-   All top-level symbols that might conflict with Apple's implementation 
+   All top-level symbols that might conflict with Apple's implementation
    should be renamed.
 
    All symbols are renamed by #define'ing their name, changing their prefix
@@ -40,7 +40,7 @@
    this advice.
 
    To revert what's done in this file, companion file AppleSupportRevert.h
-   is provided. 
+   is provided.
 
    Note: despite this header being currently publicly available, it should
    be used stricly for testing purposes. Don't depend on it. */

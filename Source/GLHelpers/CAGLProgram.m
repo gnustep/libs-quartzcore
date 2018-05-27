@@ -39,9 +39,9 @@
   self = [super init];
   if (!self)
     return nil;
-  
+
   _programID = glCreateProgram();
-  
+
   return self;
 }
 
@@ -50,9 +50,9 @@
   self = [self init];
   if (!self)
     return nil;
-  
+
   [self setShaders: shaders];
-  
+
   return self;
 }
 
@@ -60,7 +60,7 @@
 {
   [_shaders release];
   glDeleteProgram(_programID);
-  
+
   [super dealloc];
 }
 
@@ -84,10 +84,10 @@
   /* TODO: Make printing logs depend on a user default */
   [_shaders makeObjectsPerformSelector: @selector(printLog)
                             withObject: nil];
-    
+
   [_shaders makeObjectsPerformSelector: @selector(attachToProgram:)
                             withObject: self];
-  
+
   glLinkProgram(_programID);
 }
 - (GLint) validateStatus
@@ -105,7 +105,7 @@
       NSLog(@"GL Program validation log:");
       printf("%s\n", [validateLog UTF8String]);
     }
-  
+
   /* Get validation status */
   if ([self validateStatus] == GL_FALSE)
     {
@@ -121,10 +121,10 @@
   /* TODO: Make printing logs depend on a user default */
   [_shaders makeObjectsPerformSelector: @selector(printLog)
                             withObject: nil];
-  
+
   [_shaders makeObjectsPerformSelector: @selector(attachToProgram:)
                             withObject: self];
-  
+
   glLinkProgram(_programID);
 }
 - (GLint) linkStatus
@@ -143,7 +143,7 @@
       NSLog(@"GL Program link log:");
       printf("%s\n", [linkLog UTF8String]);
     }
-  
+
   /* Get link status */
   if ([self linkStatus] == GL_FALSE)
     {
@@ -167,7 +167,7 @@
       free(log);
       return logString;
     }
-  
+
   return nil;
 }
 
@@ -187,7 +187,7 @@
   // Use of [self use] modifies state a bit, but that doesn't
   // really matter.
   //glProgramUniform4i(_programID, location, 1, value);
-  
+
   [self use];
   if (location != -1)
     glUniform1i(location, value);
@@ -202,7 +202,7 @@
   // Use of [self use] modifies state a bit, but that doesn't
   // really matter.
   //glProgramUniform4fv(_programID, location, 1, array);
-  
+
   [self use];
   if (location != -1)
     glUniform4fv(location, 1, array);

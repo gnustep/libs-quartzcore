@@ -1,4 +1,4 @@
-/* 
+/*
    AppleSupportRevert.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.

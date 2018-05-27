@@ -47,10 +47,10 @@ static NSMutableArray * framebufferStack = nil;
     return nil;
 
   glGenFramebuffers(1, &_framebufferID);
-  
+
   /* Build a texture and assign it to the framebuffer */
   _texture = [CAGLTexture new];
- 
+
 
   [_texture bind];
   /* Ogre3d sets these parameters to ensure functionality under nVidia cards */
@@ -62,10 +62,10 @@ static NSMutableArray * framebufferStack = nil;
 
   [_texture loadEmptyImageWithWidth: width
                              height: height];
-  
+
   glBindFramebuffer(GL_FRAMEBUFFER_EXT, _framebufferID);
   glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, [_texture textureTarget], [_texture textureID], 0);
-    
+
   return self;
 }
 
@@ -73,20 +73,20 @@ static NSMutableArray * framebufferStack = nil;
 {
   if ([framebufferStack lastObject] == self)
     [self unbind];
-  
+
   if ([framebufferStack containsObject: self])
     NSLog(@"Releasing a framebuffer that's still in framebuffer stack");
-    
+
   /* clean up renderbuffer storage */
   if (_depthBufferEnabled)
     [self setDepthBufferEnabled: NO];
-  
+
   /* delete framebuffer itself */
   glDeleteFramebuffers(1, &_framebufferID);
-  
+
   /* release the texture */
   [_texture release];
-  
+
   [super dealloc];
 }
 
@@ -94,10 +94,10 @@ static NSMutableArray * framebufferStack = nil;
 {
   if (_depthBufferEnabled == depthBufferEnabled)
     return;
-  
+
   _depthBufferEnabled = depthBufferEnabled;
   [self bind];
-  
+
   if (_depthBufferEnabled)
   {
     glGenRenderbuffers(1, &_depthRenderbufferID);
@@ -109,10 +109,10 @@ static NSMutableArray * framebufferStack = nil;
   else
   {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0);
-    
+
     glDeleteRenderbuffers(1, &_depthRenderbufferID);
   }
-  
+
   [self unbind];
 }
 
@@ -133,7 +133,7 @@ static NSMutableArray * framebufferStack = nil;
       NSLog(@"Unbinding a framebuffer that is not on top of the stack");
     }
   [framebufferStack removeLastObject];
-  
+
   if ([framebufferStack count] > 0)
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, [((CAGLSimpleFramebuffer*)[framebufferStack lastObject]) framebufferID]);
   else

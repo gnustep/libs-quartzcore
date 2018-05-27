@@ -1,11 +1,11 @@
-/* 
+/*
    CoreAnimation.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
 
    Author: Amr Aboelela <amraboelela@gmail.com>
    Date: January 2012
-   
+
    Author: Ivan Vučica <ivan@vucica.net>
    Date: June 2012
 

@@ -1,7 +1,7 @@
 /* CALayer+DynamicProperties.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
-   
+
    Author: Ivan Vučica <ivan@vucica.net>
    Date: August 2012
 

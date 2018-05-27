@@ -158,7 +158,7 @@ static NSMutableArray *transactionStack = nil;
   _animationDuration = 0.25;
   _animationTimingFunction = [[CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault] retain];
   _disableActions = NO;
-    
+
   return self;
 }
 
@@ -166,26 +166,26 @@ static NSMutableArray *transactionStack = nil;
 {
   [_animationTimingFunction release];
   [_actions release];
-  
+
   [super dealloc];
 }
 
 - (void) commit
-{ 
+{
   for (NSDictionary* actionDescription in _actions)
     {
       NSObject<CAAction> * action = [actionDescription objectForKey: @"action"];
       id object = [actionDescription objectForKey: @"object"];
       NSString * keyPath = [actionDescription objectForKey: @"keyPath"];
       NSDictionary * arguments = nil;
-      
+
       if ([object respondsToSelector: @selector(isPresentationLayer)] &&
           [object isPresentationLayer])
         {
           NSLog(@"Attempt at adding action to a presentation layer");
           continue;
         }
-      
+
       if ([action conformsToProtocol:@protocol(CAMediaTiming)])
         {
           NSObject<CAAction, CAMediaTiming>* timedAction = (id)action;
@@ -198,7 +198,7 @@ static NSMutableArray *transactionStack = nil;
           if(![animation timingFunction])
             [animation setTimingFunction: [CATransaction animationTimingFunction]];
         }
-      
+
       [action runActionForKey: keyPath
                        object: object
                     arguments: arguments];
@@ -221,7 +221,7 @@ static NSMutableArray *transactionStack = nil;
     object, @"object",
     keyPath, @"keyPath",
     nil];
-  
+
   [_actions addObject: actionDescription];
 }
 

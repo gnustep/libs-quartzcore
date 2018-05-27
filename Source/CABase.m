@@ -1,4 +1,4 @@
-/* 
+/*
    CABase.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
@@ -33,7 +33,7 @@
 CFTimeInterval CACurrentMediaTime(void)
 {
   struct timeval systemTime;
-  
+
   gettimeofday(&systemTime, NULL);
   return (double)systemTime.tv_sec + ((double)systemTime.tv_usec)/(1000 * 1000.);
 }
