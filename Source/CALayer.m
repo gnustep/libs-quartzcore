@@ -304,8 +304,25 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
                 }
               #endif
 
-              [self setValue: defaultValue
-                      forKey: keys[i]];
+              if ([@"shadowOffset" isEqualToString: keys[i]])
+                {
+		  /* TODO(ivucica): remove this block once #53994 is resolved */
+                  NS_DURING
+                  [self setValue: defaultValue
+                          forKey: keys[i]];
+                  NS_HANDLER
+                  static BOOL warned = NO;
+                  if (!warned)
+                    NSLog(@"CALayer: one time warning: KVC for shadowOffset (a CGSize/NSSize) is affected by bug in gnustep-base https://savannah.gnu.org/bugs/index.php?53994; applying workaround");
+		  warned = YES;
+                  [self setShadowOffset: [defaultValue sizeValue]];
+                  NS_ENDHANDLER
+                }
+              else
+                {
+		  [self setValue: defaultValue
+			  forKey: keys[i]];
+		}
             }
 
           /* implicit animations support */

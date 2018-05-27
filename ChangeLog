@@ -1,5 +1,13 @@
 2018-05-27  Ivan Vučica <ivan@vucica.net>
 
+	* Source/CALayer.m:
+	Work around a problem in initializing default values of CGSizes;
+	CGSizes are NSSizes because of a typedef in opal, and KVC in GNUstep
+	seems to interpret NSSize as NSPoint in a particular part of code.
+	See https://savannah.gnu.org/bugs/index.php?53994.
+
+2018-05-27  Ivan Vučica <ivan@vucica.net>
+
 	* Source/CAAnimation.m:
 	Add support for animatable CGSize/NSSize.
 
