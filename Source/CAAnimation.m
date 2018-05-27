@@ -725,7 +725,55 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
                                       linearInterpolation(fromPt.y, toPt.y, fraction));
           return [NSValue valueWithBytes:&valuePt objCType:@encode(CGPoint)];
         }
-        
+
+      //////////////////////////////////
+      if (!strcmp([from objCType], @encode(NSSize)))
+        {
+          /* Just convert to CGSize. Core Animation doesn't deal with NSSizes! */
+          /* After that, don't return; instead let the CGSize branch deal with the values. */
+
+          CGSize fromSz = CGSizeMake([from sizeValue].width, [from sizeValue].height);
+          CGSize toSz = CGSizeMake([to sizeValue].width, [to sizeValue].height);
+
+          from = [NSValue valueWithBytes: &fromSz objCType: @encode(CGSize)];
+          to = [NSValue valueWithBytes: &toSz objCType: @encode(CGSize)];
+
+        }
+#if GNUSTEP
+      if (!strcmp([from objCType], @encode(NSSize)))
+        {
+          static BOOL warned = NO;
+          if (!warned)
+            {
+              NSLog(@"CAAnimation: one time warning: bug in gnustep-base: despite storing cgsize, we ended up with a nssize.");
+              if (sizeof(NSSize) != sizeof(CGSize))
+                NSLog(@"(that's even more problematic since currently sizeof(NSSize)==%d and sizeof(CGSize)==%d.", sizeof(NSSize), sizeof(CGSize));
+            }
+          warned = YES;
+
+          NSSize fromSz = [from sizeValue];
+          NSSize toSz = [to sizeValue];
+          NSSize valueSz = NSMakeSize(linearInterpolation(fromSz.width, toSz.height, fraction),
+                                      linearInterpolation(fromSz.width, toSz.height, fraction));
+          return [NSValue valueWithSize: valueSz];
+        }
+#endif
+      if (!strcmp([from objCType], @encode(CGSize)))
+        {
+
+          /* NSValue in GNUstep and Cocoa doesn't come with CGSize support.
+             Opal and Core Graphics don't provide it either.
+             Support for it is an extension provided by UIKit. */
+          /* Note: this branch CASCADES from NSSize branch and
+             should come immediately after it. */
+          CGSize fromSz = { 0 }; [from getValue:&fromSz];
+          CGSize toSz = { 0 }; [to getValue:&toSz];
+
+          CGSize valueSz = CGSizeMake(linearInterpolation(fromSz.width, toSz.width, fraction),
+                                      linearInterpolation(fromSz.height, toSz.height, fraction));
+          return [NSValue valueWithBytes:&valueSz objCType:@encode(CGSize)];
+        }
+      
       //////////////////////////////////
       if (!strcmp([from objCType], @encode(NSRect)))
         {

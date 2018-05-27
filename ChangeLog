@@ -1,3 +1,8 @@
+2018-05-27  Ivan Vučica <ivan@vucica.net>
+
+	* Source/CAAnimation.m:
+	Add support for animatable CGSize/NSSize.
+
 2018-05-06  Ivan Vučica <ivan@vucica.net>
 
 	* Demo/QuartzCoreDemo.xcodeproj/project.pbxproj:
