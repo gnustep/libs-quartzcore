@@ -40,7 +40,7 @@
 {
   NSString * _source;
   GLuint _shaderID;
-  
+
   /* 'compiled' prevents multiple compiles for same program.
      It's not updated if 'source' is changed (which we don't
      support anyway -- shader is mostly an immutable object,

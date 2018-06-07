@@ -1,4 +1,4 @@
-/* 
+/*
    CARenderer.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
@@ -107,7 +107,7 @@
                                     options: (NSDictionary*)options;
 {
   return [[[self alloc] initWithNSOpenGLContext: ctx
-	                                options: options] autorelease];
+                                        options: options] autorelease];
 }
 
 /* *** methods *** */
@@ -118,7 +118,7 @@
   if ((self = [super init]) != nil)
     {
       [self setGLContext: ctx];
-      
+
       /* SHADER SETUP */
       [ctx makeCurrentContext];
 
@@ -137,7 +137,7 @@
       simpleProgram = [simpleProgram initWithArrayOfShaders: objectsForSimpleShader];
       [simpleProgram link];
       _simpleProgram = simpleProgram;
-      
+
       /* Horizontal and vertical blur shader */
       CAGLVertexShader * blurBaseVS = [CAGLVertexShader alloc];
       blurBaseVS = [blurBaseVS initWithFile: @"blurbase"
@@ -153,17 +153,17 @@
       [blurBaseVS release];
       [blurHorizFS release];
       [blurVertFS release];
-      
+
       CAGLProgram * blurHorizProgram = [CAGLProgram alloc];
       blurHorizProgram = [blurHorizProgram initWithArrayOfShaders: objectsForBlurHorizShader];
       [blurHorizProgram link];
       _blurHorizProgram = blurHorizProgram;
-      
+
       CAGLProgram * blurVertProgram = [CAGLProgram alloc];
       blurVertProgram = [blurVertProgram initWithArrayOfShaders: objectsForBlurVertShader];
       [blurVertProgram link];
       _blurVertProgram = blurVertProgram;
-      
+
     }
   return self;
 }
@@ -172,22 +172,22 @@
 {
   [_layer release];
   [_rasterizationSchedule release];
-  
+
   /* Release all GL programs */
   [_simpleProgram release];
   [_blurHorizProgram release];
   [_blurVertProgram release];
-  
+
   [super dealloc];
 }
 
 - (void)setBounds: (CGRect)bounds
 {
   _bounds = bounds;
-  
+
   /* This value is returned from -updateBounds in case nothing has changed */
   _updateBounds = CGRectMake(__builtin_inf(), __builtin_inf(), 0, 0);
-  
+
   [self addUpdateRect: bounds];
 }
 /* Adds a rectangle to the update region. */
@@ -213,14 +213,14 @@
       [CATransaction commit];
     }
   _nextFrameTime = __builtin_inf();
-  
+
   /* Prepare for rasterization */
   [_rasterizationSchedule release];
   _rasterizationSchedule = [[NSMutableArray alloc] init];
-  
+
   /* Update layers (including determining and scheduling rasterization) */
   [self _updateLayer: _layer atTime: timeInterval];
-  
+
 }
 
 /* Ends rendering the frame, releasing any temporary data. */
@@ -240,7 +240,7 @@
   return _nextFrameTime;
 }
 
-/* Renders a frame to the target context. Best case scenario, it 
+/* Renders a frame to the target context. Best case scenario, it
    should be rendering the update region only. */
 - (void) render
 {
@@ -253,20 +253,20 @@
   [_GLContext makeCurrentContext];
 
   glMatrixMode(GL_MODELVIEW);
-  
+
   glEnableClientState(GL_VERTEX_ARRAY);
   glEnableClientState(GL_COLOR_ARRAY);
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-  
+
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  
+
   [self _rasterizeAll];
-  
+
   /* Perform render */
   [self _renderLayer: [[self layer] presentationLayer]
        withTransform: CATransform3DIdentity];
-       
+
   /* Restore defaults */
   glMatrixMode(GL_MODELVIEW);
   glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -285,13 +285,13 @@
      in order to keep the number of layers that are rendered to a
      minimum. This is the method Apple seems to use to keep down the
      amount of content rendered upon screen refresh.
-     
+
      https://mail.mozilla.org/pipermail/plugin-futures/2010-March/000023.html
 
      This quote: "A -render with nothing to do is cheap." leads me to
      believe that -render is actually repeatedly ran, but that it's counted
-     on that most often, nothing will be painted. 
-     
+     on that most often, nothing will be painted.
+
      Value of -updateBounds is apparently calculated in -beginFrameAtTime:timeStamp:.
      This makes sense and we'll do the same.
      */
@@ -314,17 +314,17 @@
     layer = [layer modelLayer];
 
   [CALayer setCurrentFrameBeginTime: theTime];
-  
+
   /* Destroy and then recreate the presentation layer.
      This is the easiest way to reset it to default values. */
   [layer discardPresentationLayer];
   CALayer * presentationLayer = [layer presentationLayer];
-  
+
   /* Tell the presentation layer to apply animations. */
   /* Also, determine nextFrameTime */
   _nextFrameTime = MIN(_nextFrameTime, [presentationLayer applyAnimationsAtTime: theTime]);
   _nextFrameTime = MAX(_nextFrameTime, theTime);
-  
+
   /* Tell all children to update themselves. */
   for (CALayer * sublayer in [layer sublayers])
     {
@@ -337,14 +337,14 @@
      can determine it, too. */
   /* (Order is important, because the deeper the layer is, earlier
      it needs to be offscreen-rendered.) */
-     
+
   /* TODO: */
   /* First, allow mask layer to determine this, since it's deeper than
      the current layer. */
   #if 0
   [self _determineAndScheduleRasterizationForLayer: [layer mask]];
   #endif
-  
+
   /* Then permit current layer to determine rasterization */
   [self _determineAndScheduleRasterizationForLayer: layer];
 }
@@ -354,11 +354,11 @@
 {
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
-  
+
   // apply transform and translate to position
   transform = CATransform3DTranslate(transform, [layer position].x, [layer position].y, 0);
   transform = CATransform3DConcat([layer transform], transform);
-  
+
   if (sizeof(transform.m11) == sizeof(GLdouble))
     glLoadMatrixd((GLdouble*)&transform);
   else
@@ -372,22 +372,22 @@
       if ([layer shadowOpacity] > 0.0)
         {
           /* first paint shadow */
-          
+
           /* TODO: we might be able to skip blurring in case radius == 1. */
           /* TODO: shouldRasterize means that shadow should be included in
                    rasterized bitmap. Currently, we still render shadow separately */
-          
+
           /* here, we do blurring in two passes. first horizontal, then vertical. */
           /* IDEA: perform blurring during offscreen-rendering, so we group all
                    FBO operations in once place? */
-          
+
           /* TODO: these not correct sizes for shadow rasterization */
           const GLuint shadow_rasterize_w = 512, shadow_rasterize_h = 512;
-          
+
           CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
           CATransform3D rasterizedTextureTransform = CATransform3DMakeTranslation([texture width]/2.0, [texture height]/2.0, 0);
-          
-          
+
+
           /* Setup transform for first pass */
           if (sizeof(rasterizedTextureTransform.m11) == sizeof(GLdouble))
             glLoadMatrixd((GLdouble*)&rasterizedTextureTransform);
@@ -397,7 +397,7 @@
           /* Setup FBO for first pass */
           CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
           [framebuffer bind];
-          
+
           glClearColor(0.0, 0.0, 0.0, 0.0);
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -406,10 +406,10 @@
           GLint loc = [_blurHorizProgram locationForUniform:@"RTScene"];
           [_blurHorizProgram bindUniformAtLocation: loc
                                      toUnsignedInt: 0];
-          
+
           // TODO: replace use of glBegin()/glEnd()
           [texture bind];
-          
+
           GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
           if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
             {
@@ -421,7 +421,7 @@
               glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
               glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
-          
+
           glBegin(GL_QUADS);
           glTexCoord2f(0, 0);
           glVertex2f(-[texture width]/2.0, -[texture height]/2.0);
@@ -433,30 +433,30 @@
           glVertex2f([texture width]/2.0, -[texture height]/2.0);
           glEnd();
           glDisable([texture textureTarget]);
-          
-          
+
+
           glUseProgram(0);
 
           [texture unbind];
           [framebuffer unbind];
-                        
+
           /* Preserve the FBO texture and discard framebuffer */
           CAGLTexture * firstPassTexture = [[framebuffer texture] retain];
           [framebuffer release];
-          
+
           /************************************/
-          
+
           /* Setup transform for second pass */
           if (sizeof(shadowRasterizeTransform.m11) == sizeof(GLdouble))
             glLoadMatrixd((GLdouble*)&shadowRasterizeTransform);
           else
             glLoadMatrixf((GLfloat*)&shadowRasterizeTransform);
-           
-          
+
+
           /* Setup FBO for second pass */
           framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: shadow_rasterize_w height: shadow_rasterize_h];
           [framebuffer bind];
-          
+
           glDisable([[framebuffer texture] textureTarget]);
 
           glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -491,7 +491,7 @@
               components[1] = componentsOrig[1];
               components[2] = componentsOrig[2];
               components[3] = 1.0;
-              components[3] *= [layer shadowOpacity]; 
+              components[3] *= [layer shadowOpacity];
             }
           else
             {
@@ -500,10 +500,10 @@
 
           [_blurVertProgram bindUniformAtLocation: loc
                                         toFloat4v: components];
-                                        
+
           // TODO: replace use of glBegin()/glEnd()
           [firstPassTexture bind];
-          
+
           GLfloat firstPassTextureMaxX = 1.0, firstPassTextureMaxY = 1.0;
           if ([firstPassTexture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
             {
@@ -527,18 +527,18 @@
           glVertex2f([firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
           glEnd();
           glDisable([firstPassTexture textureTarget]);
-          
+
           glUseProgram(0);
 
           [firstPassTexture unbind];
           [framebuffer unbind];
-          
+
           /* Preserve the FBO texture and discard framebuffer */
           CAGLTexture * secondPassTexture = [[framebuffer texture] retain];
           [framebuffer release];
-          
+
           /************************************/
-          
+
           /* Finally! Draw shadow into draw buffer */
           if (sizeof(transform.m11) == sizeof(GLdouble))
             glLoadMatrixd((GLdouble*)&transform);
@@ -570,10 +570,10 @@
           glVertex2f([secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
           glEnd();
           glDisable([secondPassTexture textureTarget]);
-          
+
           [firstPassTexture release];
           [secondPassTexture release];
-          
+
           /* Without shadow offset */
           if (sizeof(transform.m11) == sizeof(GLdouble))
             glLoadMatrixd((GLdouble*)&transform);
@@ -584,7 +584,7 @@
 
       #warning Intentionally coloring offscreen-rendered layer
       glColor3f(0.4, 1.0, 1.0);
-      
+
       #warning Intentionally applying shader to offscreen-rendered layer
       [_simpleProgram use];
       GLint loc;
@@ -592,14 +592,14 @@
         loc = [_simpleProgram locationForUniform:@"texture_2drect"];
       else
         loc = [_simpleProgram locationForUniform:@"texture_2d"];
-      
+
       [_simpleProgram bindUniformAtLocation: loc
                               toUnsignedInt: 0];
-      
-      
+
+
       // TODO: replace use of glBegin()/glEnd()
       [texture bind];
-      
+
       GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
       if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
         {
@@ -611,7 +611,7 @@
           glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
           glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         }
-            
+
       glBegin(GL_QUADS);
       glTexCoord2f(0, 0);
       glVertex2f(-256, -256);
@@ -623,12 +623,12 @@
       glVertex2f(256, -256);
       glEnd();
       glDisable([texture textureTarget]);
-      
+
       #warning Intentionally coloring offscreen-rendered layer
       glColor3f(1.0, 1.0, 1.0);
       #warning Intentionally applying shader to offscreen-rendered layer
       glUseProgram(0);
-      
+
       return;
     }
 
@@ -639,7 +639,7 @@
     0.0, 0.0,
     [layer bounds].size.width, 0.0,
     [layer bounds].size.width, [layer bounds].size.height,
-    
+
     [layer bounds].size.width, [layer bounds].size.height,
     0.0, [layer bounds].size.height,
     0.0, 0.0,
@@ -649,7 +649,7 @@
     cr.origin.x,                 1.0 - (cr.origin.y),
     cr.origin.x + cr.size.width, 1.0 - (cr.origin.y),
     cr.origin.x + cr.size.width, 1.0 - (cr.origin.y + cr.size.height),
-    
+
     cr.origin.x + cr.size.width, 1.0 - (cr.origin.y + cr.size.height),
     cr.origin.x,                 1.0 - (cr.origin.y + cr.size.height),
     cr.origin.x,                 1.0 - (cr.origin.y),
@@ -658,7 +658,7 @@
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
-    
+
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
@@ -667,14 +667,14 @@
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
-    
+
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0,
   };
   glVertexPointer(2, GL_FLOAT, 0, vertices);
   glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
-  
+
   // apply anchor point
   for (int i = 0; i < 6; i++)
     {
@@ -693,18 +693,18 @@
     {
       const CGFloat * componentsCG = CGColorGetComponents([layer backgroundColor]);
       GLfloat components[4] = { 0, 0, 0, 1 };
-      
+
       // convert
       components[0] = componentsCG[0];
       components[1] = componentsCG[1];
       components[2] = componentsCG[2];
       if (CGColorGetNumberOfComponents([layer backgroundColor]) == 4)
         components[3] = componentsCG[3];
-      
+
       // apply opacity
       components[3] *= [layer opacity];
 
-      
+
       // FIXME: here we presume that color contains RGBA channels.
       // However this may depend on colorspace, number of components et al
       memcpy(backgroundColor + 0*4, components, sizeof(GLfloat)*4);
@@ -714,9 +714,9 @@
       memcpy(backgroundColor + 4*4, components, sizeof(GLfloat)*4);
       memcpy(backgroundColor + 5*4, components, sizeof(GLfloat)*4);
       glColorPointer(4, GL_FLOAT, 0, backgroundColor);
-      
+
       glDrawArrays(GL_TRIANGLES, 0, 6);
-  
+
     }
 
   // if there are some contents, draw them
@@ -724,7 +724,7 @@
     {
       CAGLTexture * texture = nil;
       id layerContents = [layer contents];
-      
+
       if ([layerContents isKindOfClass: [CABackingStore class]])
         {
           CABackingStore * backingStore = layerContents;
@@ -739,22 +739,22 @@
 #endif
         {
           CGImageRef image = (CGImageRef)layerContents;
-          
+
           texture = [CAGLTexture texture];
           [texture loadImage: image];
         }
-      
+
       if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
         {
           /* Rectangle textures use non-normalized coordinates. */
-          
+
           for (int i = 0; i < 6; i++)
             {
               texCoords[i*2 + 0] *= [texture width];
               texCoords[i*2 + 1] *= [texture height];
             }
         }
-      
+
       [texture bind];
       glColorPointer(4, GL_FLOAT, 0, whiteColor);
       glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -780,24 +780,24 @@
     {
       shouldRasterize = YES;
     }
-    
+
   if (!shouldRasterize && [[layer presentationLayer] shadowOpacity] > 0.0)
     {
       shouldRasterize = YES;
     }
-  
+
   /* Now, based on results, either rasterize or invalidate rasterization */
   if (shouldRasterize)
     [self _scheduleRasterization: layer];
   else
     [[layer backingStore] setOffscreenRenderTexture: nil];
-  
+
 }
 
 - (void) _scheduleRasterization: (CALayer *)layer
 {
   NSMutableDictionary * rasterizationSpec = [NSMutableDictionary new];
-  
+
   [rasterizationSpec setValue: layer forKey: @"layer"];
   [_rasterizationSchedule addObject: rasterizationSpec];
   [rasterizationSpec release];
@@ -806,7 +806,7 @@
 - (void) _rasterize: (NSDictionary*) rasterizationSpec
 {
   CALayer * layer = [rasterizationSpec valueForKey: @"layer"];
-  
+
   /* we need to render the presentationLayer */
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
@@ -819,20 +819,20 @@
   CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: rasterize_w height: rasterize_h];
   [framebuffer setDepthBufferEnabled: YES];
   [framebuffer bind];
-  
+
   glDisable([[framebuffer texture] textureTarget]);
 
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   [self _renderLayer: layer withTransform: CATransform3DMakeTranslation(rasterize_w/2.0 - [layer position].x, rasterize_h/2.0 - [layer position].y, 0)];
-  
+
   [framebuffer unbind];
-  
+
   if (![layer backingStore])
     [layer setBackingStore: [CABackingStore backingStoreWithWidth: rasterize_w height: rasterize_h]];
   [[layer backingStore] setOffscreenRenderTexture: [framebuffer texture]];
-  
+
   [framebuffer release];
 }
 

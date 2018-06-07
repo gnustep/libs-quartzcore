@@ -28,7 +28,7 @@
    is a texture serving as a color attachment point and a renderbuffer
    serving as a depth attachment. It also isn't too nice that it
    directly manages the renderbuffer for depth.
-   
+
    It'd be more powerful if we also wrapped framebuffer in a way
    that allows more finetuned manipulation of attachment points.
    However, for the time being, we don't need that.

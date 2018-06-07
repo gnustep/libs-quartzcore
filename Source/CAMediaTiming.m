@@ -4,7 +4,7 @@
 
    Author: Ivan Vučica <ivan@vucica.net>
    Date: June 2012
-   
+
    This file is part of QuartzCore.
 
    This library is free software; you can redistribute it and/or

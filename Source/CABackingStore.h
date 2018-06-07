@@ -1,4 +1,4 @@
-/* 
+/*
    CABackingStore.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
@@ -31,7 +31,7 @@
  * - OpenGL texture containing drawn contents
  * - OpenGL texture containing offscreen-rendered cache of contents
  *   and sublayers
- * In the future, this class will probably also wrap CGImageRefs. 
+ * In the future, this class will probably also wrap CGImageRefs.
  */
 
 

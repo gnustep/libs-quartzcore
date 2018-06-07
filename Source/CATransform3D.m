@@ -4,7 +4,7 @@
 
    Author: Ivan Vučica <ivan@vucica.net>
    Date: June 2012
-   
+
    This file is part of QuartzCore.
 
    This library is free software; you can redistribute it and/or
@@ -42,7 +42,7 @@ bool CATransform3DIsIdentity(CATransform3D t)
 }
 bool CATransform3DEqualToTransform(CATransform3D a, CATransform3D b)
 {
-  return 
+  return
     (a.m11 == b.m11 && a.m12 == b.m12 && a.m13 == b.m13 && a.m14 == b.m14 &&
      a.m21 == b.m21 && a.m22 == b.m22 && a.m23 == b.m23 && a.m24 == b.m24 &&
      a.m31 == b.m31 && a.m32 == b.m32 && a.m33 == b.m33 && a.m34 == b.m34 &&
@@ -104,7 +104,7 @@ CATransform3D CATransform3DMakeRotation(CGFloat radians, CGFloat x, CGFloat y, C
   returnValue.m42 = 0;
   returnValue.m43 = 0;
   returnValue.m44 = 1;
- 
+
   return returnValue;
 }
 
@@ -160,15 +160,15 @@ CATransform3D CATransform3DConcat(CATransform3D b, CATransform3D a)
 
 
 static CGFloat determinant2x2(CGFloat m11, CGFloat m12,
-	                          CGFloat m21, CGFloat m22)
+                                  CGFloat m21, CGFloat m22)
 {
   return m11 * m22 - m12 * m21;
 }
 
 
 static CGFloat determinant3x3(CGFloat m11, CGFloat m12, CGFloat m13,
-	                          CGFloat m21, CGFloat m22, CGFloat m23,
-	                          CGFloat m31, CGFloat m32, CGFloat m33)
+                                  CGFloat m21, CGFloat m22, CGFloat m23,
+                                  CGFloat m31, CGFloat m32, CGFloat m33)
 {
   return m11 * determinant2x2(m22, m23, m32, m33 )
        - m21 * determinant2x2(m12, m13, m32, m33 )
@@ -191,9 +191,9 @@ CATransform3D CATransform3DInvert(CATransform3D t)
   if (fabs(determinant) > epsilon)
     {
       /* can be inverted */
-      
+
       CATransform3D m;
-      
+
       m.m11 =   determinant3x3(t.m22, t.m23, t.m24, t.m32, t.m33, t.m34, t.m42, t.m43, t.m44);
       m.m12 = - determinant3x3(t.m12, t.m13, t.m14, t.m32, t.m33, t.m34, t.m42, t.m43, t.m44);
       m.m13 =   determinant3x3(t.m12, t.m13, t.m14, t.m22, t.m23, t.m24, t.m42, t.m43, t.m44);
@@ -203,12 +203,12 @@ CATransform3D CATransform3DInvert(CATransform3D t)
       m.m22 =   determinant3x3(t.m11, t.m13, t.m14, t.m31, t.m33, t.m34, t.m41, t.m43, t.m44);
       m.m23 = - determinant3x3(t.m11, t.m13, t.m14, t.m21, t.m23, t.m24, t.m41, t.m43, t.m44);
       m.m24 =   determinant3x3(t.m11, t.m13, t.m14, t.m21, t.m23, t.m24, t.m31, t.m33, t.m34);
-  
+
       m.m31 =   determinant3x3(t.m21, t.m22, t.m24, t.m31, t.m32, t.m34, t.m41, t.m42, t.m44);
       m.m32 = - determinant3x3(t.m11, t.m12, t.m14, t.m31, t.m32, t.m34, t.m41, t.m42, t.m44);
       m.m33 =   determinant3x3(t.m11, t.m12, t.m14, t.m21, t.m22, t.m24, t.m41, t.m42, t.m44);
       m.m34 = - determinant3x3(t.m11, t.m12, t.m14, t.m21, t.m22, t.m24, t.m31, t.m32, t.m34);
-  
+
       m.m41 = - determinant3x3(t.m21, t.m22, t.m23, t.m31, t.m32, t.m33, t.m41, t.m42, t.m43);
       m.m42 =   determinant3x3(t.m11, t.m12, t.m13, t.m31, t.m32, t.m33, t.m41, t.m42, t.m43);
       m.m43 = - determinant3x3(t.m11, t.m12, t.m13, t.m21, t.m22, t.m23, t.m41, t.m42, t.m43);
@@ -243,8 +243,8 @@ CATransform3D CATransform3DInvert(CATransform3D t)
   for (int i = 0; i < 16; i++)
     {
       printf("%g ", ((CGFloat*)&transform)[i]);
-      if (i%4 == 3) 
-	printf("\n");
+      if (i%4 == 3)
+        printf("\n");
     }
  */
 

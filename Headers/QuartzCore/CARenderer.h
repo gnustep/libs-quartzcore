@@ -1,4 +1,4 @@
-/* 
+/*
    CARenderer.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
@@ -61,7 +61,7 @@ typedef struct _CVTimeStamp
   CALayer * _layer;
   CGRect _bounds;
   CGRect _updateBounds;
-  
+
   CFTimeInterval _firstRender;
   CFTimeInterval _currentTime;
   CFTimeInterval _nextFrameTime;

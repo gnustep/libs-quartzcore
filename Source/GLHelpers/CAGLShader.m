@@ -41,9 +41,9 @@
   self = [super init];
   if (!self)
     return nil;
-  
+
   _shaderID = glCreateShader([self shaderType]);
-  
+
   return self;
 }
 
@@ -63,7 +63,7 @@
       [self release];
       return nil;
     }
-  
+
   /* Find source file */
   NSString * source = [NSString stringWithContentsOfFile: filePath
                                                 encoding: NSUTF8StringEncoding
@@ -74,7 +74,7 @@
       return nil;
     }
   [self setSource: source];
-  
+
   return self;
 }
 
@@ -95,16 +95,16 @@
 {
   if (_compiled)
     return;
-  
+
   _compiled = YES;
-  
+
   /* Upload the shader to the GPU */
   const GLchar * source = [_source UTF8String];
   glShaderSource(_shaderID,
                  1,
                  &source,
                  NULL);
-  
+
   /* Compile the shader */
   glCompileShader(_shaderID);
 
@@ -119,7 +119,7 @@
       NSLog(@"Shader compile log:");
       printf("%s\n", [compileLog UTF8String]);
     }
-  
+
   /* Get compile status */
   if ([self compileStatus] == GL_FALSE)
     {
@@ -146,7 +146,7 @@
       free(log);
       return logString;
     }
-  
+
   return nil;
 }
 
@@ -154,7 +154,7 @@
 {
   if ([self compileStatus] == GL_FALSE)
     return;
-  
+
   glAttachShader([program programID], _shaderID);
 }
 

@@ -4,12 +4,12 @@
 
    Author: Ivan Vučica <ivan@vucica.net>
    Date: July 2012
-   
+
    Author: Amr Aboelela <amraboelela@gmail.com>
 
    Additional credits:
-   Bezier-related mathematics in this file is in part based on 
-   implementation in NSAnimation.* from GNUstep GUI, created by 
+   Bezier-related mathematics in this file is in part based on
+   implementation in NSAnimation.* from GNUstep GUI, created by
    Dr. H. Nikolaus Schaller, and authored by Xavier Glattard.
 
    This file is part of QuartzCore.
@@ -47,13 +47,13 @@ static const float _c0x = 0.0;
 static const float _c0y = 0.0;
 static const float _c3x = 1.0;
 static const float _c3y = 1.0;
-  
+
 @implementation CAMediaTimingFunction
 + (id) functionWithName:(NSString *)name
 {
   /* None of these were documented except 'default'. */
   /* see: http://netcetera.org/camtf-playground.html */
-  
+
   if ([name isEqualToString: kCAMediaTimingFunctionDefault])
     {
       /* netcetera.org source claims this one was misdocumented.
@@ -68,7 +68,7 @@ static const float _c3y = 1.0;
       return [self functionWithControlPoints: 0.42
                                             : 0.0
                                             : 0.58
-                                            : 1.0]; 
+                                            : 1.0];
     }
   if ([name isEqualToString: kCAMediaTimingFunctionEaseIn])
     {
@@ -113,7 +113,7 @@ static const float _c3y = 1.0;
   self = [super init];
   if(!self)
     return nil;
-  
+
   _c1x = c1x;
   _c1y = c1y;
   _c2x = c2x;
@@ -124,12 +124,12 @@ static const float _c3y = 1.0;
   _coefficientsX[1] = -3.0*_c0x + 3.0*_c1x; // t^1
   _coefficientsX[2] = 3.0*_c0x - 6.0*_c1x + 3.0*_c2x;  // t^2
   _coefficientsX[3] = -_c0x + 3.0*_c1x - 3.0*_c2x + _c3x; // t^3
-  
+
   _coefficientsY[0] = _c0y; // t^0
   _coefficientsY[1] = -3.0*_c0y + 3.0*_c1y; // t^1
   _coefficientsY[2] = 3.0*_c0y - 6.0*_c1y + 3.0*_c2y;  // t^2
   _coefficientsY[3] = -_c0y + 3.0*_c1y - 3.0*_c2y + _c3y; // t^3
-  
+
   return self;
 }
 
@@ -169,22 +169,22 @@ static inline CGFloat evaluateDerivationAtParameterWithCoefficients(CGFloat t, C
 static inline CGFloat calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(CGFloat x, CGFloat coefficientsX[])
 {
   // see http://en.wikipedia.org/wiki/Newton's_method
-    
+
   // start with X being the correct value
   CGFloat t = x;
-    
+
   // iterate several times
   const CGFloat epsilon = 0.00001;
   for(int i = 0; i < 10; i++)
     {
       CGFloat x2 = evaluateAtParameterWithCoefficients(t, coefficientsX) - x;
       CGFloat d = evaluateDerivationAtParameterWithCoefficients(t, coefficientsX);
-      
+
       CGFloat dt = x2/d;
-      
-      t = t - dt;      
+
+      t = t - dt;
     }
-    
+
   return t;
 }
 
@@ -192,12 +192,12 @@ static inline CGFloat calcParameterUsingXAndCoefficientsForX (CGFloat x, CGFloat
 {
   // for the time being, we'll guess Newton-Raphson always
   // returns the correct value.
-  
+
   // if we find it doesn't find the solution often enough,
   // we can add additional calculation methods.
-    
+
   CGFloat t = calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(x, coefficientsX);
-    
+
   return t;
 }
 
@@ -205,7 +205,7 @@ static inline CGFloat calcParameterUsingXAndCoefficientsForX (CGFloat x, CGFloat
 {
   CGFloat t = calcParameterUsingXAndCoefficientsForX(x, _coefficientsX);
   CGFloat y = evaluateAtParameterWithCoefficients(t, _coefficientsY);
-  
+
   return y;
 }
 
@@ -220,12 +220,12 @@ static inline CGFloat calcParameterUsingXAndCoefficientsForX (CGFloat x, CGFloat
 - (CGPoint) valueForParameter: (CGFloat)t
 {
   CGFloat x, y, k;
-  
+
   k = ((1-t)*(1-t)*(1-t));
-  
+
   x = _c1x * (3*t*t*(1-t)) + _c2x * (3*t*(1-t)*(1-t)) + k;
   y = _c1y * (3*t*t*(1-t)) + _c2y * (3*t*(1-t)*(1-t)) + k;
-  
+
   return CGPointMake(x, y);
 }
 */

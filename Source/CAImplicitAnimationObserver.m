@@ -1,4 +1,4 @@
-/* 
+/*
    CAImplicitAnimationObserver.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
@@ -51,11 +51,11 @@ static CAImplicitAnimationObserver * sharedObserver;
     {
       return nil;
     }
-  
+
   return self;
 }
 
-- (void) observeValueForKeyPath: (NSString *)keyPath 
+- (void) observeValueForKeyPath: (NSString *)keyPath
                        ofObject: (id)object
                          change: (NSDictionary *)change
                         context: (void *)context
@@ -64,21 +64,21 @@ static CAImplicitAnimationObserver * sharedObserver;
     {
       return;
     }
-  
+
   id from = [change valueForKey: NSKeyValueChangeOldKey];
   id to = [change valueForKey: NSKeyValueChangeNewKey];
-  
+
   if (!from)
     from = [object valueForKeyPath: keyPath];
   if (!to)
     to = [object valueForKeyPath: keyPath];
-  
+
   /* Implicit animation must not be launched if model tree value
      is equal to the new value, even if the presentation tree value
      is not equal. */
   if ([to isEqual: from])
     return;
-  
+
   NSObject<CAAction>* action = (id)[object actionForKey: keyPath];
   if (!action || [action isKindOfClass: [NSNull class]])
     return;

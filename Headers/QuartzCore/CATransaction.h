@@ -34,7 +34,7 @@
   CFTimeInterval _animationDuration;
   CAMediaTimingFunction *_animationTimingFunction;
   BOOL _disableActions;
-  
+
   NSMutableArray *_actions;
   BOOL _implicit;
 }

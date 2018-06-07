@@ -49,7 +49,7 @@
 - (CFTimeInterval) localTimeWithTimeAuthority: (id<CAMediaTiming>)timeAuthority;
 
 
-@end 
+@end
 
 extern NSString *const kCAFillModeRemoved;
 extern NSString *const kCAFillModeForwards;

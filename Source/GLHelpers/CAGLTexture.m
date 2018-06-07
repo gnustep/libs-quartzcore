@@ -63,7 +63,7 @@
   self = [super init];
   if (!self)
     return nil;
-  
+
   glGenTextures(1, &_textureID);
 
   return self;
@@ -72,7 +72,7 @@
 - (void) dealloc
 {
   glDeleteTextures(1, &_textureID);
-  
+
   [super dealloc];
 }
 
@@ -82,7 +82,7 @@
 #if __APPLE__
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
 #endif
-    
+
   /* Used for, for example, renderbuffer's target */
 #if !(USE_BUILDMIPMAPS)
   qcLoadTexImage(GL_RGBA,
@@ -104,7 +104,7 @@
     GL_UNSIGNED_BYTE,
     0);
 #endif
-  
+
   _width = width;
   _height = height;
 }
@@ -134,10 +134,10 @@
   #endif
 
 /* TODO: This Apple-specific section of code refers "Best practices for
-   working with texture data" in Apple docs, except that the 'format' 
-   argument (the second argument specifying GL_RGBA) should be, according 
-   to their docs, BGRA. 
-   Explore if we should use this everywhere, and if we can somehow make 
+   working with texture data" in Apple docs, except that the 'format'
+   argument (the second argument specifying GL_RGBA) should be, according
+   to their docs, BGRA.
+   Explore if we should use this everywhere, and if we can somehow make
    use of BGRA (probably not due to CGImageRefs and other uses that may
    presume RGBA ordering). */
 
@@ -173,7 +173,7 @@
   /* Draw CGImage to a byte array */
   CGContextRef context = CGBitmapContextCreate(NULL,
     width, height,
-    bitsPerComponent, 
+    bitsPerComponent,
     bytesPerRow,
     space,
 #if !GNUSTEP
@@ -196,16 +196,16 @@
   CGContextClearRect (context, CGRectInfinite);
 #else
 #warning Opal bug: CGContextClearRect() permanently whacks the context
-  memset (CGBitmapContextGetData (context), 
+  memset (CGBitmapContextGetData (context),
           0, bytesPerRow * height);
 #endif
-#endif  
-    
+#endif
+
   CGContextDrawImage(context, CGRectMake(0.0, 0.0, width, height), image);
 
   uint8_t * data = CGBitmapContextGetData(context);
   for(int i=0; i < bytesPerRow * height; i+=4)
-	  {
+    {
       #if !(GNUSTEP)
       /* let's undo premultiplication */
       /* TODO: do we need to undo premultiplication under GNUstep too? */
@@ -215,18 +215,18 @@
         }
       #endif
     }
-  
+
   #if 0
   BOOL hasAlpha = (CGImageGetBytesPerRow(image) / width == 4);
-	GLuint internalFormat = GL_RGBA; /* does not depend on hasAlpha, we always paint a RGBA image into CGContext (sadly) */
+  GLuint internalFormat = GL_RGBA; /* does not depend on hasAlpha, we always paint a RGBA image into CGContext (sadly) */
   #endif
-  
+
   #if !USE_RECT
   /* Since we release the context, we also release its pixels.
      We cannot use client storage extension. */
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
   #endif
-  
+
   [self loadRGBATexImage: data
                    width: width
                   height: height];
@@ -257,19 +257,19 @@
   char pixels[[self width]*[self height]*4];
   [self bind];
   glGetTexImage([self textureTarget], 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  
+
   CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
   CGContextRef context = CGBitmapContextCreate(pixels, [self width], [self height], 8, [self width]*4, colorSpace, kCGImageAlphaPremultipliedLast);
   CGImageRef image = CGBitmapContextCreateImage(context);
   CGContextRelease(context);
   CGColorSpaceRelease(colorSpace);
-  
+
   NSMutableData * data = [NSMutableData data];
   CGImageDestinationRef destination = CGImageDestinationCreateWithData((CFMutableDataRef)data, (CFStringRef)@"public.png", 1, NULL);
   CGImageDestinationAddImage(destination, image, NULL);
   CGImageDestinationFinalize(destination);
   CGImageRelease(image);
-  
+
   [data writeToFile:path atomically:YES];
 }
 @end

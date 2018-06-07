@@ -2,7 +2,7 @@
 /* Note:
    Main code of the framework doesn't bind many of the attributes,
    and does not supply any values.
-   
+
    But, it'll have to, on OpenGL ES.
 */
 
@@ -35,10 +35,10 @@ vec2 textureSize(sampler2DRect sampler, int lod)
 {
   // function unavailable before GLSL 1.30!
   // 1.30 is unavailable on OS X!
-  
+
   // oh well. hardcoding value 512x512.
   // this function isn't really necessary anyway.
-  
+
   return vec2(512.0, 512.0);
 }
 */
@@ -48,7 +48,7 @@ void main()
   gl_FragColor = colorVarying;
   /* Previous line is unused, apart from eliminating warning
      that colorVarying is unused */
-  
+
   #if RECT_TEXTURE == 0
   gl_FragColor = texture2D(texture_2d, fragmentTextureCoordinates);
   #else
@@ -56,5 +56,5 @@ void main()
 
   //gl_FragColor = texture2DRect(texture_2drect, vec2(textureSize(texture_2drect, 0).x + fragmentTextureCoordinates.x * -1.0, fragmentTextureCoordinates.y));
   #endif
-  
+
 }

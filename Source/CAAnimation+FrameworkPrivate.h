@@ -1,10 +1,10 @@
 /* CAAnimation+FrameworkPrivate.h
 
    Copyright (C) 2012 Free Software Foundation, Inc.
-   
+
    Author: Ivan Vučica <ivan@vucica.net>
    Date: July 2012
-   
+
    This file is part of QuartzCore.
 
    This library is free software; you can redistribute it and/or

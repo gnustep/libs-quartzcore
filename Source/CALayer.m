@@ -1,7 +1,7 @@
 /* CALayer.m
 
    Copyright (C) 2012 Free Software Foundation, Inc.
-   
+
    Author: Ivan Vučica <ivan@vucica.net>
    Date: June 2012
 
@@ -305,8 +305,25 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
                 }
               #endif
 
-              [self setValue: defaultValue
-                      forKey: keys[i]];
+              if ([@"shadowOffset" isEqualToString: keys[i]])
+                {
+		  /* TODO(ivucica): remove this block once #53994 is resolved */
+                  NS_DURING
+                  [self setValue: defaultValue
+                          forKey: keys[i]];
+                  NS_HANDLER
+                  static BOOL warned = NO;
+                  if (!warned)
+                    NSLog(@"CALayer: one time warning: KVC for shadowOffset (a CGSize/NSSize) is affected by bug in gnustep-base https://savannah.gnu.org/bugs/index.php?53994; applying workaround");
+		  warned = YES;
+                  [self setShadowOffset: [defaultValue sizeValue]];
+                  NS_ENDHANDLER
+                }
+              else
+                {
+		  [self setValue: defaultValue
+			  forKey: keys[i]];
+		}
             }
 
           /* implicit animations support */
@@ -326,7 +343,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
 - (id) initWithLayer: (CALayer*)layer
 {
-  /* Used when creating shadow copies of 'layer', e.g. when creating 
+  /* Used when creating shadow copies of 'layer', e.g. when creating
      presentation layer. Not to be used by app developer for copying existing
      layers. */
 
@@ -872,7 +889,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (NSArray *) allAncestorLayers
 {
-  /* This could be cached. It could even be updated at 
+  /* This could be cached. It could even be updated at
     -addSublayer: and -insertSublayer:... methods. */
 
   NSMutableArray * allAncestorLayers = [NSMutableArray array];
@@ -969,13 +986,13 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime toLayer: (CALayer *)layer
 {
-  /* Method used to convert 'activeTime' of self into 'activeTime' 
+  /* Method used to convert 'activeTime' of self into 'activeTime'
      of 'layer'. */
 
   if (layer == self)
     return theTime;
 
-  /* First, convert theTime to the "media time" timespace, the 
+  /* First, convert theTime to the "media time" timespace, the
      timespace returned by CACurrentMediaTime(). */
 
   /* For self, invert formula in theTime. */
@@ -1002,7 +1019,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       return theTime;
     }
 
-  /* Use activeTime/localTime mechanism to convert media time into 
+  /* Use activeTime/localTime mechanism to convert media time into
      layer time */
   CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
   currentFrameBeginTime = theTime;
@@ -1100,7 +1117,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     /* It's nil? Continue the search */
   }
 
-  /* Before generating an action, let's also see if 
+  /* Before generating an action, let's also see if
      defaultActionForKey: has an offering to make to us. */
   NSObject<CAAction>* action = (NSObject<CAAction>*)[[self class] defaultActionForKey: key];
 
