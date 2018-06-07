@@ -99,6 +99,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize actions=_actions;
 @synthesize style=_style;
 @synthesize borderColor=_borderColor;
+@synthesize contentsScale=_contentsScale;
 
 @synthesize shadowColor=_shadowColor;
 @synthesize shadowOffset=_shadowOffset;
@@ -276,7 +277,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       static NSString * keys[] = {
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
-        @"backgroundColor", @"borderColor",
+        @"backgroundColor", @"borderColor", @"contentsScale",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
@@ -375,6 +376,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       [self setGeometryFlipped: [layer isGeometryFlipped]];
       [self setBackgroundColor: [layer backgroundColor]];
       [self setBorderColor: [layer borderColor]];
+      [self setContentsScale: [layer contentsScale]];
       [self setMasksToBounds: [layer masksToBounds]];
       [self setContentsRect: [layer contentsRect]];
       [self setHidden: [layer isHidden]];
@@ -1181,7 +1183,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     }
   if ([key isEqualToString: @"borderColor"])
     {
-      [self setborderColor: (CGColorRef)value];
+      [self setBorderColor: (CGColorRef)value];
       return;
     }
   if ([key isEqualToString: @"shadowColor"])

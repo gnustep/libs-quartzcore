@@ -208,8 +208,7 @@ extern NSString *const kCATransition;
 - (CGAffineTransform) affineTransform;
 - (void) setAffineTransform: (CGAffineTransform)affineTransform;
 
-@property (nonatomic, assign) CGColorRef borderColor;
-
+@property (nonatomic, assign) CGColorRef borderColor; /* retained by CG */
 @property (nonatomic, assign) CGFloat contentsScale;
 @property (nonatomic, assign) CGFloat anchorPointZ;
 @end
