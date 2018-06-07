@@ -26,10 +26,12 @@ QuartzCore_HEADER_FILES = \
 	CABase.h \
 	CADisplayLink.h \
 	CAEAGLLayer.h \
+	CAFilter.h \
 	CAGradientLayer.h \
 	CALayer.h \
 	CAMediaTimingFunction.h \
 	CAMediaTiming.h \
+	CAOpenGLLayer.h \
 	CARenderer.h \
 	CAReplicatorLayer.h \
 	CAScrollLayer.h \

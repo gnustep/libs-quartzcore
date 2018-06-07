@@ -29,3 +29,17 @@
 @implementation CAValueFunction
 
 @end
+
+NSString *const kCAValueFunctionRotateX = @"kCAValueFunctionRotateX";
+NSString *const kCAValueFunctionRotateY = @"kCAValueFunctionRotateY";
+NSString *const kCAValueFunctionRotateZ = @"kCAValueFunctionRotateZ";
+                                            
+NSString *const kCAValueFunctionScale = @"kCAValueFunctionScale";
+NSString *const kCAValueFunctionScaleX = @"kCAValueFunctionScaleX";
+NSString *const kCAValueFunctionScaleY = @"kCAValueFunctionScaleY";
+NSString *const kCAValueFunctionScaleZ = @"kCAValueFunctionScaleZ";
+                                            
+NSString *const kCAValueFunctionTranslate = @"kCAValueFunctionTranslate";
+NSString *const kCAValueFunctionTranslateX = @"kCAValueFunctionTranslateX";
+NSString *const kCAValueFunctionTranslateY = @"kCAValueFunctionTranslateY";
+NSString *const kCAValueFunctionTranslateZ = @"kCAValueFunctionTranslateZ";

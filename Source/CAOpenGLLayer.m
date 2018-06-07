@@ -1,9 +1,9 @@
-/* CAValueFunction.h
+/* CAOpenGLLayer.m
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2017 Free Software Foundation, Inc.
 
-   Author: Ivan Vučica <ivan@vucica.net>
-   Date: June 2012
+   Author: Daniel Ferreira <dtf@stanford.edu>
+   Date: July 2017
 
    This file is part of QuartzCore.
 
@@ -24,21 +24,5 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <Foundation/Foundation.h>
-@interface CAValueFunction : NSObject
-
+@implementation CAOpenGLLayer
 @end
-
-extern NSString *const kCAValueFunctionRotateX;
-extern NSString *const kCAValueFunctionRotateY;
-extern NSString *const kCAValueFunctionRotateZ;
-
-extern NSString *const kCAValueFunctionScale;
-extern NSString *const kCAValueFunctionScaleX;
-extern NSString *const kCAValueFunctionScaleY;
-extern NSString *const kCAValueFunctionScaleZ;
-
-extern NSString *const kCAValueFunctionTranslate;
-extern NSString *const kCAValueFunctionTranslateX;
-extern NSString *const kCAValueFunctionTranslateY;
-extern NSString *const kCAValueFunctionTranslateZ;

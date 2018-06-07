@@ -22,3 +22,31 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import "QuartzCore/CAShapeLayer.h"
+
+NSString *const kCAFillRuleNonZero = @"kCAFillRuleNonZero";
+NSString *const kCAFillRuleEvenOdd = @"kCAFillRuleEvenOdd";
+                                    
+NSString *const kCALineJoinMiter = @"kCALineJoinMiter";
+NSString *const kCALineJoinRound = @"kCALineJoinRound";
+NSString *const kCALineJoinBevel = @"kCALineJoinBevel";
+                                    
+NSString *const kCALineCapButt = @"kCALineCapButt";
+NSString *const kCALineCapRound = @"kCALineCapRound";
+NSString *const kCALineCapSquare = @"kCALineCapSquare";
+
+@implementation CAShapeLayer
+@synthesize path = _path;
+@synthesize fillColor = _fillColor;
+@synthesize fillRule = _fillRule;
+@synthesize strokeColor = _strokeColor;
+@synthesize strokeStart = _strokeStart;
+@synthesize strokeEnd = _strokeEnd;
+@synthesize lineWidth = _lineWidth;
+@synthesize miterLimit = _miterLimit;
+@synthesize lineCap = _lineCap;
+@synthesize lineJoin = _lineJoin;
+@synthesize lineDashPhase = _lineDashPhase;
+@synthesize lineDashPattern = _lineDashPattern;
+@end

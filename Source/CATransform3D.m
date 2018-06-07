@@ -33,14 +33,14 @@ const CATransform3D CATransform3DIdentity = {
   0, 0, 0, 1
 };
 
-BOOL CATransform3DIsIdentity(CATransform3D t)
+bool CATransform3DIsIdentity(CATransform3D t)
 {
   return (t.m11==1.0 && t.m12==0.0 && t.m13==0.0 && t.m14==0.0 &&
           t.m21==0.0 && t.m22==1.0 && t.m23==0.0 && t.m24==0.0 &&
           t.m31==0.0 && t.m32==0.0 && t.m33==1.0 && t.m34==0.0 &&
           t.m41==0.0 && t.m42==0.0 && t.m43==0.0 && t.m44==1.0);
 }
-BOOL CATransform3DEqualToTransform(CATransform3D a, CATransform3D b)
+bool CATransform3DEqualToTransform(CATransform3D a, CATransform3D b)
 {
   return
     (a.m11 == b.m11 && a.m12 == b.m12 && a.m13 == b.m13 && a.m14 == b.m14 &&

@@ -24,9 +24,18 @@
    Boston, MA 02110-1301, USA.
 */
 
-#if GNUSTEP
-#import <CoreGraphics/CGBase.h>
+#import "QuartzCore/CABase.h"
+
+#ifndef __cplusplus
+#include <stdbool.h>
 #endif
+
+//#if GNUSTEP
+#import <CoreGraphics/CGBase.h>
+//#endif
+
+CA_EXTERN_C_BEGIN
+
 typedef struct CATransform3D
 {
   CGFloat m11, m12, m13, m14;
@@ -37,9 +46,9 @@ typedef struct CATransform3D
 
 extern const CATransform3D CATransform3DIdentity;
 
-BOOL CATransform3DIsIdentity(CATransform3D t);
+bool CATransform3DIsIdentity(CATransform3D t);
 
-BOOL CATransform3DEqualToTransform(CATransform3D a, CATransform3D b);
+bool CATransform3DEqualToTransform(CATransform3D a, CATransform3D b);
 
 CATransform3D CATransform3DMakeTranslation(CGFloat tx, CGFloat ty, CGFloat tz);
 
@@ -57,10 +66,15 @@ CATransform3D CATransform3DConcat(CATransform3D a, CATransform3D b);
 
 CATransform3D CATransform3DInvert(CATransform3D t);
 
+#ifdef __OBJC__
+#import <Foundation/NSValue.h>
 @interface NSValue (CATransform3D)
 + (NSValue *) valueWithCATransform3D: (CATransform3D)transform;
 - (CATransform3D) CATransform3DValue;
 @end
+#endif
+
+CA_EXTERN_C_END
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
 

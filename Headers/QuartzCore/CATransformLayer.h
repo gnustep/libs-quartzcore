@@ -22,3 +22,13 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#ifndef QuartzCore_CATransformLayer
+#define QuartzCore_CATransformLayer
+
+#import <QuartzCore/CALayer.h>
+
+@interface CATransformLayer : CALayer
+@end
+
+#endif

@@ -110,8 +110,23 @@
 
 @end
 
+@interface CASpringAnimation : CABasicAnimation
+{
+  CGFloat _mass;
+  CGFloat _stiffness;
+  CGFloat _damping;
+  CGFloat _initialVelocity;
+  CFTimeInterval _settlingDuration;
+}
+@property CGFloat mass;
+@property CGFloat stiffness;
+@property CGFloat damping;
+@property CGFloat initialVelocity;
+@property(readonly) CFTimeInterval settlingDuration;
+@end
+
 /* calculationMode constants */
-NSString *const kCAAnimationDiscrete;
+extern NSString *const kCAAnimationDiscrete;
 
 /* *********************************** */
 
@@ -126,13 +141,13 @@ NSString *const kCAAnimationDiscrete;
 @end
 
 /* transition types */
-NSString *const kCATransitionMoveIn;
+extern NSString *const kCATransitionMoveIn;
 
 /* transition subtypes */
-NSString *const kCATransitionFromTop;
-NSString *const kCATransitionFromBottom;
-NSString *const kCATransitionFromLeft;
-NSString *const kCATransitionFromRight;
+extern NSString *const kCATransitionFromTop;
+extern NSString *const kCATransitionFromBottom;
+extern NSString *const kCATransitionFromLeft;
+extern NSString *const kCATransitionFromRight;
 
 /* *********************************** */
 

@@ -30,34 +30,34 @@
 #import "QuartzCore/CABase.h"
 #import "QuartzCore/CAMediaTiming.h"
 #import "QuartzCore/CATransform3D.h"
-#if GNUSTEP
+//#if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
-#endif
+//#endif
 
-NSString *const kCAGravityResize;
-NSString *const kCAGravityResizeAspect;
-NSString *const kCAGravityResizeAspectFill;
-NSString *const kCAGravityCenter;
-NSString *const kCAGravityTop;
-NSString *const kCAGravityBottom;
-NSString *const kCAGravityLeft;
-NSString *const kCAGravityRight;
-NSString *const kCAGravityTopLeft;
-NSString *const kCAGravityTopRight;
-NSString *const kCAGravityBottomLeft;
-NSString *const kCAGravityBottomRight;
-NSString *const kCATransition;
+extern NSString *const kCAGravityResize;
+extern NSString *const kCAGravityResizeAspect;
+extern NSString *const kCAGravityResizeAspectFill;
+extern NSString *const kCAGravityCenter;
+extern NSString *const kCAGravityTop;
+extern NSString *const kCAGravityBottom;
+extern NSString *const kCAGravityLeft;
+extern NSString *const kCAGravityRight;
+extern NSString *const kCAGravityTopLeft;
+extern NSString *const kCAGravityTopRight;
+extern NSString *const kCAGravityBottomLeft;
+extern NSString *const kCAGravityBottomRight;
+extern NSString *const kCATransition;
 
 @class CAAnimation;
 @class CARenderer;
 
 #import "QuartzCore/CAAction.h"
 
-#if GNUSTEP
+//#if GNUSTEP
 #define NONATOMIC_GSONLY nonatomic
-#else
-#define NONATOMIC_GSONLY atomic
-#endif
+//#else
+//#define NONATOMIC_GSONLY atomic
+//#endif
 
 @class CABackingStore;
 @class CAGLSimpleFramebuffer;
@@ -93,6 +93,7 @@ NSString *const kCATransition;
   NSMutableDictionary *_dynamicPropertyValueDict;
   id _presentationLayer;
   id _modelLayer;
+  CGColorRef _borderColor;
 
   CGColorRef _shadowColor;
   CGSize _shadowOffset;
@@ -207,6 +208,10 @@ NSString *const kCATransition;
 - (CGAffineTransform) affineTransform;
 - (void) setAffineTransform: (CGAffineTransform)affineTransform;
 
+@property (nonatomic, assign) CGColorRef borderColor;
+
+@property (nonatomic, assign) CGFloat contentsScale;
+@property (nonatomic, assign) CGFloat anchorPointZ;
 @end
 
 @interface NSObject (CALayerActions)
