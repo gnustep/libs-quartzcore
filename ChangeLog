@@ -1,3 +1,28 @@
+2018-06-07  Ivan Vučica <ivan@vucica.net>
+
+	* Headers/QuartzCore/CAAnimation.h
+	* Headers/QuartzCore/CABase.h
+	* Headers/QuartzCore/CAFilter.h
+	* Headers/QuartzCore/CALayer.h
+	* Headers/QuartzCore/CAOpenGLLayer.h
+	* Headers/QuartzCore/CARenderer.h
+	* Headers/QuartzCore/CAShapeLayer.h
+	* Headers/QuartzCore/CATransform3D.h
+	* Headers/QuartzCore/CATransformLayer.h
+	* Headers/QuartzCore/CAValueFunction.h
+	* Headers/QuartzCore/CoreAnimation.h
+	* Source/CAAnimation.m
+	* Source/CAFilter.m
+	* Source/CALayer.m
+	* Source/CAOpenGLLayer.m
+	* Source/CAShapeLayer.m
+	* Source/CAShapeLayer.m
+	* Source/CATransform3D.m
+	* Source/CATransformLayer.m
+	* Source/CAValueFunction.m
+	* Source/GNUmakefile:
+	Merge Jun 15 2017 changes by Daniel Ferreira.
+
 2018-05-27  Ivan Vučica <ivan@vucica.net>
 
 	* Source/CALayer.m:
@@ -23,6 +48,39 @@
 	place of struct CVTimeStamp.
 
 	This is a partial fix of QuartzCoreDemo.
+
+2017-08-06  Daniel Ferreira <dtf@stanford.edu>
+
+	* Headers/QuartzCore/CAAnimation.h
+	* Source/CAAnimation.m:
+	Add stub CASpringAnimation class.
+
+2017-06-15  Daniel Ferreira <dtf@stanford.edu>
+
+	* Headers/QuartzCore/CAAnimation.h
+	* Headers/QuartzCore/CABase.h
+	* Headers/QuartzCore/CAFilter.h
+	* Headers/QuartzCore/CALayer.h
+	* Headers/QuartzCore/CAOpenGLLayer.h
+	* Headers/QuartzCore/CARenderer.h
+	* Headers/QuartzCore/CAShapeLayer.h
+	* Headers/QuartzCore/CATransform3D.h
+	* Headers/QuartzCore/CATransformLayer.h
+	* Headers/QuartzCore/CAValueFunction.h
+	* Headers/QuartzCore/CoreAnimation.h
+	* Source/CAAnimation.m
+	* Source/CAFilter.m
+	* Source/CALayer.m
+	* Source/CAOpenGLLayer.m
+	* Source/CAShapeLayer.m
+	* Source/CAShapeLayer.m
+	* Source/CATransform3D.m
+	* Source/CATransformLayer.m
+	* Source/CAValueFunction.m
+	* Source/GNUmakefile:
+	Fix headers and add stubs to QuartzCore.
+
+	Introduces stub CAShapeLayer, CATransformLayer and CAOpenGLLayer.
 
 2015-08-19  Filip Zelic <zelic.filip@gmail.com>
 
