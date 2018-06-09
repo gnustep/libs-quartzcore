@@ -2,7 +2,6 @@
 	* Source/CALayer.m:
 	Fix failing build by adding CGFloat _contentsScale ivar.
 
-
 2018-06-07  Ivan Vučica <ivan@vucica.net>
 
 	* Headers/QuartzCore/CALayer.h
