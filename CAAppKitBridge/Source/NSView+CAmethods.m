@@ -20,7 +20,7 @@
     cadata->_wantsLayer = YES;
     cadata->_isOriginalReciever = YES;
     cadata->_layer = [self makeBackingLayer];
-    cadata->_renderer = [CARenderer rendererWithNSOpenGLContext: nil // TODO: context handling
+    cadata->_renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext].CGLContextObj
                                                         options: nil];
     // Attach cadata to self
     self->_coreAnimationData = cadata;
