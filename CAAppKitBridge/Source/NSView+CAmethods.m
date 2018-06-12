@@ -15,40 +15,46 @@
         return;
     }
 
-    // Initialise new CAData if setWantsLayer:YES
+    /* Initialise new CAData if setWantsLayer:YES */
     CAData * cadata = [[CAData alloc]init];
     cadata->_wantsLayer = YES;
-    cadata->_isOriginalReciever = YES;
+    cadata->_isRootLayer = YES;
     cadata->_layer = [self makeBackingLayer];
-    cadata->_renderer = [CARenderer rendererWithNSOpenGLContext: [self openGLContext].CGLContextObj
-                                                        options: nil];
-    // Attach cadata to self
+    //cadata->_renderer = 
+    //    [CARenderer rendererWithNSOpenGLContext: [self openGLContext].CGLContextObj
+    //                                                   options: nil];
+    /* Attach cadata to self */
     self->_coreAnimationData = cadata;
 
-    // Call _recursiveSubtreePropagation recursively on all the subviews
+    /* Further prep of CARenderer */
+    [cadata->_renderer setLayer: cadata->_layer]; // Set root layer
+    [cadata->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
+
+    /* Call _recursiveSubviewPropagation recursively on all the subviews */
     for (NSView *currView in [self subviews])
     {
         [currView _recursiveSubviewPropagation];
     }
 }
 
--(void) _recursiveSubviewPropagation {
-    // Initialise new CAData instance
+- (void) _recursiveSubviewPropagation {
+    /* Initialise new CAData instance */
     CAData * cadata = [[CAData alloc]init];
     cadata->_wantsLayer = NO; // A bit unintuitive, but default Apple behaviour.
-    cadata->_isOriginalReciever = NO;
+    cadata->_isRootLayer = NO;
     cadata->_layer = [self makeBackingLayer];
-    // Attach cadata to self
+
+    /* Attach cadata to self */
     self->_coreAnimationData = cadata;
 
-    // Attach our CALayer to its superView CALayer
+    /* Attach our CALayer to its superView CALayer */
     NSView * superView = [self superview];
     if(superView != nil){
         CAData * supercadata = superView->_coreAnimationData;
         [supercadata->_layer addSublayer:cadata->_layer];
     }
 
-    // Call wantsLayer recursively on all the subviews
+    /* Call wantsLayer recursively on all the subviews */
     for (NSView *currView in [self subviews])
     {
         [currView _recursiveSubviewPropagation];
@@ -57,7 +63,29 @@
 
 }
 
--(CALayer *) makeBackingLayer {
+- (BOOL) addCARenderer: (CARenderer*) customCARenderer {
+    CAData *currCAData = self->_coreAnimationData;
+    if (!currCAData->_isRootLayer) {
+        NSLog(@"Cannot add CARenderer to a non-root layer");
+        return NO;
+    }
+    currCAData->_renderer = customCARenderer;
+    return YES;
+
+}
+
+- (BOOL) removeCARenderer {
+    CAData *currCAData = self->_coreAnimationData;
+    if (!currCAData->_isRootLayer) {
+        NSLog(@"Cannot remove CARenderer from a non-root layer");
+        return NO;
+    }
+    currCAData->_renderer = nil;
+    return YES;
+
+}
+
+- (CALayer *) makeBackingLayer {
     return [CALayer layer];
 }
 
@@ -65,6 +93,7 @@
 
 /* methods from libs-gui/Headers/AppKit/NSOpenGlView.h */
 
+#if 0
 static NSOpenGLPixelFormat *fmt = nil;
 static NSOpenGLPixelFormatAttribute attrs[] =
     {   
@@ -78,17 +107,22 @@ static NSOpenGLPixelFormatAttribute attrs[] =
 + (NSOpenGLPixelFormat*) defaultPixelFormat
 {
   // Initialize it once
+
   if (!fmt)
     fmt = [[NSOpenGLPixelFormat alloc] initWithAttributes: attrs];
 
   if (fmt)
     return fmt;
+
   else
     {
       NSWarnMLog(@"could not find a reasonable pixel format...");
       return nil;
     }
+
+
 }
+
 
 /**
    detach from the current context.  You should call it before releasing this 
@@ -139,6 +173,7 @@ static NSOpenGLPixelFormatAttribute attrs[] =
     return currGlContext;
 }
 
+
 -(id) initWithFrame: (NSRect)frameRect
 {  
   return [self initWithFrame: frameRect
@@ -147,9 +182,7 @@ static NSOpenGLPixelFormatAttribute attrs[] =
 }
 
 
-/** default initializer.  Can be passed [NSOpenGLContext defaultPixelFormat] 
-    as second argument
-*/
+
 - (id) initWithFrame: (NSRect)frameRect 
          pixelFormat: (NSOpenGLPixelFormat*)format
 {
@@ -175,6 +208,7 @@ static NSOpenGLPixelFormatAttribute attrs[] =
 
   return self;
 }
+
 
 - (void) dealloc
 {
@@ -269,5 +303,5 @@ static NSOpenGLPixelFormatAttribute attrs[] =
 
   return self;
 }
-
+#endif
 @end

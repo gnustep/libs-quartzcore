@@ -6,6 +6,10 @@
 @property BOOL wantsLayer;
 - (CALayer *) makeBackingLayer;
 
+/* GNUstep specific methods */
+- (BOOL) addCARenderer: (CARenderer*) CARenderer;
+- (BOOL) removeCARenderer;
+
 /* methods from libs-gui/Headers/AppKit/NSOpenGlView.h */
 + (NSOpenGLPixelFormat*) defaultPixelFormat;
 - (void) clearGLContext;
