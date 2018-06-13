@@ -1,9 +1,15 @@
 #import "../Headers/CAAppKitBridge/CAData.h"
 #import "../Headers/CAAppKitBridge/NSView+CAmethods.h"
 #import <Foundation/Foundation.h>
+#import "DemoController.h"
 
 
 int main(void) {
+    DemoController * controller = [DemoController new];
+    [[NSApplication sharedApplication] setDelegate:controller];
+    [NSApp run];
+}
+#if 0
     NSView * view = [[NSView alloc]init];
     NSView * view2 = [[NSView alloc]init];
     NSView * view3 = [[NSView alloc]init];
@@ -51,3 +57,4 @@ from AppControler.m */
     NSLog(@"removeCARenderer from non-root layer %p");
     NSLog(@"%d",[view3 removeCARenderer]);
 }
+#endif

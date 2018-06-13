@@ -93,7 +93,6 @@
 
 /* methods from libs-gui/Headers/AppKit/NSOpenGlView.h */
 
-#if 0
 static NSOpenGLPixelFormat *fmt = nil;
 static NSOpenGLPixelFormatAttribute attrs[] =
     {   
@@ -101,8 +100,7 @@ static NSOpenGLPixelFormatAttribute attrs[] =
       NSOpenGLPFADepthSize, 16,
       NSOpenGLPFAColorSize, 1,
       0
-    };
-
+};
 
 + (NSOpenGLPixelFormat*) defaultPixelFormat
 {
@@ -303,5 +301,5 @@ static NSOpenGLPixelFormatAttribute attrs[] =
 
   return self;
 }
-#endif
+
 @end
