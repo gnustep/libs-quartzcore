@@ -28,7 +28,14 @@
 #import "../Source/NSView+CAMethods.h"
 #import <Foundation/Foundation.h>
 
-int main(){
+@interface DemoController : NSObject
+{
+}
+@end
+
+@implementation DemoController
+- (void) applicationDidFinishLaunching: (id) t
+{
   NSView * view = [[NSView alloc]init];
   NSView * view2 = [[NSView alloc]init];
   NSView * view3 = [[NSView alloc]init];
@@ -67,4 +74,17 @@ int main(){
   NSLog(@"Success: %d",[view2 removeCARenderer]);
   NSLog(@"removeCARenderer from non-root layer %p", view3);
   NSLog(@"Success: %d",[view3 removeCARenderer]);
+}
+@end
+
+int main(int argc, const char ** argv, char ** environ){
+  NSAutoreleasePool * pool = [NSAutoreleasePool new];
+  id controller = [DemoController new];
+  [[NSApplication sharedApplication] setDelegate:controller];
+  [NSProcessInfo initializeWithArguments: (char**)argv
+                                   count: argc
+                             environment: environ];
+  [NSApp run];
+  [pool drain];
+  return 0;
 }

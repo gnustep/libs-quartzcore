@@ -124,6 +124,9 @@
 */
 - (void) clearGLContext
 {
+  if (self->_coreAnimationData == nil) {
+      return;
+  }
   GSCAData *currGSCAData = self->_coreAnimationData;
   NSOpenGLContext *currGlContext = currGSCAData->_GLContext;
 if (currGlContext)
@@ -167,17 +170,6 @@ if (currGlContext)
   return currGlContext;
 }
 
-
-- (void) dealloc
-{
-  GSCAData *currGSCAData = self->_coreAnimationData;
-  [[NSNotificationCenter defaultCenter] removeObserver: self];
-  [self clearGLContext];
-  RELEASE(currGSCAData->_pixelFormat);
-  NSDebugMLLog(@"GL", @"deallocating");
-  [super dealloc];
-}
-
 - (NSOpenGLPixelFormat*) pixelFormat
 {
   GSCAData *currGSCAData = self->_coreAnimationData;
@@ -204,26 +196,6 @@ if (currGlContext)
   return YES;
 }
 
-- (void) _frameChanged: (NSNotification *) aNot
-{
-  GSCAData *currGSCAData = self->_coreAnimationData;
-  if (currGSCAData->_prepared)
-  {
-    [[self openGLContext] makeCurrentContext];
-    [self update];
-    [self reshape];
-  }
-}
-
--(void) _viewWillMoveToWindow: (NSWindow *) newWindow
-{
-  [super _viewWillMoveToWindow: newWindow];
-
-  if ([self window] != newWindow)
-    {
-      // the context will be recreated in the new window if needed
-      [[self openGLContext] clearDrawable];
-    }
-}
+// TODO:(stjepanbrkicc) Implement custom dealloc
 
 @end
