@@ -1,4 +1,4 @@
-/* NSView+CAmethods.h
+/* Source/CAData.h
 
    Copyright (C) 2018 Free Software Foundation, Inc.
 
@@ -26,28 +26,20 @@
 
 #import <AppKit/AppKit.h>
 #import <QuartzCore/QuartzCore.h>
-#import <GNUstepBase/GSVersionMacros.h>
 
-@interface  NSView (NSViewCAmethods)
-@property BOOL wantsLayer;
-- (CALayer *) makeBackingLayer;
+@interface  GSCAData : NSObject
+{
+  @public
+  BOOL            _wantsLayer;
+  BOOL            _isRootLayer;
+  CARenderer *    _renderer; // NIL if _isOriginalReciever == NO
+  CALayer    *    _layer;
 
-/* GNUstep specific methods */
-- (BOOL) addCARenderer: (CARenderer*) CARenderer;
-- (BOOL) removeCARenderer;
+  /* from libs-gui/Headers/AppKit/NSOpenGlView.h */
 
-/* methods from libs-gui/Headers/AppKit/NSOpenGlView.h */
-+ (NSOpenGLPixelFormat*) defaultPixelFormat;
-- (void) clearGLContext;
-- (void) setOpenGLContext: (NSOpenGLContext*)context;
-- (NSOpenGLContext*) openGLContext;
-- (id) initWithFrame: (NSRect)frameRect 
-         pixelFormat: (NSOpenGLPixelFormat*)format;
-- (NSOpenGLPixelFormat*) pixelFormat;
-- (void) setPixelFormat: (NSOpenGLPixelFormat*)pixelFormat;
-- (void) reshape;
-- (void) update;
-#if OS_API_VERSION(MAC_OS_X_VERSION_10_3, GS_API_LATEST)
-- (void) prepareOpenGL;
-#endif
+  NSOpenGLContext 	  *  _GLContext;
+	NSOpenGLPixelFormat	*  _pixelFormat; //<- TODO: Check Apple behavior for propagating this
+	BOOL		             	 _prepared;
+}
+
 @end

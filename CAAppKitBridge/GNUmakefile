@@ -1,5 +1,5 @@
 #
-# GNUmakefile for QuartzCore
+# GNUmakefile for QuartzCore/CAAppKitBridge
 #
 
 ifeq ($(GNUSTEP_MAKEFILES),)

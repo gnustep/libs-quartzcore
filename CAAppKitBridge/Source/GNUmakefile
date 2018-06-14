@@ -17,13 +17,10 @@ FRAMEWORK_NAME =CAAppKitBridge
 -include ../config.make
 
 CAAppKitBridge_OBJCFLAGS += -std=c99
-CAAppKitBridge_HEADER_FILES_DIR = ../Headers/CAAppKitBridge
-CAAppKitBridge_HEADER_FILES = \
-	CAData.h \
-    NSView+CAmethods.h
-#QuartzCore_RESOURCE_FILES = \
-	$(wildcard Shaders/*.vsh) \
-	$(wildcard Shaders/*.fsh)
+#CAAppKitBridge_HEADER_FILES_DIR = ../Headers/CAAppKitBridge
+#CAAppKitBridge_HEADER_FILES = \
+#	CAData.h \
+#   NSView+CAmethods.h
 
 CAAppKitBridge_OBJC_FILES = $(wildcard *.m)
 
