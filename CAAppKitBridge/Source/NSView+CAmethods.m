@@ -1,3 +1,30 @@
+/* NSView+CAmethods.m
+
+   Copyright (C) 2018 Free Software Foundation, Inc.
+
+   Author: Stjepan Brkic <stjepanbrkicc@gmail.com>
+   Date: June 2018
+
+   This file is part of QuartzCore.
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2 of the License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this library; see the file COPYING.LIB.
+   If not, see <http://www.gnu.org/licenses/> or write to the
+   Free Software Foundation, 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.
+*/
+
+
 #import "CAAppKitBridge/CAData.h"
 #import "CAAppKitBridge/NSView+CAmethods.h"
 #import <Foundation/Foundation.h>
@@ -184,11 +211,11 @@ static NSOpenGLPixelFormatAttribute attrs[] =
 - (id) initWithFrame: (NSRect)frameRect 
          pixelFormat: (NSOpenGLPixelFormat*)format
 {
-  CAData *currCAData = self->_coreAnimationData;
-  self = [super initWithFrame: frameRect];
+  self = [[self initWIthFrame: frameRect];
   if (!self)
     return nil;
 
+  CAData *currCAData = self->_coreAnimationData;
   ASSIGN(currCAData->_pixel_format, format);
 
   [[NSNotificationCenter defaultCenter] 

@@ -9,7 +9,7 @@
 -(void)applicationDidFinishLaunching: (NSNotification*)aNote
 {
 
-  NSMenu * menu = [[NSMenu alloc] initWithTitle: @"Main Menu"];
+/*  NSMenu * menu = [[NSMenu alloc] initWithTitle: @"Main Menu"];
 
   [menu addItemWithTitle: @"GSQCDemo"
                   action: @selector(orderFrontStandardAboutPanel:)
@@ -20,11 +20,12 @@
 
   [NSApp setMainMenu: menu];
 //  [menu release];
-
+*/
   _window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,800,600)
                                         styleMask: NSTitledWindowMask | NSClosableWindowMask
                                           backing: NSBackingStoreBuffered
                                             defer: NO];
+
 
   NSView * demoView1;
   NSView * demoView2;
