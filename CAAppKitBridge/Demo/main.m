@@ -25,7 +25,7 @@
 */
 
 #import "../Headers/CAAppKitBridge/CAData.h"
-#import "../Headers/CAAppKitBridge/NSView+CAmethods.h"
+#import "../Source/NSView+CAMethods.h"
 #import <Foundation/Foundation.h>
 
 int main(){
