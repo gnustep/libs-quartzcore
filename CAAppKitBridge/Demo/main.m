@@ -24,7 +24,7 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "../Headers/CAAppKitBridge/CAData.h"
+#import "../Source/GSCAData.h"
 #import "../Source/NSView+CAMethods.h"
 #import <Foundation/Foundation.h>
 
