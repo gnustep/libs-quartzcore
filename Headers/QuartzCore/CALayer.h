@@ -94,6 +94,7 @@ extern NSString *const kCATransition;
   id _presentationLayer;
   id _modelLayer;
   CGColorRef _borderColor;
+  CGFloat _contentsScale;
 
   CGColorRef _shadowColor;
   CGSize _shadowOffset;
