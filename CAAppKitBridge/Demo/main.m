@@ -34,15 +34,15 @@
 @end
 
 @implementation DemoController
-- (void) applicationDidFinishLaunching: (id) t
+- (void) applicationDidFinishLaunching: (id)t
 {
-  NSView * view = [[NSView alloc]init];
-  NSView * view2 = [[NSView alloc]init];
-  NSView * view3 = [[NSView alloc]init];
-  NSView * view3_5 = [[NSView alloc]init];
-  NSView * view4 = [[NSView alloc]init];
+  NSView * view = [[NSView alloc] init];
+  NSView * view2 = [[NSView alloc] init];
+  NSView * view3 = [[NSView alloc] init];
+  NSView * view3_5 = [[NSView alloc] init];
+  NSView * view4 = [[NSView alloc] init];
 
-  NSLog(@"%p %p %p %p %p",view,view2,view3,view3_5,view4);
+  NSLog(@"%p %p %p %p %p", view, view2, view3, view3_5, view4);
 
   [view addSubview:view2];
   [view2 addSubview:view3];
@@ -56,28 +56,30 @@
   NSLog(@"view4 wantsLayer value: %d", [view4 wantsLayer]);
 
   NSLog(@"Setting view2 wantsLayer to true");
-  [view2 setWantsLayer:TRUE];
+  [view2 setWantsLayer:YES];
   NSLog(@"view wantsLayer value: %d", [view wantsLayer]);
   NSLog(@"view2 wantsLayer value: %d", [view2 wantsLayer]);
   NSLog(@"view3 wantsLayer value: %d", [view3 wantsLayer]);
   NSLog(@"view3_5 wantsLayer value: %d", [view3_5 wantsLayer]);
   NSLog(@"view4 wantsLayer value: %d", [view4 wantsLayer]);
-  
-  CARenderer *renderer = [[CARenderer alloc]init];
+
+  CARenderer *renderer = [[CARenderer alloc] init];
 
   NSLog(@"addCARenderer on root layer %p", view2);
-  NSLog(@"Success: %d",[view2 addCARenderer:renderer]); // Also creates OpenGL context
+  NSLog(@"Success: %d", [view2 addCARenderer:renderer]); // Also creates OpenGL context
   NSLog(@"addCARenderer on non-root layer %p", view3);
-  NSLog(@"Success: %d",[view3 addCARenderer:renderer]);
+  NSLog(@"Success: %d", [view3 addCARenderer:renderer]);
 
   NSLog(@"removeCARenderer from root layer %p", view2);
-  NSLog(@"Success: %d",[view2 removeCARenderer]);
+  NSLog(@"Success: %d", [view2 removeCARenderer]);
   NSLog(@"removeCARenderer from non-root layer %p", view3);
-  NSLog(@"Success: %d",[view3 removeCARenderer]);
+  NSLog(@"Success: %d" ,[view3 removeCARenderer]);
 }
 @end
 
-int main(int argc, const char ** argv, char ** environ){
+int
+main(int argc, const char ** argv, char ** environ)
+{
   NSAutoreleasePool * pool = [NSAutoreleasePool new];
   id controller = [DemoController new];
   [[NSApplication sharedApplication] setDelegate:controller];

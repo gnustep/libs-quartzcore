@@ -1,11 +1,11 @@
-/* Source/CAData.h
+/* GSCAData.h
 
    Copyright (C) 2018 Free Software Foundation, Inc.
 
    Author: Stjepan Brkic <stjepanbrkicc@gmail.com>
    Date: June 2018
 
-   This file is part of QuartzCore.
+   This file is part of QuartzCore/CAAppKitBridge.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -32,14 +32,14 @@
   @public
   BOOL            _wantsLayer;
   BOOL            _isRootLayer;
-  CARenderer *    _renderer; // NIL if _isOriginalReciever == NO
-  CALayer    *    _layer;
+  CARenderer     *_renderer; /* NIL if _isOriginalReciever == NO */
+  CALayer        *_layer;
 
-  /* from libs-gui/Headers/AppKit/NSOpenGlView.h */
+  /* from libs-gui/Headers/AppKit/NSOpenGLView.h */
 
-  NSOpenGLContext 	  *  _GLContext;
-	NSOpenGLPixelFormat	*  _pixelFormat; //<- TODO: Check Apple behavior for propagating this
-	BOOL		             	 _prepared;
+  NSOpenGLContext 	        *_GLContext;
+	NSOpenGLPixelFormat	    *_pixelFormat; /* <- TODO: Check Apple behavior for propagating this */
+	BOOL		            _prepared;
 }
 
 @end

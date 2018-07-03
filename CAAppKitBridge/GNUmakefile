@@ -24,17 +24,9 @@ include $(GNUSTEP_MAKEFILES)/common.make
 PACKAGE_NAME = CAAppKitBridge
 PACKAGE_VERSION = 0.0.1
 SVN_MODULE_NAME = CAAppKitBridge
-#SVN_BASE_URL = svn+ssh://
 
 SUBPROJECTS = Source
-#SUBPROJECTS += Tests
 SUBPROJECTS += Demo
-
-#ifneq ($(strip `which makeinfo`),)
-#ifneq ($(strip `which texi2pdf`),)
-#SUBPROJECTS += Documentation
-#endif
-#endif
 
 
 #

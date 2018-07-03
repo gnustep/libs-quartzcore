@@ -1,11 +1,11 @@
-/* Source/NSView+CAmethods.m
+/* NSView+CAMethods.m
 
    Copyright (C) 2018 Free Software Foundation, Inc.
 
    Author: Stjepan Brkic <stjepanbrkicc@gmail.com>
    Date: June 2018
 
-   This file is part of QuartzCore.
+   This file is part of QuartzCore/CAAppKitBridge.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -26,31 +26,30 @@
 
 #import "GSCAData.h"
 #import "NSView+CAMethods.h"
-#import <Foundation/Foundation.h>
 
 @implementation NSView (NSViewCAmethods)
-- (BOOL) wantsLayer {
-  if (self->_coreAnimationData == nil) {
+- (BOOL) wantsLayer
+{
+  if (self->_coreAnimationData == nil)
+    {
       return NO;
-  }
+    }
   GSCAData * GSCAData = self->_coreAnimationData;
   return GSCAData->_wantsLayer;
 }
 
-- (void) setWantsLayer:(BOOL) newValue{
-  if (newValue == NO){
+- (void) setWantsLayer:(BOOL)newValue
+  {
+  if (newValue == NO)
+    {
       return;
-  }
+    }
 
   /* Initialise new GSCAData if setWantsLayer:YES */
   GSCAData * currGSCAData = [[GSCAData alloc]init];
   currGSCAData->_wantsLayer = YES;
   currGSCAData->_isRootLayer = YES;
   currGSCAData->_layer = [self makeBackingLayer];
-  //GSCAData->_renderer = 
-  //    [CARenderer rendererWithNSOpenGLContext: [self openGLContext].CGLContextObj
-  //                                                   options: nil];
-  /* Attach GSCAData to self */
   self->_coreAnimationData = currGSCAData;
 
   /* Further prep of CARenderer */
@@ -60,12 +59,13 @@
 
   /* Call _recursiveSubviewPropagation recursively on all the subviews */
   for (NSView *currView in [self subviews])
-  {
+    {
       [currView _recursiveSubviewPropagation];
-  }
+    }
 }
 
-- (void) _recursiveSubviewPropagation {
+- (void) _recursiveSubviewPropagation
+{
   /* Initialise new GSCAData instance */
   GSCAData * currGSCAData = [[GSCAData alloc]init];
   currGSCAData->_wantsLayer = NO;
@@ -77,45 +77,51 @@
 
   /* Attach our CALayer to its superView CALayer */
   NSView * superView = [self superview];
-  if(superView != nil){
+  if(superView != nil)
+    {
       GSCAData * superGSCAData = superView->_coreAnimationData;
       [superGSCAData->_layer addSublayer:currGSCAData->_layer];
-  }
+    }
 
   /* Call wantsLayer recursively on all the subviews */
   for (NSView *currView in [self subviews])
-  {
+    {
       [currView _recursiveSubviewPropagation];
-  }
+    }
 
 }
 
-- (BOOL) addCARenderer: (CARenderer*) customCARenderer {
+- (BOOL) addCARenderer: (CARenderer*)customCARenderer 
+{
   GSCAData *currGSCAData = self->_coreAnimationData;
-  if (!currGSCAData->_isRootLayer) {
+  if (!currGSCAData->_isRootLayer)
+    {
       NSLog(@"Cannot add CARenderer to a non-root layer");
       return NO;
-  }
+    }
   currGSCAData->_renderer = customCARenderer;
   return YES;
 }
 
-- (BOOL) removeCARenderer {
+- (BOOL) removeCARenderer
+{
   GSCAData *currGSCAData = self->_coreAnimationData;
-  if (!currGSCAData->_isRootLayer) {
+  if (!currGSCAData->_isRootLayer)
+    {
       NSLog(@"Cannot remove CARenderer from a non-root layer");
       return NO;
-  }
+    }
   currGSCAData->_renderer = nil;
   return YES;
 }
 
-- (CALayer *) makeBackingLayer {
+- (CALayer *) makeBackingLayer
+{
   return [CALayer layer];
 }
 
 
-/* methods from libs-gui/Headers/AppKit/NSOpenGlView.h */
+/* methods from libs-gui/Headers/AppKit/NSOpenGLView.h */
 
 
 /**
@@ -146,10 +152,6 @@ if (currGlContext)
       [self clearGLContext];
       ASSIGN(currGlContext, context);
       }
-}
-
-- (void) prepareOpenGL
-{
 }
 
 - (NSOpenGLContext*) openGLContext
@@ -196,6 +198,6 @@ if (currGlContext)
   return YES;
 }
 
-// TODO:(stjepanbrkicc) Implement custom dealloc
+/* TODO:(stjepanbrkicc) Implement custom dealloc */
 
 @end

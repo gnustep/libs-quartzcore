@@ -17,17 +17,13 @@ FRAMEWORK_NAME =CAAppKitBridge
 -include ../config.make
 
 CAAppKitBridge_OBJCFLAGS += -std=c99
-#CAAppKitBridge_HEADER_FILES_DIR = ../Headers/CAAppKitBridge
-#CAAppKitBridge_HEADER_FILES = \
-#	CAData.h \
-#   NSView+CAmethods.h
 
 CAAppKitBridge_OBJC_FILES = $(wildcard *.m)
 
 CAAppKitBridge_OBJCFLAGS += $(WARN_FLAGS)
 # Treat warnings as errors unless someone chooses to ignore them.
 #ifneq ($(nonstrict), yes)
-#QuartzCore_OBJCFLAGS += -Werror
+#CAAppKitBridge_OBJCFLAGS += -Werror
 #endif
 
 -include ../GNUmakefile.preamble

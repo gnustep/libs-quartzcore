@@ -1,11 +1,11 @@
-/* Source/NSView+CAmethods.h
+/* NSView+CAMethods.h
 
    Copyright (C) 2018 Free Software Foundation, Inc.
 
    Author: Stjepan Brkic <stjepanbrkicc@gmail.com>
    Date: June 2018
 
-   This file is part of QuartzCore.
+   This file is part of QuartzCore/CAAppKitBridge.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -25,26 +25,22 @@
 */
 
 #import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
-#import <GNUstepBase/GSVersionMacros.h>
 
-@interface  NSView (NSViewCAmethods)
+@interface  NSView (CAmethods)
 @property BOOL wantsLayer;
 - (CALayer *) makeBackingLayer;
 
 /* GNUstep specific methods */
-- (BOOL) addCARenderer: (CARenderer*) CARenderer;
+- (BOOL) addCARenderer: (CARenderer*)renderer;
 - (BOOL) removeCARenderer;
 
-/* methods from libs-gui/Headers/AppKit/NSOpenGlView.h */
-- (void)             clearGLContext;
-- (void)             setOpenGLContext: (NSOpenGLContext*)context;
+/* methods from libs-gui/Headers/AppKit/NSOpenGLView.h */
+- (void) clearGLContext;
+- (void) setOpenGLContext: (NSOpenGLContext*)context;
 - (NSOpenGLContext*) openGLContext;
-- (void)             reshape;
-- (void)             update;
-
-#if OS_API_VERSION(MAC_OS_X_VERSION_10_3, GS_API_LATEST)
-- (void) prepareOpenGL;
-#endif
+- (void) reshape;
+- (void) update;
 
 @end

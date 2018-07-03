@@ -1,11 +1,11 @@
-/* Source/NSView+CAmethods.m
+/* GSCAData.m
 
    Copyright (C) 2018 Free Software Foundation, Inc.
 
    Author: Stjepan Brkic <stjepanbrkicc@gmail.com>
    Date: June 2018
 
-   This file is part of QuartzCore.
+   This file is part of QuartzCore/CAAppKitBridge.
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
