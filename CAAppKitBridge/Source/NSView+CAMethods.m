@@ -55,6 +55,8 @@
   /* Further prep of CARenderer */
   [currGSCAData->_renderer setLayer: currGSCAData->_layer];           // Set root layer
   [currGSCAData->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
+
+  /* Create (NS)OpenGL context on reciever NSView */
   [self _gsCreateOpenGLContext];                                               // Create OpenGL context
 
   /* Call _recursiveSubviewPropagation recursively on all the subviews */
@@ -132,7 +134,6 @@
 
       ASSIGN(currGLContext, context);
       [context setView: self];
-      RELEASE(context);
     }
   return currGLContext;
 }

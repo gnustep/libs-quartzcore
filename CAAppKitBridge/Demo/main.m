@@ -24,8 +24,6 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "../Source/GSCAData.h"
-#import "../Source/NSView+CAMethods.h"
 #import "DemoController.h"
 #import <Foundation/Foundation.h>
 
