@@ -10,7 +10,6 @@
 	Fix various issues from the code review.
 
 2018-06-09 Stjepan Brkić <stjepanbrkicc@gmail.com>
-
 	* Source/CALayer.m:
 	Fix failing build by adding CGFloat _contentsScale ivar.
 
