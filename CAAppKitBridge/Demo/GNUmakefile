@@ -4,6 +4,7 @@ APP_NAME = CAAppKitBridgeDemo
 
 CAAppKitBridgeDemo_OBJC_FILES = \
 	main.m \
+	DemoController.m \
 
 
 ADDITIONAL_LDFLAGS += $(shell pkg-config --libs cairo) -L../Source/CAAppKitBridge.framework
