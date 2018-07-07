@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Demo/DemoController.
+=======
+/* Demo/DemoController.m
+>>>>>>> 3c5e7c5e49fdb15cdcb1227dc2115e17b269a335
 
    Copyright (C) 2018 Free Software Foundation, Inc.
 
