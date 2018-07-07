@@ -44,10 +44,10 @@
 
   NSLog(@"%p %p %p %p %p", view, view2, view3, view3_5, view4);
 
-  [view addSubview:view2];
-  [view2 addSubview:view3];
-  [view2 addSubview:view3_5];
-  [view3 addSubview:view4];
+  [view addSubview: view2];
+  [view2 addSubview: view3];
+  [view2 addSubview: view3_5];
+  [view3 addSubview: view4];
 
   NSLog(@"view wantsLayer value: %d", [view wantsLayer]);
   NSLog(@"view2 wantsLayer value: %d", [view2 wantsLayer]);
