@@ -1,4 +1,16 @@
+2018-07-07 Stjepan Brkić <stjepanbrkicc@gmail.com>
+
+	* CAAppKitBridge/Source/GSCAData.h
+	* CAAppKitBridge/Source/NSView+CAMethods.h
+	* CAAppKitBridge/Demo/DemoController.h
+	* CAAppKitBridge/Source/GSCAData.m
+	* CAAppKitBridge/Source/NSView+CAMethods.m
+	* CAAppKitBridge/Demo/DemoController.m
+	* CAAppKitBridge/Demo/main.m:
+	Fix various issues from the code review.
+
 2018-06-09 Stjepan Brkić <stjepanbrkicc@gmail.com>
+
 	* Source/CALayer.m:
 	Fix failing build by adding CGFloat _contentsScale ivar.
 

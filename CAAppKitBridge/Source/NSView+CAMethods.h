@@ -33,14 +33,10 @@
 - (CALayer *) makeBackingLayer;
 
 /* GNUstep specific methods */
-- (BOOL) addCARenderer: (CARenderer*)renderer;
-- (BOOL) removeCARenderer;
+- (BOOL) _gsAddCARenderer: (CARenderer*)renderer;
+- (BOOL) _gsRemoveCARenderer;
+- (NSOpenGLContext*) _gsCreateOpenGLContext;
+- (NSOpenGLContext*) _gsGetOpenGLContext;
 
-/* methods from libs-gui/Headers/AppKit/NSOpenGLView.h */
-- (void) clearGLContext;
-- (void) setOpenGLContext: (NSOpenGLContext*)context;
-- (NSOpenGLContext*) openGLContext;
-- (void) reshape;
-- (void) update;
 
 @end

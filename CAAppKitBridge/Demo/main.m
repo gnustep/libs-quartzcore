@@ -56,7 +56,7 @@
   NSLog(@"view4 wantsLayer value: %d", [view4 wantsLayer]);
 
   NSLog(@"Setting view2 wantsLayer to true");
-  [view2 setWantsLayer:YES];
+  [view2 setWantsLayer: YES];
   NSLog(@"view wantsLayer value: %d", [view wantsLayer]);
   NSLog(@"view2 wantsLayer value: %d", [view2 wantsLayer]);
   NSLog(@"view3 wantsLayer value: %d", [view3 wantsLayer]);
@@ -66,14 +66,14 @@
   CARenderer *renderer = [[CARenderer alloc] init];
 
   NSLog(@"addCARenderer on root layer %p", view2);
-  NSLog(@"Success: %d", [view2 addCARenderer:renderer]); // Also creates OpenGL context
+  NSLog(@"Success: %d", [view2 _gsAddCARenderer: renderer]); // Also creates OpenGL context
   NSLog(@"addCARenderer on non-root layer %p", view3);
-  NSLog(@"Success: %d", [view3 addCARenderer:renderer]);
+  NSLog(@"Success: %d", [view3 _gsAddCARenderer: renderer]);
 
   NSLog(@"removeCARenderer from root layer %p", view2);
-  NSLog(@"Success: %d", [view2 removeCARenderer]);
+  NSLog(@"Success: %d", [view2 _gsRemoveCARenderer]);
   NSLog(@"removeCARenderer from non-root layer %p", view3);
-  NSLog(@"Success: %d" ,[view3 removeCARenderer]);
+  NSLog(@"Success: %d" ,[view3 _gsRemoveCARenderer]);
 }
 @end
 
@@ -82,7 +82,7 @@ main(int argc, const char ** argv, char ** environ)
 {
   NSAutoreleasePool * pool = [NSAutoreleasePool new];
   id controller = [DemoController new];
-  [[NSApplication sharedApplication] setDelegate:controller];
+  [[NSApplication sharedApplication] setDelegate: controller];
   [NSProcessInfo initializeWithArguments: (char**)argv
                                    count: argc
                              environment: environ];

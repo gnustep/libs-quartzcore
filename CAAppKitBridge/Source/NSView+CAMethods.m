@@ -55,7 +55,7 @@
   /* Further prep of CARenderer */
   [currGSCAData->_renderer setLayer: currGSCAData->_layer];           // Set root layer
   [currGSCAData->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
-  [self openGLContext];                                               // Create OpenGL context
+  [self _gsCreateOpenGLContext];                                               // Create OpenGL context
 
   /* Call _recursiveSubviewPropagation recursively on all the subviews */
   for (NSView *currView in [self subviews])
@@ -91,7 +91,7 @@
 
 }
 
-- (BOOL) addCARenderer: (CARenderer*)customCARenderer 
+- (BOOL) _gsAddCARenderer: (CARenderer*)customCARenderer 
 {
   GSCAData *currGSCAData = self->_coreAnimationData;
   if (!currGSCAData->_isRootLayer)
@@ -103,7 +103,7 @@
   return YES;
 }
 
-- (BOOL) removeCARenderer
+- (BOOL) _gsRemoveCARenderer
 {
   GSCAData *currGSCAData = self->_coreAnimationData;
   if (!currGSCAData->_isRootLayer)
@@ -120,56 +120,21 @@
   return [CALayer layer];
 }
 
-
-/* methods from libs-gui/Headers/AppKit/NSOpenGLView.h */
-
-
-/**
- detach from the current context.  You should call it before releasing this 
- object.
-*/
-- (void) clearGLContext
-{
-  if (self->_coreAnimationData == nil) {
-      return;
-  }
-  GSCAData *currGSCAData = self->_coreAnimationData;
-  NSOpenGLContext *currGlContext = currGSCAData->_GLContext;
-if (currGlContext)
-  {
-    [currGlContext clearDrawable];
-    DESTROY(currGlContext);
-    currGSCAData->_prepared = NO;
-  }
-}
-
-- (void) setOpenGLContext: (NSOpenGLContext*)context
+- (NSOpenGLContext*) _gsCreateOpenGLContext
 {
   GSCAData *currGSCAData = self->_coreAnimationData;
-  NSOpenGLContext *currGlContext = currGSCAData->_GLContext;
-  if ( context != currGlContext )
-      {
-      [self clearGLContext];
-      ASSIGN(currGlContext, context);
-      }
-}
+  NSOpenGLContext *currGLContext = currGSCAData->_GLContext;
+  if (currGLContext == nil)
+    {
+      NSOpenGLContext *context = [[NSOpenGLContext alloc] 
+                                     initWithFormat: currGSCAData->_pixelFormat
+                                     shareContext: nil];
 
-- (NSOpenGLContext*) openGLContext
-{
-  GSCAData *currGSCAData = self->_coreAnimationData;
-  NSOpenGLContext *currGlContext = currGSCAData->_GLContext;
-  if (currGlContext == nil)
-  {
-    NSOpenGLContext *context = [[NSOpenGLContext alloc] 
-                                   initWithFormat: currGSCAData->_pixelFormat
-                                   shareContext: nil];
-
-    [self setOpenGLContext: context];
-    [context setView: self];
-
-    RELEASE(context);
-  }
-  return currGlContext;
+      ASSIGN(currGLContext, context);
+      [context setView: self];
+      RELEASE(context);
+    }
+  return currGLContext;
 }
 
 - (NSOpenGLPixelFormat*) pixelFormat
@@ -178,26 +143,11 @@ if (currGlContext)
   return currGSCAData->_pixelFormat;
 }
 
-
-- (void) reshape
-{
-}
-
-- (void) update
-{
-  NSOpenGLContext *context;
-  context = [self openGLContext];
-  if ([context view] == self)
-    {
-      [context update];
-    }
-}
-
 - (BOOL) isOpaque
 {
   return YES;
 }
 
-/* TODO:(stjepanbrkicc) Implement custom dealloc */
+/* TODO(stjepanbrkicc): Implement custom dealloc */
 
 @end

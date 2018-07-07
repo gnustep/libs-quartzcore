@@ -28,7 +28,7 @@
 
 }
 
--(BOOL)applicationShouldTerminateAfterLastWindowClosed:(id)sender
+-(BOOL)applicationShouldTerminateAfterLastWindowClosed: (id)sender
 {
   return YES;
 }
