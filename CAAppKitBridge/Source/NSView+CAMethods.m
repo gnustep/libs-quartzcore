@@ -57,7 +57,7 @@
   [currGSCAData->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
 
   /* Create (NS)OpenGL context on reciever NSView */
-  [self _gsCreateOpenGLContext];                                               // Create OpenGL context
+  [self _gsCreateOpenGLContext];
 
   /* Call _recursiveSubviewPropagation recursively on all the subviews */
   for (NSView *currView in [self subviews])
