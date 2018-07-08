@@ -38,8 +38,8 @@
   /* from libs-gui/Headers/AppKit/NSOpenGLView.h */
 
   NSOpenGLContext       *_GLContext;
-	NSOpenGLPixelFormat	  *_pixelFormat; /* <- TODO: Check Apple behavior for propagating this */
-	BOOL		              _prepared;
+  NSOpenGLPixelFormat   *_pixelFormat; /* <- TODO: Check Apple behavior for propagating this */
+  BOOL                  _prepared;
 }
 
 @end
