@@ -31,12 +31,14 @@
 @interface  NSView (CAmethods)
 @property BOOL wantsLayer;
 - (CALayer *) makeBackingLayer;
+- (void)drawLayer: (CALayer *)layer 
+        inContext: (CGContextRef)ctx;
 
 /* GNUstep specific methods */
+- (CALayer*) _gsLayer;
 - (BOOL) _gsAddCARenderer: (CARenderer*)renderer;
 - (BOOL) _gsRemoveCARenderer;
 - (NSOpenGLContext*) _gsCreateOpenGLContext;
 - (NSOpenGLContext*) _gsGetOpenGLContext;
-
 
 @end

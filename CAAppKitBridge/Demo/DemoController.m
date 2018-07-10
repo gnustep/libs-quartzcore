@@ -1,6 +1,5 @@
 /* Demo/DemoController.m
 
-
    Copyright (C) 2018 Free Software Foundation, Inc.
 
    Author: Stjepan Brkic <stjepanbrkicc@gmail.com>
@@ -28,8 +27,14 @@
 #import "DemoController.h"
 
 @implementation DemoController
+
+@synthesize window=_window;
+@synthesize mainView=_mainView;
+@synthesize renderer=_renderer;
+
 - (void) applicationDidFinishLaunching: (id)t
 {
+#if 0
   NSView * view = [[NSView alloc] init];
   NSView * view2 = [[NSView alloc] init];
   NSView * view3 = [[NSView alloc] init];
@@ -67,13 +72,76 @@
   NSLog(@"removeCARenderer from root layer %p", view2);
   NSLog(@"Success: %d", [view2 _gsRemoveCARenderer]);
   NSLog(@"removeCARenderer from non-root layer %p", view3);
-  NSLog(@"Success: %d" ,[view3 _gsRemoveCARenderer]);
+  NSLog(@"Success: %d" , [view3 _gsRemoveCARenderer]);
+#endif
 
-  NSWindow *window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,800,600)
+  /* Test the drawing into the context */
+  self->_window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,800,600)
                                         styleMask: NSTitledWindowMask | NSClosableWindowMask
                                           backing: NSBackingStoreBuffered
                                             defer: NO];
-  [window makeKeyAndOrderFront: nil];
+  self->_mainView = [[NSButton alloc] initWithFrame: [[self->_window contentView] frame]];
+  [self->_mainView setTitle: @"hello"];
+  [self->_window setContentView: self->_mainView];
+  [self->_mainView setWantsLayer: YES];
+  NSLog(@"mainView wantsLayer value: %d", [self->_mainView wantsLayer]);
+  [self->_window makeKeyAndOrderFront: nil];
+
+  /* set up the NSTimer */
+  NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval: 1./60. 
+                                                    target: self 
+                                                  selector: @selector(drawRect:) 
+                                                  userInfo: nil
+                                                   repeats: YES];
+
+}
+
+-(void) drawRect: (NSTimer*)t
+{
+#if 0
+  glViewport(0, 0, [self->_mainView frame].size.width, [self->_mainView frame].size.height);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glEnableClientState(GL_COLOR_ARRAY);
+  GLfloat vertices[] = {
+    -0.5, 0.0,
+     0.5, 0.0,
+     0.5, 0.5,
+     0.5, 0.5,
+    -0.5, 0.5,
+    -0.5, 0.0,
+  };
+  GLfloat colors[] = {
+    1.0, 0.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 1.0, 1.0,
+    1.0, 0.0, 0.0, 1.0,
+    0.0, 1.0, 0.0, 1.0,
+  };
+  glVertexPointer(2, GL_FLOAT, 0, vertices);
+  glColorPointer(3, GL_FLOAT, 0, colors);
+
+  glDrawArrays(GL_TRIANGLES, 0, 6);
+
+  glFlush();
+
+  [[self->_mainView _gsCreateOpenGLContext] flushBuffer];
+#endif
+
+  NSLog(@"mainView is at %p", self->_mainView);
+  //[[self->_mainView _gsCreateOpenGLContext] makeCurrentContext];
+  NSLog(@"Context is at %p", [self->_mainView _gsCreateOpenGLContext]);
+  NSLog(@"_gsLayer %p", [self->_mainView _gsLayer]);
+  [[self->_mainView _gsLayer] setNeedsDisplay];
+  //[self->_renderer render];
+
 }
 
 -(BOOL)applicationShouldTerminateAfterLastWindowClosed: (id)sender

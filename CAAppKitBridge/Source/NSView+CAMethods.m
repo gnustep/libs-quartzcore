@@ -28,6 +28,15 @@
 #import "NSView+CAMethods.h"
 
 @implementation NSView (NSViewCAmethods)
+- (CALayer*) _gsLayer
+{
+  if (self->_coreAnimationData != nil) {
+    GSCAData * GSCAData = self->_coreAnimationData;
+    return GSCAData->_layer;
+  }
+  return nil;
+}
+
 - (BOOL) wantsLayer
 {
   if (self->_coreAnimationData == nil)
@@ -50,14 +59,15 @@
   currGSCAData->_wantsLayer = YES;
   currGSCAData->_isRootLayer = YES;
   currGSCAData->_layer = [self makeBackingLayer];
+  [currGSCAData->_layer setDelegate: self]; // set self (NSView) as delegate
+
   self->_coreAnimationData = currGSCAData;
 
   /* Further prep of CARenderer */
+  currGSCAData->_renderer = [CARenderer rendererWithNSOpenGLContext: [self _gsCreateOpenGLContext]
+                                                           options: nil];
   [currGSCAData->_renderer setLayer: currGSCAData->_layer];           // Set root layer
   [currGSCAData->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
-
-  /* Create (NS)OpenGL context on reciever NSView */
-  [self _gsCreateOpenGLContext];
 
   /* Call _recursiveSubviewPropagation recursively on all the subviews */
   for (NSView *currView in [self subviews])
@@ -65,6 +75,22 @@
       [currView _recursiveSubviewPropagation];
     }
 }
+
+- (void)drawLayer: (CALayer *)layer 
+        inContext: (CGContextRef)ctx
+{
+  float width = [self bounds].size.width;
+  float height = [self bounds].size.height;
+
+  /* Draw dummy content into the context */
+  CGRect rect = CGRectMake(50, 50, width/2.0, height/2.0);
+  CGContextSetRGBStrokeColor(ctx, 0, 0, 1, 1);
+  CGContextSetRGBFillColor(ctx, 1, 0, 0, 1);
+  CGContextSetLineWidth(ctx, 4.0);
+  CGContextStrokeRect(ctx, rect);
+  CGContextFillRect(ctx, rect);
+}
+
 
 - (void) _recursiveSubviewPropagation
 {
