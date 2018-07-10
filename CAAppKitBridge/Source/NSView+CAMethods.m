@@ -81,7 +81,7 @@
                                                            options: nil];
   [currGSCAData->_renderer setLayer: currGSCAData->_layer];           // Set root layer
   [currGSCAData->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
-
+  [currGSCAData->_renderer retain];
   /* Call _recursiveSubviewPropagation recursively on all the subviews */
   for (NSView *currView in [self subviews])
     {
@@ -92,7 +92,6 @@
 - (void)drawLayer: (CALayer *)layer 
         inContext: (CGContextRef)ctx
 {
-  NSLog(@"poy");
   float width = [self bounds].size.width;
   float height = [self bounds].size.height;
 
