@@ -141,7 +141,25 @@
   NSLog(@"Context is at %p", [self->_mainView _gsCreateOpenGLContext]);
   NSLog(@"_gsLayer %p", [self->_mainView _gsLayer]);
   [[self->_mainView _gsLayer] setNeedsDisplay];
-  //[self->_renderer render];
+
+  [[self->_mainView _gsCreateOpenGLContext] makeCurrentContext];
+
+  glClear(GL_COLOR_BUFFER_BIT);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, [self->_mainView frame].size.width, 0, [self->_mainView frame].size.height, -2500, 2500);
+  
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+
+  [self->_renderer beginAtFrame: CACurrentMediaTime()
+                      timeStamp: NULL];
+
+  [self->_renderer render];
+  [self->_renderer endFrame];
+
+  glFlush();
+  [[self->_mainView _gsCreateOpenGLContext] flushBuffer];
 
 }
 

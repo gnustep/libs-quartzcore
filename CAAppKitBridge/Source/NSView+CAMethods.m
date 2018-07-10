@@ -30,10 +30,11 @@
 @implementation NSView (NSViewCAmethods)
 - (CALayer*) _gsLayer
 {
-  if (self->_coreAnimationData != nil) {
-    GSCAData * GSCAData = self->_coreAnimationData;
-    return GSCAData->_layer;
-  }
+  if (self->_coreAnimationData != nil)
+    {
+      GSCAData * GSCAData = self->_coreAnimationData;
+      return GSCAData->_layer;
+    }
   return nil;
 }
 
@@ -162,11 +163,6 @@
       [context setView: self];
     }
   return currGLContext;
-}
-
-- (BOOL) isOpaque
-{
-  return YES;
 }
 
 /* TODO(stjepanbrkicc): Implement custom dealloc */
