@@ -60,6 +60,7 @@
   currGSCAData->_wantsLayer = YES;
   currGSCAData->_isRootLayer = YES;
   currGSCAData->_layer = [self makeBackingLayer];
+  [currGSCAData->_layer setBounds: NSRectToCGRect([self bounds])];
   [currGSCAData->_layer setDelegate: self]; // set self (NSView) as delegate
 
   self->_coreAnimationData = currGSCAData;
@@ -100,6 +101,7 @@
   currGSCAData->_wantsLayer = NO;
   currGSCAData->_isRootLayer = NO;
   currGSCAData->_layer = [self makeBackingLayer];
+  [currGSCAData->_layer setBounds: NSRectToCGRect([self bounds])];
 
   /* Attach GSCAData to self */
   self->_coreAnimationData = currGSCAData;

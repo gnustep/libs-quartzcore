@@ -152,6 +152,7 @@
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
+  [self->_renderer addUpdateRect: [self->_renderer bounds]];
   [self->_renderer beginAtFrame: CACurrentMediaTime()
                       timeStamp: NULL];
 
