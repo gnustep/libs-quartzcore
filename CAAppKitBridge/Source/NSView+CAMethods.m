@@ -81,6 +81,7 @@
 - (void)drawLayer: (CALayer *)layer 
         inContext: (CGContextRef)ctx
 {
+  NSLog(@"poy");
   float width = [self bounds].size.width;
   float height = [self bounds].size.height;
 

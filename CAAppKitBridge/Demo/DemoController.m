@@ -88,6 +88,9 @@
   [self->_window makeKeyAndOrderFront: nil];
   [[self->_mainView _gsLayer] retain];
 
+  CGColorRef yellowColor = CGColorCreateGenericRGB(1, 1, 0, 1);
+  [[self->_mainView _gsLayer] setBackgroundColor: yellowColor];
+
   /* set up the NSTimer */
   NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval: 1./60. 
                                                     target: self 
@@ -153,8 +156,8 @@
   glLoadIdentity();
 
   [self->_renderer addUpdateRect: [self->_renderer bounds]];
-  [self->_renderer beginAtFrame: CACurrentMediaTime()
-                      timeStamp: NULL];
+  [self->_renderer beginFrameAtTime: CACurrentMediaTime()
+                          timeStamp: NULL];
 
   [self->_renderer render];
   [self->_renderer endFrame];
