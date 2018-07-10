@@ -86,6 +86,7 @@
   [self->_mainView setWantsLayer: YES];
   NSLog(@"mainView wantsLayer value: %d", [self->_mainView wantsLayer]);
   [self->_window makeKeyAndOrderFront: nil];
+  [[self->_mainView _gsLayer] retain];
 
   /* set up the NSTimer */
   NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval: 1./60. 
