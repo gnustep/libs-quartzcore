@@ -38,6 +38,7 @@
 - (CALayer*) _gsLayer;
 - (BOOL) _gsAddCARenderer: (CARenderer*)renderer;
 - (BOOL) _gsRemoveCARenderer;
+- (CARenderer*) _gsRendererTemp;
 - (NSOpenGLContext*) _gsCreateOpenGLContext;
 - (NSOpenGLContext*) _gsGetOpenGLContext;
 

@@ -92,7 +92,7 @@
   [[self->_mainView _gsLayer] setBackgroundColor: yellowColor];
 
   /* set up the NSTimer */
-  NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval: 1./60. 
+  NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval: 1.0 
                                                     target: self 
                                                   selector: @selector(drawRect:) 
                                                   userInfo: nil
@@ -155,12 +155,13 @@
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  [self->_renderer addUpdateRect: [self->_renderer bounds]];
-  [self->_renderer beginFrameAtTime: CACurrentMediaTime()
+  NSLog(@"renderer: %p : %@", [self->_mainView _gsRendererTemp], [self->_mainView _gsRendererTemp]);
+  [[self->_mainView _gsRendererTemp] addUpdateRect: [[self->_mainView _gsRendererTemp] bounds]];
+  [[self->_mainView _gsRendererTemp] beginFrameAtTime: CACurrentMediaTime()
                           timeStamp: NULL];
 
-  [self->_renderer render];
-  [self->_renderer endFrame];
+  [[self->_mainView _gsRendererTemp] render];
+  [[self->_mainView _gsRendererTemp] endFrame];
 
   glFlush();
   [[self->_mainView _gsCreateOpenGLContext] flushBuffer];

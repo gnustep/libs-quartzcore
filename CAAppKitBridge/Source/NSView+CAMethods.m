@@ -38,6 +38,16 @@
   return nil;
 }
 
+- (CARenderer*) _gsRendererTemp
+{
+  if (self->_coreAnimationData != nil)
+    {
+      GSCAData * GSCAData = self->_coreAnimationData;
+      return GSCAData->_renderer;
+    }
+  return nil;
+}
+
 - (BOOL) wantsLayer
 {
   if (self->_coreAnimationData == nil)
@@ -60,6 +70,7 @@
   currGSCAData->_wantsLayer = YES;
   currGSCAData->_isRootLayer = YES;
   currGSCAData->_layer = [self makeBackingLayer];
+  [currGSCAData->_layer retain];
   [currGSCAData->_layer setBounds: NSRectToCGRect([self bounds])];
   [currGSCAData->_layer setDelegate: self]; // set self (NSView) as delegate
 
@@ -98,10 +109,11 @@
 - (void) _recursiveSubviewPropagation
 {
   /* Initialise new GSCAData instance */
-  GSCAData * currGSCAData = [[GSCAData alloc]init];
+  GSCAData * currGSCAData = [[GSCAData alloc] init];
   currGSCAData->_wantsLayer = NO;
   currGSCAData->_isRootLayer = NO;
   currGSCAData->_layer = [self makeBackingLayer];
+  [currGSCAData->_layer retain];
   [currGSCAData->_layer setBounds: NSRectToCGRect([self bounds])];
 
   /* Attach GSCAData to self */
