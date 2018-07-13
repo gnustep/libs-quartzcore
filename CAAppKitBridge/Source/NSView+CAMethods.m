@@ -40,21 +40,25 @@
 
 - (CARenderer*) _gsRendererTemp
 {
-  if (self->_coreAnimationData != nil)
+  GSCAData * GSCAData = self->_coreAnimationData;
+  if (GSCAData == nil)
     {
-      GSCAData * GSCAData = self->_coreAnimationData;
-      return GSCAData->_renderer;
+      NSLog(@"Cannot call _gsAddCARenderer on an NSView instance before calling \
+              setWantsLayer");
+      return nil;
     }
-  return nil;
+
+    return GSCAData->_renderer;
 }
 
 - (BOOL) wantsLayer
 {
-  if (self->_coreAnimationData == nil)
+  GSCAData * GSCAData = self->_coreAnimationData;
+  if (GSCAData == nil)
     {
       return NO;
     }
-  GSCAData * GSCAData = self->_coreAnimationData;
+
   return GSCAData->_wantsLayer;
 }
 
@@ -130,6 +134,13 @@
 - (BOOL) _gsAddCARenderer: (CARenderer*)customCARenderer 
 {
   GSCAData *currGSCAData = self->_coreAnimationData;
+  if (currGSCAData == nil)
+    {
+      NSLog(@"Cannot call _gsAddCARenderer on an NSView instance before calling \
+              setWantsLayer");
+      return NO;
+    }
+
   if (!currGSCAData->_isRootLayer)
     {
       NSLog(@"Cannot add CARenderer to a non-root layer");
@@ -142,6 +153,12 @@
 - (BOOL) _gsRemoveCARenderer
 {
   GSCAData *currGSCAData = self->_coreAnimationData;
+  if (currGSCAData == nil)
+    {
+      NSLog(@"Cannot call _gsRemoveCARenderer on an NSView instance before calling \
+              setWantsLayer");
+      return NO;
+    }
   if (!currGSCAData->_isRootLayer)
     {
       NSLog(@"Cannot remove CARenderer from a non-root layer");
@@ -159,6 +176,12 @@
 - (NSOpenGLContext*) _gsCreateOpenGLContext
 {
   GSCAData *currGSCAData = self->_coreAnimationData;
+  if (currGSCAData == nil)
+    {
+      NSLog(@"Cannot create OpenGL context on an NSView instance before calling \
+              setWantsLayer");
+      return nil;
+    }
   NSOpenGLContext *currGLContext = currGSCAData->_GLContext;
   if (currGLContext == nil)
     {
