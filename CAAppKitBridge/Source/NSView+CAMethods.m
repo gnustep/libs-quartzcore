@@ -65,28 +65,8 @@
       return;
     }
 
-  /* Initialise new GSCAData if setWantsLayer:YES */
-  GSCAData * currGSCAData = [[GSCAData alloc]init];
-  currGSCAData->_wantsLayer = YES;
-  currGSCAData->_isRootLayer = YES;
-  currGSCAData->_layer = [self makeBackingLayer];
-  [currGSCAData->_layer retain];
-  [currGSCAData->_layer setBounds: NSRectToCGRect([self bounds])];
-  [currGSCAData->_layer setDelegate: self]; // set self (NSView) as delegate
+    [self _gsRecursiveSetWantsLayer: YES];
 
-  self->_coreAnimationData = currGSCAData;
-
-  /* Further prep of CARenderer */
-  currGSCAData->_renderer = [CARenderer rendererWithNSOpenGLContext: [self _gsCreateOpenGLContext]
-                                                           options: nil];
-  [currGSCAData->_renderer setLayer: currGSCAData->_layer];           // Set root layer
-  [currGSCAData->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
-  [currGSCAData->_renderer retain];
-  /* Call _recursiveSubviewPropagation recursively on all the subviews */
-  for (NSView *currView in [self subviews])
-    {
-      [currView _recursiveSubviewPropagation];
-    }
 }
 
 - (void)drawLayer: (CALayer *)layer 
@@ -105,31 +85,44 @@
 }
 
 
-- (void) _recursiveSubviewPropagation
+- (void) _gsRecursiveSetWantsLayer: (BOOL)isRoot
 {
   /* Initialise new GSCAData instance */
   GSCAData * currGSCAData = [[GSCAData alloc] init];
-  currGSCAData->_wantsLayer = NO;
-  currGSCAData->_isRootLayer = NO;
+  currGSCAData->_wantsLayer = isRoot;
+  currGSCAData->_isRootLayer = isRoot;
   currGSCAData->_layer = [self makeBackingLayer];
   [currGSCAData->_layer retain];
   [currGSCAData->_layer setBounds: NSRectToCGRect([self bounds])];
+  [currGSCAData->_layer setDelegate: self]; // set self (NSView) as delegate
 
   /* Attach GSCAData to self */
   self->_coreAnimationData = currGSCAData;
 
-  /* Attach our CALayer to its superView CALayer */
-  NSView * superView = [self superview];
-  if(superView != nil)
+  if (isRoot == YES)
     {
-      GSCAData * superGSCAData = superView->_coreAnimationData;
-      [superGSCAData->_layer addSublayer:currGSCAData->_layer];
+      currGSCAData->_renderer = [CARenderer rendererWithNSOpenGLContext: [self _gsCreateOpenGLContext]
+                                                           options: nil];
+      [currGSCAData->_renderer setLayer: currGSCAData->_layer];           // Set root layer
+      [currGSCAData->_renderer setBounds: NSRectToCGRect([self bounds])]; // Set bounds
+      [currGSCAData->_renderer retain];
     }
 
-  /* Call wantsLayer recursively on all the subviews */
+  else
+    {
+      /* Attach our CALayer to its superView CALayer */
+      NSView * superView = [self superview];
+      if(superView != nil)
+        {
+          GSCAData * superGSCAData = superView->_coreAnimationData;
+          [superGSCAData->_layer addSublayer:currGSCAData->_layer];
+        }
+    }
+
+  /* Call  recursively on all the subviews */
   for (NSView *currView in [self subviews])
     {
-      [currView _recursiveSubviewPropagation];
+      [currView _gsRecursiveSetWantsLayer: NO];
     }
 
 }
