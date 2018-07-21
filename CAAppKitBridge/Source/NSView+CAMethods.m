@@ -74,18 +74,25 @@
 }
 
 - (void)drawLayer: (CALayer *)layer 
-        inContext: (CGContextRef)ctx
+        inContext: (CGContextRef)cgContext
 {
   float width = [self bounds].size.width;
   float height = [self bounds].size.height;
-
-  /* Draw dummy content into the context */
+  NSLog(@"NSVIEW-drawlayerincontext is called");
+  /* Draw dummy content into the context
   CGRect rect = CGRectMake(50, 50, width/2.0, height/2.0);
   CGContextSetRGBStrokeColor(ctx, 0, 0, 1, 1);
   CGContextSetRGBFillColor(ctx, 1, 0, 0, 1);
   CGContextSetLineWidth(ctx, 4.0);
   CGContextStrokeRect(ctx, rect);
   CGContextFillRect(ctx, rect);
+  */
+
+  NSGraphicsContext *nsContext = [NSGraphicsContext graphicsContextWithGraphicsPort: cgContext
+                                                                            flipped: NO];
+  NSLog(@"nsContext is at %p", nsContext);
+  [self displayRectIgnoringOpacity: [self frame] // ... or bounds?
+                         inContext: nsContext];
 }
 
 
