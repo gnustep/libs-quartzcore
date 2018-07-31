@@ -73,12 +73,12 @@
 
 }
 
-- (void)drawLayer: (CALayer *)layer 
+- (void)drawLayer: (CALayer *)layer
         inContext: (CGContextRef)cgContext
 {
   float width = [self bounds].size.width;
   float height = [self bounds].size.height;
-  NSLog(@"NSVIEW-drawlayerincontext is called");
+  NSLog(@"!!!!!!!!!! NSView %@ is called to draw into %p; w %g h %g", NSStringFromSelector(_cmd), cgContext, width, height);
   /* Draw dummy content into the context
   CGRect rect = CGRectMake(50, 50, width/2.0, height/2.0);
   CGContextSetRGBStrokeColor(ctx, 0, 0, 1, 1);
@@ -90,9 +90,43 @@
 
   NSGraphicsContext *nsContext = [NSGraphicsContext graphicsContextWithGraphicsPort: cgContext
                                                                             flipped: NO];
+/*
+  OpalSurface *surface = nil; int x = 0, y = 0;
+  [[self gState] GSCurrentSurface: &surface :&x :&y];
+  if (surface == nil)
+    {
+      class opalSurface = NSClassFromString(@"OpalSurface");
+      [opalSurface
+    }*/
   NSLog(@"nsContext is at %p", nsContext);
-  [self displayRectIgnoringOpacity: [self frame] // ... or bounds?
+  NSLog(@"%g %g %g %g", [self frame].origin.x, [self frame].origin.y, [self frame].size.width, [self frame].size.height);
+NSLog(@"%g %g %g %g", [self bounds].origin.x, [self bounds].origin.y, [self bounds].size.width, [self bounds].size.height);
+
+  NSGraphicsContext * old = [NSGraphicsContext currentContext];
+  [NSGraphicsContext setCurrentContext: nsContext];
+  [self displayRectIgnoringOpacity: [self frame]
                          inContext: nsContext];
+  /* OpalSurface* */ id *surface = nil;
+  int x = 0, y = 0;
+  [[nsContext currentGState] GSCurrentSurface: &surface :&x :&y];
+  NSRect translatedBounds = [self bounds]; // doesn't help, maybe unnecessary
+  translatedBounds.origin.y -= translatedBounds.size.height;
+  [surface handleExposeRect: translatedBounds];
+
+  [NSGraphicsContext setCurrentContext: old];
+
+  CGImageRef image = CGBitmapContextCreateImage(cgContext);
+
+  NSMutableData * data = [NSMutableData data];
+  CGImageDestinationRef destination = CGImageDestinationCreateWithData((CFMutableDataRef)data, (CFStringRef)@"public.png", 1, NULL);
+  CGImageDestinationAddImage(destination, image, NULL);
+  CGImageDestinationFinalize(destination);
+
+  CGImageRelease(image);
+
+  [data writeToFile:@"/tmp/ovojeruzno.png" atomically:YES];
+
+  NSLog(@"!!!!!!!! NSView %@ : COMPLETE drawing into %p", NSStringFromSelector(_cmd), cgContext);
 }
 
 
