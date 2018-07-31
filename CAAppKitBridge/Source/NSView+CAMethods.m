@@ -66,6 +66,8 @@
   {
   if (newValue == NO)
     {
+      // TODO: empty and remove the GSCAData unless a parent view also has wantsLayer set
+      // (as implemented, wantsLayer only looks if the data has been set; therefore, setWantsLayer: won't affect its value)
       return;
     }
 
@@ -115,6 +117,7 @@ NSLog(@"%g %g %g %g", [self bounds].origin.x, [self bounds].origin.y, [self boun
 
   [NSGraphicsContext setCurrentContext: old];
 
+  return; // Uncomment to write a capture of the layer drawn.
   CGImageRef image = CGBitmapContextCreateImage(cgContext);
 
   NSMutableData * data = [NSMutableData data];
@@ -124,7 +127,7 @@ NSLog(@"%g %g %g %g", [self bounds].origin.x, [self bounds].origin.y, [self boun
 
   CGImageRelease(image);
 
-  [data writeToFile:@"/tmp/ovojeruzno.png" atomically:YES];
+  [data writeToFile:@"/tmp/drawLayerOutput.png" atomically:YES]; // TODO: Clean up and allow debug capture of layers to a uniquely-named file at an arbitrary-chosen path, controllable in a more standard way.
 
   NSLog(@"!!!!!!!! NSView %@ : COMPLETE drawing into %p", NSStringFromSelector(_cmd), cgContext);
 }

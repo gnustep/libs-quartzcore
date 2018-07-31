@@ -34,7 +34,7 @@
 - (void) _drawBorderAndBackgroundWithFrame: (NSRect)cellFrame
                                     inView: (NSView*)controlView
 {
-  NSLog(@"kmu");
+  // ...
   [super _drawBorderAndBackgroundWithFrame: cellFrame inView: controlView];
 }
 @end
