@@ -1,0 +1,14 @@
+# [Experimental] Signing commits using an SSH key.
+#
+# Enable verification of SSH signatures for this repository by entering the
+# repo's root and running:
+#   git config gpg.ssh.allowedSignersFile "$(pwd)/.git_allowed_signers"
+# There is no standard name for this file, but an OpenSSH repository is using
+# the name ".git_allowed_signers". There is no default value for
+# gpg.ssh.allowedSignersFile at this time.
+#
+# Setting 'namespaces' and 'valid-before' is optional. Empty lines are not
+# allowed. Lines either have to be a comment, or contain a valid key.
+#
+# Web UIs have their own store of valid SSH keys.
+ivan@vucica.net namespaces="git",valid-before="20251001" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCgk/CXulhDXxWoefFZIfrRvLyVVBERJVXD18WrgTAZIBGwUH+P4HGO+qzfHfXk5KIqbPZXvWyRJ4iHcBtumDOEZVQsgU7SWD1StJqHOmXYRmmYULEA0WWW1AyvQmGAtQzqHk3ywTO6cBO1OmH1bg7Sym3X13B1hHA3DHVGSWlTpzZRRTZuge8KrDgLh1rfUSiHlCzWTdz4kahbEfxZAuwN5W4rs4XBFDLBp6EKVREKhVAkoSwufJ5L4visNvmcnzjy6JeVGmSBkWRxcmmM+ZhU+XFIsplSOpOR2ypB9QDt7uIyKjmmDthoX+RxasrpLFFxogfvdy90+zlwu8OR7HEZ on-nas
