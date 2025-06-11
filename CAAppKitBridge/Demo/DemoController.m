@@ -34,7 +34,8 @@
 - (void) _drawBorderAndBackgroundWithFrame: (NSRect)cellFrame
                                     inView: (NSView*)controlView
 {
-  // ...
+  /* Add any debug statements or updates to drawing logic in here, before
+     or after drawing original content. */
   [super _drawBorderAndBackgroundWithFrame: cellFrame inView: controlView];
 }
 @end
