@@ -10,10 +10,11 @@ Ivan Vučica.
 Requirements
 ------------
 
-*Last updated: August 20, 2012*
+*Last updated: October 28, 2025*
 
 * **Foundation**. You can use GNUstep Base or Apple Cocoa to get Foundation.
 * **AppKit**. You can use GNUstep GUI or Apple Cocoa to get AppKit.
+* **CoreFoundation**. You can use GNUstep CoreBase or Apple Cocoa to get CoreFoundation.
 * **OpenGL 2.0**. Code makes use of framebuffers for offscreen rendering and
   of fragment shaders for shadows. By manually removing blocks of code that 
   require framebuffers and shaders, it's probably possible to run the code on
@@ -26,10 +27,7 @@ Requirements
 * **libobjc2**. While it may be possible to use the code with stock GCC
   runtime, the "new" GNUstep runtime is the only runtime code is being
   tested with. If you use Cocoa, Apple's "64-bit runtime" is also supported.
-* **Patched Opal**. Opal currently conflicts with AppKit. More specifically,
-  it also implements an incompatible `NSFont`. An experimental patch is
-  provided against r35173 of Opal in `opal-nsfonthacks.patch`.
-    * Opal requires Cairo and may require corebase.
+* **Opal**.
 
 API status
 ----------
@@ -129,6 +127,7 @@ readme. Some problems may be resolved by the time you're reading this.
   due to its use of `NSOpenGLContext` -- otherwise it doesn't care about the
   UI framework used -- an experimental patch is provided. See
   `opal-nsfonthacks.patch`.
+  * Note (2025) - this seems to be fixed.
 
 * **Opal sometimes returns 3 color components instead of 4**: Simply setting
   the alpha to 1 in that case seems to work correctly.

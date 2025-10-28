@@ -44,7 +44,7 @@
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
 #else
-#import <GL/gl.h>
+#import <GL/glew.h>
 #import <GL/glu.h>
 #endif
 

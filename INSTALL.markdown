@@ -6,11 +6,7 @@ Installing
 Please refer to README for more detailed explanation of requirements,
 supported features and how to use GNUstep QuartzCore!
 
- 1. Take a look at the README for requirements. You'll need OpenGL headers,
-    cairo, gnustep-base, gnustep-gui, opal, libobjc2, and a modern compiler
-    such as clang. gcc-4.6+ will probably work, too. For requirements of
-    each individual library as well as installation procedure, refer to their
-    documentation (or refer to online search engines).
+ 1. Take a look at the README for requirements.
  2. opal will need to be patched with `opal-nsfonthacks.patch`.
  3. Just as with any other GNUstep library, don't forget to source the
     `GNUstep.sh` file. Then just run:

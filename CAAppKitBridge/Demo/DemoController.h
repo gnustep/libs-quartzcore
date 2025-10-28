@@ -29,7 +29,7 @@
 #import <AppKit/NSOpenGL.h>
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSMenu.h>
-#import <GL/gl.h>
+#import <GL/glew.h>
 #import "../Source/GSCAData.h"
 #import "../Source/NSView+CAMethods.h"
 
