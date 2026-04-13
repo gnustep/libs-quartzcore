@@ -38,8 +38,15 @@
 #if GNUSTEP
 #import <CoreGraphics/CoreGraphics.h>
 #endif
-#if (__APPLE__)
+/* GL_GLEXT_PROTOTYPES must be defined BEFORE <GL/gl.h> is included so that
+ * when gl.h transitively pulls in glext.h, the OpenGL 2.0+ prototypes
+ * (glUseProgram etc.) are declared. Previously this define was inside the
+ * __APPLE__ branch, so the Linux build of CARenderer.m saw an undefined
+ * glUseProgram and failed on modern clang (which treats implicit function
+ * declarations as errors).
+ */
 #define GL_GLEXT_PROTOTYPES 1
+#if (__APPLE__)
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
