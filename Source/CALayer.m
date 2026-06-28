@@ -932,8 +932,9 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   /* Slides */
   CFTimeInterval activeTime = (timeAuthorityLocalTime - [self beginTime]) * [self speed] + [self timeOffset];
-  assert(activeTime > 0);
 
+  /* activeTime may legitimately be <= 0: a future beginTime gives a negative
+     active time, and the exact start instant gives 0. */
   return activeTime;
 }
 
