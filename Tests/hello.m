@@ -25,7 +25,7 @@
 */
 
 #if !(__APPLE__)
-#import <GL/gl.h>
+#import <GL/glew.h>
 #else
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
