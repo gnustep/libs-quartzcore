@@ -933,8 +933,6 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   /* Slides */
   CFTimeInterval activeTime = (timeAuthorityLocalTime - [self beginTime]) * [self speed] + [self timeOffset];
 
-  /* activeTime may legitimately be <= 0: a future beginTime gives a negative
-     active time, and the exact start instant gives 0. */
   return activeTime;
 }
 
@@ -962,6 +960,21 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 
 
+/**
+ * Private implementation detail in implementing CAMediaTiming-related time
+ * functions.<br />
+ * Computes active local time, which is the point at which the layer appears
+ * in parent's timeline and how fast its animations play relative to parent
+ * layer.<br />
+ * This excludes other aspects of basic local time: duration, autoreversing
+ * before possibly reversing, and repetition itself. Some of that would
+ * depend on use of this in applyAnimationsAtTime: in any case.<br />
+ * Implementation is delegated to -activeTimeWithTimeAuthorityLocalTime:
+ * where the time authority is considered to be the parent layer as returned
+ * by -superlayer.<br />
+ * activeTime may legitimately be <= 0: a future beginTime gives a negative
+ * active time, and the exact start instant gives 0.
+ */
 - (CFTimeInterval) activeTime
 {
   /* Slides */
@@ -972,6 +985,17 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     return [self activeTimeWithTimeAuthorityLocalTime: [timeAuthority localTime]];
 }
 
+/**
+ * Private implementation detail in implementing CAMediaTiming-related time
+ * functions.<br />
+ * Implements basic local time. This means supporting duration, repetition,
+ * autoreversing. Some of this depends on -applyAnimationsAtTime: using
+ * -repeatCount, -duration and -autoreverse as well.<br />
+ * Implementation is delegated to -localTimeWithTimeAuthority: where the time
+ * authority is considered to be the parent layer as returned by
+ * -superlayer.<br />
+ *  This may be negative if the -beginTime is in the future.
+ */
 - (CFTimeInterval) localTime
 {
   id<CAMediaTiming> timeAuthority = [self superlayer];
