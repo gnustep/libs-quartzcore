@@ -28,27 +28,12 @@
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSOpenGL.h>
 #import <AppKit/NSApplication.h>
-#import <AppKit/NSMenu.h>
 #import "DemoOpenGLView.h"
 #import "AppController.h"
 
 @implementation AppController
 -(void)applicationDidFinishLaunching: (NSNotification*)aNote
 {
-#if GNUSTEP
-  NSMenu * menu = [[NSMenu alloc] initWithTitle: @"Main Menu"];
-
-  [menu addItemWithTitle: @"GSQCDemo"
-                  action: @selector(orderFrontStandardAboutPanel:)
-           keyEquivalent: @""];
-  [menu addItemWithTitle: @"Quit"
-                  action: @selector(terminate:)
-           keyEquivalent: @"q"];
-
-  [NSApp setMainMenu: menu];
-  [menu release];
-#endif
-
   _window = [[NSWindow alloc] initWithContentRect: NSMakeRect(0,0,800,600)
                                         styleMask: NSTitledWindowMask | NSClosableWindowMask
                                           backing: NSBackingStoreBuffered

@@ -138,7 +138,7 @@
     CALayer * layer = [CALayer layer];
     [_renderer setLayer: layer];
     [layer setBounds: NSRectToCGRect([self bounds])];
-    [layer setBackgroundColor: whiteColor];  
+    [layer setBackgroundColor: whiteColor];
     CGPoint midPos = CGPointMake([_renderer bounds].size.width/2,
                                  [_renderer bounds].size.height/2);
     [layer setPosition: midPos];

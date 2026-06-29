@@ -51,6 +51,10 @@ QuartzCore_RESOURCE_FILES = \
 QuartzCore_OBJC_FILES = $(wildcard *.m) $(wildcard GLHelpers/*.m)
 
 QuartzCore_OBJCFLAGS += $(WARN_FLAGS)
+# Newer clang treats -Wint-conversion as a hard error; suppress for
+# CoreFoundation.h compatibility shim which has type mismatches in
+# inline functions (CFEqual returns Boolean but message send returns id).
+QuartzCore_OBJCFLAGS += -Wno-error=int-conversion
 # Treat warnings as errors unless someone chooses to ignore them.
 #ifneq ($(nonstrict), yes)
 #QuartzCore_OBJCFLAGS += -Werror

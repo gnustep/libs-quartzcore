@@ -23,6 +23,11 @@
    Boston, MA 02110-1301, USA.
 */
 
+/* Import Foundation first so CoreFoundation.h inline functions
+   can resolve NSObject method signatures (-hash, -isEqual:, etc.) */
+#ifdef __OBJC__
+#import <Foundation/NSObject.h>
+#endif
 #import <CoreFoundation/CoreFoundation.h>
 
 #ifdef __cplusplus

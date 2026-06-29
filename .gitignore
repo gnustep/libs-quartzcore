@@ -1,0 +1,9 @@
+# Build artifacts
+obj/
+derived_src/
+
+# Framework output
+*.framework/
+
+# Application bundles
+*.app/

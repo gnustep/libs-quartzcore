@@ -25,7 +25,7 @@
 */
 
 #import <Foundation/Foundation.h>
-#import "CoreFoundation/CFDate.h" /* CFTimeInterval */
+#import <CoreFoundation/CoreFoundation.h> /* CFTimeInterval */
 
 @class CAMediaTimingFunction;
 

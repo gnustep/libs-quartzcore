@@ -273,7 +273,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
       _observedKeyPaths = [[NSMutableArray alloc] init];
       _dynamicPropertyValueDict = [[NSMutableDictionary alloc] init];
 
-      /* TODO: list all properties below */
+      /* All properties that need default values set */
       static NSString * keys[] = {
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
@@ -287,25 +287,20 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
         @"bounds", @"position" };
 
+      /* Struct-typed properties must NOT be observed via KVO because
+         GNUstep's KVO generates setter overrides that corrupt struct
+         arguments passed by value through objc_msgSend.  The custom
+         GSCA_OBSERVABLE_SETTER macro and the manual setBounds: method
+         already emit willChange/didChange notifications directly. */
+      static NSString * structKeys[] = {
+        @"anchorPoint", @"transform", @"sublayerTransform",
+        @"contentsRect", @"shadowOffset", @"bounds", @"position" };
+
       for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
         {
           id defaultValue = [[self class] defaultValueForKey: keys[i]];
           if (defaultValue)
             {
-
-              #if 0
-              NSString * setter = [NSString stringWithFormat:@"set%@%@:", [[keys[i] substringToIndex: 1] uppercaseString], [keys[i] substringFromIndex: 1]];
-
-              if (![self respondsToSelector: NSSelectorFromString(setter)])
-                {
-                  NSLog(@"Key %@ is missing setter", keys[i]);
-                }
-              else
-                {
-                  NSLog(@"setter %@ found", setter);
-                }
-              #endif
-
               if ([@"shadowOffset" isEqualToString: keys[i]])
                 {
 		  /* TODO(ivucica): remove this block once #53994 is resolved */
@@ -320,6 +315,24 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
                   [self setShadowOffset: [defaultValue sizeValue]];
                   NS_ENDHANDLER
                 }
+              else if ([@"transform" isEqualToString: keys[i]])
+                {
+                  NS_DURING
+                  [self setValue: defaultValue
+                          forKey: keys[i]];
+                  NS_HANDLER
+                  [self setTransform: [defaultValue CATransform3DValue]];
+                  NS_ENDHANDLER
+                }
+              else if ([@"sublayerTransform" isEqualToString: keys[i]])
+                {
+                  NS_DURING
+                  [self setValue: defaultValue
+                          forKey: keys[i]];
+                  NS_HANDLER
+                  [self setSublayerTransform: [defaultValue CATransform3DValue]];
+                  NS_ENDHANDLER
+                }
               else
                 {
 		  [self setValue: defaultValue
@@ -327,15 +340,30 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 		}
             }
 
-          /* implicit animations support */
-          /* TODO: only animatable properties should be observed */
-          /* TODO: @dynamically created properties also need to be
-              set up and observed. */
-          [self addObserver: [CAImplicitAnimationObserver sharedObserver]
-                 forKeyPath: keys[i]
-                    options: NSKeyValueObservingOptionOld
-                    context: nil];
-          [_observedKeyPaths addObject: keys[i]];
+          /* Set up KVO observation for non-struct properties only */
+          BOOL isStructKey = NO;
+          for (int j = 0; j < sizeof(structKeys)/sizeof(structKeys[0]); j++)
+            {
+              if ([keys[i] isEqualToString: structKeys[j]])
+                {
+                  isStructKey = YES;
+                  break;
+                }
+            }
+          if (!isStructKey)
+            {
+              NS_DURING
+              [self addObserver: [CAImplicitAnimationObserver sharedObserver]
+                     forKeyPath: keys[i]
+                        options: NSKeyValueObservingOptionOld
+                        context: nil];
+              [_observedKeyPaths addObject: keys[i]];
+              NS_HANDLER
+              /* Some property types (e.g. CGColorRef) may not support
+                 automatic KVO observation. Properties with custom setters
+                 handle change notifications directly. */
+              NS_ENDHANDLER
+            }
         }
 
     }

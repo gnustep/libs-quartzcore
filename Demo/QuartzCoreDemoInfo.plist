@@ -1,6 +1,6 @@
 {
     ApplicationDescription = "Demonstration of GNUstep QuartzCore";
-    ApplicationName = GSQuartzCoreDemo;
+    ApplicationName = QuartzCoreDemo;
     ApplicationRelease = 1.0;
     Authors = (
 	"Ivan Vucica <ivan@vucica.net>"
@@ -8,7 +8,7 @@
     Copyright = "Copyright (C) 2012 Free Software Foundation";
     CopyrightDescription = "Released under GNU Lesser General Public License v2.1 or later";
     FullVersionID = 1.0;
-    NSExecutable = GSQuartzCoreDemo;
+    NSExecutable = QuartzCoreDemo;
     NSPrincipalClass = NSApplication;
     NSRole = Application;
     URL = "http://www.gnustep.org/";

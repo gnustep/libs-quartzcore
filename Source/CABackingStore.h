@@ -46,6 +46,7 @@
 #else
 #import <GL/gl.h>
 #import <GL/glu.h>
+#import <GL/glext.h>
 #endif
 
 @class CAGLTexture;
