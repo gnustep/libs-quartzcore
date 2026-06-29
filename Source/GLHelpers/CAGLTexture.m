@@ -271,8 +271,8 @@
   CGImageDestinationAddImage(destination, image, NULL);
   CGImageDestinationFinalize(destination);
   CGImageRelease(image);
+  free(pixels);
 
   [data writeToFile:path atomically:YES];
-  free(pixels);
 }
 @end
