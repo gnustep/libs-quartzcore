@@ -28,6 +28,7 @@
 */
 
 #import <Foundation/NSObject.h>
+#import <CoreGraphics/CGBase.h>
 
 extern NSString *const kCAMediaTimingFunctionDefault;
 extern NSString *const kCAMediaTimingFunctionEaseInEaseOut;
