@@ -214,6 +214,11 @@ CATransform3D CATransform3DInvert(CATransform3D t)
       m.m43 = - determinant3x3(t.m11, t.m12, t.m13, t.m21, t.m22, t.m23, t.m41, t.m42, t.m43);
       m.m44 =   determinant3x3(t.m11, t.m12, t.m13, t.m21, t.m22, t.m23, t.m31, t.m32, t.m33);
 
+      m.m11 /= determinant;  m.m12 /= determinant;  m.m13 /= determinant;  m.m14 /= determinant;
+      m.m21 /= determinant;  m.m22 /= determinant;  m.m23 /= determinant;  m.m24 /= determinant;
+      m.m31 /= determinant;  m.m32 /= determinant;  m.m33 /= determinant;  m.m34 /= determinant;
+      m.m41 /= determinant;  m.m42 /= determinant;  m.m43 /= determinant;  m.m44 /= determinant;
+
       return m;
     }
   else
