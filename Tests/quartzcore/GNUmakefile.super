@@ -1,0 +1,1 @@
+AUXILIARY_TOOL_LIBS += -lQuartzCore -lopal -lGL
