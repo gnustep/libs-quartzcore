@@ -1,0 +1,29 @@
+name: Apple QuartzCore Reference
+
+# Compiles and runs the QuartzCore test suite against Apple's QuartzCore
+# framework, so the values the tests expect are checked against the reference
+# implementation.  A suite can exclude tests that cannot run on Apple (for
+# example ones that use GNUstep-only API or need a display) by setting
+# APPLE_SKIP_TESTS in its TestInfo.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: macOS Apple QuartzCore tests
+    runs-on: macos-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Run Apple compatibility tests
+        run: ./.github/scripts/run-apple-tests.py
+
+      - name: Upload log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Apple test log
+          path: Tests/quartzcore/apple-tests.log

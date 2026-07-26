@@ -25,6 +25,10 @@ on:
         description: "libs-opal branch"
         default: "master"
         required: true
+      libs_back_branch:
+        description: "libs-back branch"
+        default: "master"
+        required: true
 
 env:
   APT_PACKAGES: >-
@@ -138,3 +142,81 @@ jobs:
             ${{ env.SRC_PATH }}/Tests/quartzcore/tests.log
             ${{ env.DEPS_PATH }}/libs-base/config.log
             ${{ env.DEPS_PATH }}/libs-corebase/config.log
+
+  ########### Linux (cairo backend, virtual display) ###########
+  # QuartzCore renders (CARenderer/OpenGL, CALayer display), so this job builds
+  # the cairo libs-back backend and runs the tests under a virtual X display,
+  # letting any display- or render-dependent tests run instead of being skipped.
+  linux-headless:
+    name: Ubuntu x64 Clang gnustep-2.0 (cairo backend, Xvfb)
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+
+    env:
+      SRC_PATH: ${{ github.workspace }}/source
+      DEPS_PATH: ${{ github.workspace }}/dependencies
+      INSTALL_PATH: ${{ github.workspace }}/build
+      CC: clang
+      CXX: clang++
+      LIBRARY_COMBO: ng-gnu-gnu
+      RUNTIME_VERSION: gnustep-2.0
+
+    defaults:
+      run:
+        working-directory: ${{ env.SRC_PATH }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.SRC_PATH }}
+
+      - name: Install packages
+        run: |
+          sudo apt-get -q -y update
+          # libs-back builds an x11 server layer even for the cairo graphics
+          # backend, so the X development libraries are required to build it;
+          # xvfb provides a virtual display for tests that reach the display.
+          sudo apt-get -q -y install $APT_PACKAGES $APT_PACKAGES_clang \
+            libxt-dev libxmu-dev libxft-dev libxrandr-dev libxfixes-dev libxcursor-dev \
+            xvfb
+          sudo update-alternatives --install "/usr/bin/ld" "ld" "/usr/bin/ld.gold" 10
+
+      - name: Install dependencies
+        env:
+          TOOLS_MAKE_BRANCH: ${{github.event.inputs.tools_make_branch}}
+          LIBS_BASE_BRANCH: ${{github.event.inputs.libs_base_branch}}
+          LIBS_COREBASE_BRANCH: ${{github.event.inputs.libs_corebase_branch}}
+          LIBS_GUI_BRANCH: ${{github.event.inputs.libs_gui_branch}}
+          LIBS_OPAL_BRANCH: ${{github.event.inputs.libs_opal_branch}}
+        run: ./.github/scripts/dependencies.sh
+
+      - name: Build libs-back (cairo backend)
+        working-directory: ${{env.DEPS_PATH}}
+        env:
+          LIBS_BACK_BRANCH: ${{github.event.inputs.libs_back_branch}}
+        run: |
+          . $INSTALL_PATH/share/GNUstep/Makefiles/GNUstep.sh
+          git clone -q -b ${LIBS_BACK_BRANCH:-master} https://github.com/gnustep/libs-back.git
+          cd libs-back
+          ./configure --enable-graphics=cairo
+          make && make install
+
+      - name: Build source
+        run: |
+          . $INSTALL_PATH/share/GNUstep/Makefiles/GNUstep.sh
+          make -C Source
+          make -C Source install
+
+      - name: Run tests
+        run: |
+          . $INSTALL_PATH/share/GNUstep/Makefiles/GNUstep.sh
+          cd Tests/quartzcore
+          xvfb-run -a gnustep-tests
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Logs - Ubuntu x64 Clang gnustep-2.0 (cairo backend, Xvfb)
+          path: |
+            ${{ env.SRC_PATH }}/Tests/quartzcore/tests.log
