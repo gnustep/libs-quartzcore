@@ -18,10 +18,10 @@ checked against the reference framework.
 """
 
 script_dir = pathlib.Path(__file__).resolve().parent
-repo = script_dir.parents[1]
+repo = script_dir.parent
 test_root = repo / "Tests" / "quartzcore"
 # A self-contained Testing.h so the gnustep-tests test files compile on macOS.
-apple_include = repo / ".github" / "apple"
+apple_include = repo / "Tests" / "apple"
 log_file = test_root / "apple-tests.log"
 totals = {"passed": 0, "failed": 0, "hoped": 0, "failed_files": 0, "skipped": 0}
 

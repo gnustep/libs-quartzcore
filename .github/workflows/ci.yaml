@@ -30,36 +30,6 @@ on:
         default: "master"
         required: true
 
-env:
-  APT_PACKAGES: >-
-    pkg-config
-    libgnutls28-dev
-    libffi-dev
-    libicu-dev
-    libxml2-dev
-    libxslt1-dev
-    libssl-dev
-    libavahi-client-dev
-    zlib1g-dev
-    gnutls-bin
-    libcurl4-gnutls-dev
-    libgmp-dev
-    libcairo2-dev
-    libfreetype-dev
-    libfontconfig-dev
-    libx11-dev
-    libxrender-dev
-    liblcms2-dev
-    libjpeg-dev
-    libtiff-dev
-    libpng-dev
-    libgl1-mesa-dev
-    libglu1-mesa-dev
-
-  # packages for libobjc2 / libdispatch
-  APT_PACKAGES_clang: >-
-    libpthread-workqueue-dev
-
 jobs:
   ########### Linux ###########
   linux:
@@ -103,14 +73,7 @@ jobs:
           path: ${{ env.SRC_PATH }}
 
       - name: Install packages
-        run: |
-          sudo apt-get -q -y update
-          sudo apt-get -q -y install $APT_PACKAGES $APT_PACKAGES_clang
-
-          # gnustep-2.0 runtime requires ld.gold or lld
-          if [ "$RUNTIME_VERSION" = "gnustep-2.0" ]; then
-            sudo update-alternatives --install "/usr/bin/ld" "ld" "/usr/bin/ld.gold" 10
-          fi
+        run: ./scripts/install-packages.sh
 
       - name: Install dependencies
         env:
@@ -119,7 +82,7 @@ jobs:
           LIBS_COREBASE_BRANCH: ${{github.event.inputs.libs_corebase_branch}}
           LIBS_GUI_BRANCH: ${{github.event.inputs.libs_gui_branch}}
           LIBS_OPAL_BRANCH: ${{github.event.inputs.libs_opal_branch}}
-        run: ./.github/scripts/dependencies.sh
+        run: ./scripts/dependencies.sh
 
       - name: Build source
         run: |
@@ -171,15 +134,7 @@ jobs:
           path: ${{ env.SRC_PATH }}
 
       - name: Install packages
-        run: |
-          sudo apt-get -q -y update
-          # libs-back builds an x11 server layer even for the cairo graphics
-          # backend, so the X development libraries are required to build it;
-          # xvfb provides a virtual display for tests that reach the display.
-          sudo apt-get -q -y install $APT_PACKAGES $APT_PACKAGES_clang \
-            libxt-dev libxmu-dev libxft-dev libxrandr-dev libxfixes-dev libxcursor-dev \
-            xvfb
-          sudo update-alternatives --install "/usr/bin/ld" "ld" "/usr/bin/ld.gold" 10
+        run: ./scripts/install-packages.sh display
 
       - name: Install dependencies
         env:
@@ -188,7 +143,7 @@ jobs:
           LIBS_COREBASE_BRANCH: ${{github.event.inputs.libs_corebase_branch}}
           LIBS_GUI_BRANCH: ${{github.event.inputs.libs_gui_branch}}
           LIBS_OPAL_BRANCH: ${{github.event.inputs.libs_opal_branch}}
-        run: ./.github/scripts/dependencies.sh
+        run: ./scripts/dependencies.sh
 
       - name: Build libs-back (cairo backend)
         working-directory: ${{env.DEPS_PATH}}

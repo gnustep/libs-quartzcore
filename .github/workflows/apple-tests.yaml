@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Apple compatibility tests
-        run: ./.github/scripts/run-apple-tests.py
+        run: ./scripts/run-apple-tests.py
 
       - name: Upload log
         uses: actions/upload-artifact@v4
