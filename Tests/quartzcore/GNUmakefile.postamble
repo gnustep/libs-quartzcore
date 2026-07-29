@@ -1,7 +1,7 @@
 #
 # GNUmakefile.postamble for base tests
 #
-# Find all all subdirectories and run a clean in them independantly
+# Find all subdirectories and run a clean in them independantly
 #
 
 after-clean::
