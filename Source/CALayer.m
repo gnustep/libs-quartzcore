@@ -79,7 +79,6 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize renderer=_renderer;
 @synthesize superlayer=_superlayer;
 @synthesize sublayers=_sublayers;
-@synthesize frame=_frame;
 @synthesize bounds=_bounds;
 @synthesize anchorPoint=_anchorPoint;
 @synthesize position=_position;
@@ -209,6 +208,10 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   if ([key isEqualToString: @"shouldRasterize"])
     {
       return [NSNumber numberWithBool: NO];
+    }
+  if ([key isEqualToString: @"contentsScale"])
+    {
+      return [NSNumber numberWithDouble: 1.0];
     }
   if ([key isEqualToString: @"opacity"])
     {
@@ -479,8 +482,54 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 #endif
 
+/* The rectangle the bounds size occupies around the anchor point, with the
+   layer transform applied.  Its origin is relative to the position. */
+- (CGRect) _transformedBoundsRect
+{
+  CGAffineTransform affine;
+  CGRect r;
+
+  affine = CGAffineTransformMake(_transform.m11, _transform.m12,
+                                 _transform.m21, _transform.m22,
+                                 _transform.m41, _transform.m42);
+  r = CGRectMake(-_anchorPoint.x * _bounds.size.width,
+                 -_anchorPoint.y * _bounds.size.height,
+                 _bounds.size.width, _bounds.size.height);
+  return CGRectApplyAffineTransform(r, affine);
+}
+
+- (CGRect) frame
+{
+  CGRect r = [self _transformedBoundsRect];
+
+  r.origin.x += _position.x;
+  r.origin.y += _position.y;
+  return r;
+}
+
+- (void) setFrame: (CGRect)frame
+{
+  CGAffineTransform affine;
+  CGRect bounds = _bounds;
+  CGRect r;
+
+  affine = CGAffineTransformMake(_transform.m11, _transform.m12,
+                                 _transform.m21, _transform.m22,
+                                 _transform.m41, _transform.m42);
+  frame = CGRectStandardize(frame);
+  bounds.size = CGSizeApplyAffineTransform(frame.size,
+                                           CGAffineTransformInvert(affine));
+  [self setBounds: bounds];
+
+  r = [self _transformedBoundsRect];
+  [self setPosition: CGPointMake(frame.origin.x - r.origin.x,
+                                 frame.origin.y - r.origin.y)];
+}
+
 - (void) setBounds: (CGRect)bounds
 {
+  bounds = CGRectStandardize(bounds);
+
   if (CGRectEqualToRect(bounds, _bounds))
     return;
 
@@ -842,6 +891,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
 
+  [layer removeFromSuperlayer];
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
 }
@@ -858,6 +908,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
 
+  [layer removeFromSuperlayer];
   [mutableSublayers insertObject: layer atIndex: index];
   [layer setSuperlayer: self];
 }
@@ -865,8 +916,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSInteger siblingIndex;
 
-  NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
+  [layer removeFromSuperlayer];
+  siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex];
   [layer setSuperlayer: self];
 }
@@ -874,8 +927,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSInteger siblingIndex;
 
-  NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
+  [layer removeFromSuperlayer];
+  siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
 }
