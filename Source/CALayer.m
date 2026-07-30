@@ -182,6 +182,29 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 }
 
 /* *** class methods *** */
++ (BOOL) automaticallyNotifiesObserversForKey: (NSString *)key
+{
+  if ([key isEqualToString: @"backgroundColor"]
+      || [key isEqualToString: @"borderColor"]
+      || [key isEqualToString: @"shadowColor"]
+      || [key isEqualToString: @"shadowPath"])
+    {
+      return NO;
+    }
+#if GNUSTEP
+  if ([key isEqualToString: @"bounds"]
+      || [key isEqualToString: @"position"]
+      || [key isEqualToString: @"anchorPoint"]
+      || [key isEqualToString: @"transform"]
+      || [key isEqualToString: @"sublayerTransform"]
+      || [key isEqualToString: @"shadowOffset"])
+    {
+      return NO;
+    }
+#endif
+  return [super automaticallyNotifiesObserversForKey: key];
+}
+
 + (id) layer
 {
   return [[self new] autorelease];
