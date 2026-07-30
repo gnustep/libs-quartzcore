@@ -240,7 +240,8 @@ static void frameUnderTransform(void)
   [r setBounds: CGRectMake(0, 0, 100, 100)];
   [r setPosition: CGPointMake(0, 0)];
   [r setTransform: CATransform3DMakeRotation(M_PI / 4, 0, 0, 1)];
-  PASS(req([r frame], -70.7107, -70.7107, 141.421, 141.421),
+  PASS(req([r frame], -50 * M_SQRT2, -50 * M_SQRT2,
+           100 * M_SQRT2, 100 * M_SQRT2),
        "a rotation gives the frame the bounding box of the turned bounds");
 
   CALayer *sf = [CALayer layer];
