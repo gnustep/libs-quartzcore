@@ -106,12 +106,13 @@ jobs:
             ${{ env.DEPS_PATH }}/libs-base/config.log
             ${{ env.DEPS_PATH }}/libs-corebase/config.log
 
-  ########### Linux (cairo backend, virtual display) ###########
+  ########### Linux (opal backend, virtual display) ###########
   # QuartzCore renders (CARenderer/OpenGL, CALayer display), so this job builds
-  # the cairo libs-back backend and runs the tests under a virtual X display,
-  # letting any display- or render-dependent tests run instead of being skipped.
+  # a libs-back backend and runs the tests under a virtual X display, letting
+  # any display- or render-dependent tests run instead of being skipped.  The
+  # graphics backend is opal, to go with the Opal that is already built here.
   linux-headless:
-    name: Ubuntu x64 Clang gnustep-2.0 (cairo backend, Xvfb)
+    name: Ubuntu x64 Clang gnustep-2.0 (opal backend, Xvfb)
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
 
@@ -145,7 +146,7 @@ jobs:
           LIBS_OPAL_BRANCH: ${{github.event.inputs.libs_opal_branch}}
         run: ./scripts/dependencies.sh
 
-      - name: Build libs-back (cairo backend)
+      - name: Build libs-back (opal backend)
         working-directory: ${{env.DEPS_PATH}}
         env:
           LIBS_BACK_BRANCH: ${{github.event.inputs.libs_back_branch}}
@@ -153,7 +154,7 @@ jobs:
           . $INSTALL_PATH/share/GNUstep/Makefiles/GNUstep.sh
           git clone -q -b ${LIBS_BACK_BRANCH:-master} https://github.com/gnustep/libs-back.git
           cd libs-back
-          ./configure --enable-graphics=cairo
+          ./configure --enable-graphics=opal
           make && make install
 
       - name: Build source
@@ -172,6 +173,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Logs - Ubuntu x64 Clang gnustep-2.0 (cairo backend, Xvfb)
+          name: Logs - Ubuntu x64 Clang gnustep-2.0 (opal backend, Xvfb)
           path: |
             ${{ env.SRC_PATH }}/Tests/quartzcore/tests.log
