@@ -71,6 +71,24 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 - (void)setModelLayer: (id)modelLayer;
 @end
 
+
+/* The 2D part of a layer transform, as an affine transform. */
+static CGAffineTransform
+CALayerAffineOf(CATransform3D t)
+{
+  return CGAffineTransformMake(t.m11, t.m12, t.m21, t.m22, t.m41, t.m42);
+}
+
+/* Apply `t` about `pivot` rather than about the origin. */
+static CGPoint
+CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
+{
+  CGPoint q = CGPointMake(p.x - pivot.x, p.y - pivot.y);
+
+  q = CGPointApplyAffineTransform(q, t);
+  return CGPointMake(q.x + pivot.x, q.y + pivot.y);
+}
+
 @implementation CALayer
 
 @synthesize delegate=_delegate;
@@ -1248,12 +1266,193 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [super setValue: value forUndefinedKey: key];
 }
 
+/* Geometry conversion.
+ *
+ * A point is carried from a layer to the space its superlayer uses, and the
+ * other way, one level at a time; a conversion between any two layers is the
+ * first walked up to its root and the second walked back down.  Going up, the
+ * point is taken relative to the layer's bounds origin and anchor point, put
+ * through the layer's own transform and offset by its position, and then, if
+ * the superlayer carries a sublayer transform, put through that about the
+ * superlayer's anchor point.  Going down reverses each of those steps.
+ *
+ * A layer with no superlayer is its own root, so two layers in different trees
+ * convert through the root each of them has.
+ */
+
+/* The point moved from this layer's space into its superlayer's space. */
+- (CGPoint) _pointToSuperlayer: (CGPoint)p
+{
+  CGRect        b = [self bounds];
+  CGPoint       anchor = [self anchorPoint];
+  CGPoint       position = [self position];
+  CALayer      *above = [self superlayer];
+  CGPoint       q;
+
+  q = CGPointMake(p.x - b.origin.x - anchor.x * b.size.width,
+                  p.y - b.origin.y - anchor.y * b.size.height);
+  q = CGPointApplyAffineTransform(q, CALayerAffineOf([self transform]));
+  q = CGPointMake(q.x + position.x, q.y + position.y);
+
+  if (above != nil)
+    {
+      CATransform3D st = [above sublayerTransform];
+
+      if (!CATransform3DIsIdentity(st))
+        {
+          CGRect  sb = [above bounds];
+          CGPoint sa = [above anchorPoint];
+
+          q = CALayerApplyAbout(CALayerAffineOf(st), q,
+                CGPointMake(sa.x * sb.size.width, sa.y * sb.size.height));
+        }
+    }
+  return q;
+}
+
+/* The reverse: a point in the superlayer's space moved into this layer's. */
+- (CGPoint) _pointFromSuperlayer: (CGPoint)p
+{
+  CGRect        b = [self bounds];
+  CGPoint       anchor = [self anchorPoint];
+  CGPoint       position = [self position];
+  CALayer      *above = [self superlayer];
+  CGPoint       q = p;
+
+  if (above != nil)
+    {
+      CATransform3D st = [above sublayerTransform];
+
+      if (!CATransform3DIsIdentity(st))
+        {
+          CGRect  sb = [above bounds];
+          CGPoint sa = [above anchorPoint];
+
+          q = CALayerApplyAbout(CGAffineTransformInvert(CALayerAffineOf(st)), q,
+                CGPointMake(sa.x * sb.size.width, sa.y * sb.size.height));
+        }
+    }
+
+  q = CGPointMake(q.x - position.x, q.y - position.y);
+  q = CGPointApplyAffineTransform(q,
+        CGAffineTransformInvert(CALayerAffineOf([self transform])));
+  return CGPointMake(q.x + b.origin.x + anchor.x * b.size.width,
+                     q.y + b.origin.y + anchor.y * b.size.height);
+}
+
+- (CGPoint) _pointToRoot: (CGPoint)p
+{
+  CALayer *layer = self;
+  CGPoint  q = p;
+
+  while (layer != nil)
+    {
+      q = [layer _pointToSuperlayer: q];
+      layer = [layer superlayer];
+    }
+  return q;
+}
+
+- (CGPoint) _pointFromRoot: (CGPoint)p
+{
+  CGPoint q = p;
+
+  if ([self superlayer] != nil)
+    {
+      q = [[self superlayer] _pointFromRoot: q];
+    }
+  return [self _pointFromSuperlayer: q];
+}
+
+- (CGPoint) convertPoint: (CGPoint)p fromLayer: (CALayer *)layer
+{
+  return [self _pointFromRoot: [layer _pointToRoot: p]];
+}
+
+- (CGPoint) convertPoint: (CGPoint)p toLayer: (CALayer *)layer
+{
+  CGPoint q = [self _pointToRoot: p];
+
+  if (layer == nil)
+    {
+      return q;
+    }
+  return [layer _pointFromRoot: q];
+}
+
+/* A rectangle converts as the bounding box of the four converted corners,
+ * since a transform on the way may rotate or skew it. */
+- (CGRect) _boxOfCorners: (CGPoint *)c
+{
+  CGFloat minX, maxX, minY, maxY;
+  int     i;
+
+  minX = maxX = c[0].x;
+  minY = maxY = c[0].y;
+  for (i = 1; i < 4; i++)
+    {
+      if (c[i].x < minX) minX = c[i].x;
+      if (c[i].x > maxX) maxX = c[i].x;
+      if (c[i].y < minY) minY = c[i].y;
+      if (c[i].y > maxY) maxY = c[i].y;
+    }
+  return CGRectMake(minX, minY, maxX - minX, maxY - minY);
+}
+
+- (CGRect) convertRect: (CGRect)r fromLayer: (CALayer *)layer
+{
+  CGPoint c[4];
+
+  r = CGRectStandardize(r);
+  c[0] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMinY(r))
+                  fromLayer: layer];
+  c[1] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMinY(r))
+                  fromLayer: layer];
+  c[2] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMaxY(r))
+                  fromLayer: layer];
+  c[3] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMaxY(r))
+                  fromLayer: layer];
+  return [self _boxOfCorners: c];
+}
+
+- (CGRect) convertRect: (CGRect)r toLayer: (CALayer *)layer
+{
+  CGPoint c[4];
+
+  r = CGRectStandardize(r);
+  c[0] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMinY(r))
+                    toLayer: layer];
+  c[1] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMinY(r))
+                    toLayer: layer];
+  c[2] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMaxY(r))
+                    toLayer: layer];
+  c[3] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMaxY(r))
+                    toLayer: layer];
+  return [self _boxOfCorners: c];
+}
+
+/* The affine part of the layer transform.  A transform that is not affine has
+ * no affine equivalent, and is reported as the identity rather than as the six
+ * elements that happen to sit in those places. */
+- (CGAffineTransform) affineTransform
+{
+  CATransform3D t = [self transform];
+
+  if (!CATransform3DIsAffine(t))
+    {
+      return CGAffineTransformIdentity;
+    }
+  return CATransform3DGetAffineTransform(t);
+}
+
+/* Setting it replaces the whole transform rather than concatenating. */
+- (void) setAffineTransform: (CGAffineTransform)affineTransform
+{
+  [self setTransform: CATransform3DMakeAffineTransform(affineTransform)];
+}
+
 /* Unimplemented functions: */
 #if 0
-- (CGPoint) convertPoint: (CGPoint)p fromLayer: (CALayer *)l;
-- (CGPoint) convertPoint: (CGPoint)p toLayer: (CALayer *)l;
-- (CGRect) convertRect: (CGRect)p fromLayer: (CALayer *)l;
-- (CGRect) convertRect: (CGRect)p toLayer: (CALayer *)l;
 - (void)setNeedsLayout;
 - (void)layoutIfNeeded;
 
