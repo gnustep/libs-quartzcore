@@ -254,7 +254,9 @@
 
 - (void) _writeToPNG:(NSString*)path
 {
-  char pixels[[self width]*[self height]*4];
+  char *pixels = malloc([self width]*[self height]*4);
+  if (pixels == NULL)
+    return;
   [self bind];
   glGetTexImage([self textureTarget], 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
@@ -269,6 +271,7 @@
   CGImageDestinationAddImage(destination, image, NULL);
   CGImageDestinationFinalize(destination);
   CGImageRelease(image);
+  free(pixels);
 
   [data writeToFile:path atomically:YES];
 }
