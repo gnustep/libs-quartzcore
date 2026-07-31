@@ -45,8 +45,6 @@ layerWithBounds(CGRect bounds, CGPoint position)
 int
 main(int argc, char **argv)
 {
-  CREATE_AUTORELEASE_POOL(arp);
-
   START_SET("a point between a layer and its superlayer")
     CALayer *parent = layerWithBounds(CGRectMake(0, 0, 200, 200),
                                       CGPointMake(100, 100));
@@ -290,6 +288,5 @@ main(int argc, char **argv)
     PASS(t.m33 == 1, "the z scale of the replaced transform is gone");
   END_SET("setting the affine transform")
 
-  DESTROY(arp);
   return 0;
 }
