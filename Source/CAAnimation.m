@@ -133,7 +133,12 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     }
   if ([key isEqualToString:@"repeatCount"])
     {
-      return [NSNumber numberWithFloat: 1.0];
+      /* Zero means no repetition was asked for, not none at all. */
+      return [NSNumber numberWithFloat: 0.0];
+    }
+  if ([key isEqualToString:@"fillMode"])
+    {
+      return kCAFillModeRemoved;
     }
   return nil;
 }
@@ -152,7 +157,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
   static NSString * keys[] = {
     @"delegate", @"removedOnCompletion", @"timingFunction",
-    /*@"duration", */@"speed", @"autoreverses", @"repeatCount"};
+    /*@"duration", */@"speed", @"autoreverses", @"repeatCount", @"fillMode"};
     /* Duration intentionally skipped so it gets picked up from transaction */
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
@@ -177,7 +182,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
   static NSString * keys[] = {
     @"delegate", @"removedOnCompletion", @"timingFunction",
-    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+    @"duration", @"speed", @"autoreverses", @"repeatCount", @"fillMode"};
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       if ([aDecoder containsValueForKey: keys[i]])
@@ -194,7 +199,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 {
   static NSString * keys[] = {
     @"delegate", @"removedOnCompletion", @"timingFunction",
-    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+    @"duration", @"speed", @"autoreverses", @"repeatCount", @"fillMode"};
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       if ([[self class] shouldArchiveValueForKey: keys[i]])
@@ -212,7 +217,7 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
   static NSString * keys[] = {
     @"delegate", @"removedOnCompletion", @"timingFunction",
-    @"duration", @"speed", @"autoreverses", @"repeatCount"};
+    @"duration", @"speed", @"autoreverses", @"repeatCount", @"fillMode"};
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       id value = [self valueForKey: keys[i]];

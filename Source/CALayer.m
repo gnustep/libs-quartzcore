@@ -276,11 +276,16 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
     }
   if ([key isEqualToString:@"repeatCount"])
     {
-      return [NSNumber numberWithFloat: 1.0];
+      /* Zero means no repetition was asked for, not none at all. */
+      return [NSNumber numberWithFloat: 0.0];
     }
   if ([key isEqualToString: @"beginTime"])
     {
       return [NSNumber numberWithFloat: 0.0];
+    }
+  if ([key isEqualToString: @"fillMode"])
+    {
+      return kCAFillModeRemoved;
     }
 
   return nil;
@@ -303,7 +308,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
         @"backgroundColor", @"borderColor", @"contentsScale",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
-        @"repeatCount",
+        @"repeatCount", @"fillMode",
 
         @"shadowColor", @"shadowOffset", @"shadowOpacity",
         @"shadowPath", @"shadowRadius",
@@ -839,7 +844,12 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
         {
           CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
 
-          if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
+          /* A repeat count of zero asks for no repetition, so the animation
+             still runs through once. */
+          float repetitions = [propertyAnimation repeatCount] > 0
+            ? [propertyAnimation repeatCount] : 1;
+
+          if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * repetitions * ([propertyAnimation autoreverses] ? 2 : 1))
             {
               /* FIXME: doesn't take into account speed */
 
@@ -1028,7 +1038,20 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime fromLayer: (CALayer *)layer
 {
   if (layer == nil)
-    return [self localTime];
+    {
+      /* theTime is in the "media time" timespace, so bring it down into
+         ours the same way -convertTime:toLayer: brings a media time into a
+         layer.  The time given is what is being converted; the current one
+         is not. */
+      CFTimeInterval oldFrameBeginTime = currentFrameBeginTime;
+      CFTimeInterval converted;
+
+      currentFrameBeginTime = theTime;
+      converted = [self activeTime];
+      currentFrameBeginTime = oldFrameBeginTime;
+
+      return converted;
+    }
 
   /* Just make use of convertTime:toLayer: instead of reimplementing */
   return [layer convertTime: theTime toLayer: self];
