@@ -32,6 +32,7 @@
 
 #if GNUSTEP
 #import <CoreGraphics/CGBase.h>
+#import <CoreGraphics/CGAffineTransform.h>
 #endif
 
 CA_EXTERN_C_BEGIN
@@ -65,6 +66,16 @@ CATransform3D CATransform3DRotate(CATransform3D t, CGFloat radians, CGFloat x, C
 CATransform3D CATransform3DConcat(CATransform3D a, CATransform3D b);
 
 CATransform3D CATransform3DInvert(CATransform3D t);
+
+/* Returns a transform with the same effect as the affine transform 'm'. */
+CATransform3D CATransform3DMakeAffineTransform(CGAffineTransform m);
+
+/* Returns true if 't' can be represented exactly by an affine transform. */
+bool CATransform3DIsAffine(CATransform3D t);
+
+/* Returns the affine transform represented by 't'.  If 't' is not affine the
+   returned value is undefined. */
+CGAffineTransform CATransform3DGetAffineTransform(CATransform3D t);
 
 #ifdef __OBJC__
 #import <Foundation/NSValue.h>
