@@ -119,6 +119,14 @@
     {
       [self setGLContext: ctx];
 
+      /* A renderer that has been given nothing has no bounds, and nothing
+         is due to be drawn.  Left as they came from the allocator these
+         would read as an empty rectangle at the origin and a next frame due
+         at time zero, which asks whoever is driving to draw at once and to
+         keep on doing so. */
+      _bounds = CGRectNull;
+      _nextFrameTime = __builtin_inf();
+
       /* SHADER SETUP */
       [ctx makeCurrentContext];
 

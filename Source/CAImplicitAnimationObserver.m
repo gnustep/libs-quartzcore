@@ -29,6 +29,7 @@
 #import "CAImplicitAnimationObserver.h"
 #import "CALayer+FrameworkPrivate.h"
 #import "CATransaction+FrameworkPrivate.h"
+#import "QuartzCore/CAAnimation.h"
 #import "QuartzCore/CATransaction.h"
 
 static CAImplicitAnimationObserver * sharedObserver;
@@ -65,6 +66,13 @@ static CAImplicitAnimationObserver * sharedObserver;
       return;
     }
 
+  /* The property still takes its new value; only the animation that would
+     have carried it there is dropped. */
+  if ([CATransaction disableActions])
+    {
+      return;
+    }
+
   id from = [change valueForKey: NSKeyValueChangeOldKey];
   id to = [change valueForKey: NSKeyValueChangeNewKey];
 
@@ -80,8 +88,25 @@ static CAImplicitAnimationObserver * sharedObserver;
     return;
 
   NSObject<CAAction>* action = (id)[object actionForKey: keyPath];
-  if (!action || [action isKindOfClass: [NSNull class]])
+  if ([action isKindOfClass: [NSNull class]])
     return;
+
+  if (!action)
+    {
+      /* Nothing offered an action for this change, so animate it the way a
+         layer animates by default.  -actionForKey: used to build this and
+         answer it, which left it unable to say that nobody wanted one. */
+      CABasicAnimation * animation =
+        [CABasicAnimation animationWithKeyPath: keyPath];
+
+      if ([object isPresentationLayer])
+        [animation setFromValue: [object valueForKeyPath: keyPath]];
+      else
+        [animation setFromValue:
+          [[object presentationLayer] valueForKeyPath: keyPath]];
+
+      action = animation;
+    }
   [[CATransaction topTransaction] registerAction: action
                                         onObject: object
                                          keyPath: keyPath];
