@@ -62,13 +62,24 @@
 + (BOOL) disableActions;
 + (void) setDisableActions: (BOOL)disableActions;
 
+/* Something to do once the transaction has been committed.  Each of these
+   adds to what will be run; setting one does not replace what was set
+   before.
+
+   The target and selector form is here so that a compiler without blocks can
+   still ask to be told, and so that this header can be read by one. */
++ (void) setCompletionTarget: (id)target selector: (SEL)selector;
+
+#if defined(__BLOCKS__)
++ (void (^)(void)) completionBlock;
++ (void) setCompletionBlock: (void (^)(void))block;
+#endif
+
 @end
 
 extern NSString *kCATransactionAnimationDuration;
 extern NSString *kCATransactionAnimationTimingFunction;
 extern NSString *kCATransactionDisableActions;
-
-// TODO: setValue:forKey: for constants:
-// - kCATransactionCompletionBlock
+extern NSString *kCATransactionCompletionBlock;
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

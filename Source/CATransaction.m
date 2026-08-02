@@ -34,6 +34,47 @@
 NSString *kCATransactionAnimationDuration = @"animationDuration";
 NSString *kCATransactionAnimationTimingFunction= @"animationTimingFunction";
 NSString *kCATransactionDisableActions = @"disableActions";
+NSString *kCATransactionCompletionBlock = @"completionBlock";
+
+#if defined(__BLOCKS__)
+/* Something invocable holding a block, so that everything waiting on a commit
+   can be scheduled the same way whether it came from a block or from a target
+   and a selector. */
+@interface CACompletionBlockHolder : NSObject
+{
+  void (^_block)(void);
+}
+- (id) initWithBlock: (void (^)(void))block;
+- (void) invoke;
+@end
+
+@implementation CACompletionBlockHolder
+
+- (id) initWithBlock: (void (^)(void))block
+{
+  if ((self = [super init]) != nil)
+    {
+      _block = [block copy];
+    }
+  return self;
+}
+
+- (void) invoke
+{
+  if (_block != NULL)
+    {
+      _block();
+    }
+}
+
+- (void) dealloc
+{
+  [_block release];
+  [super dealloc];
+}
+
+@end
+#endif
 
 /* A thread has a transaction stack of its own.  What one thread has begun is
    nothing to do with another, and neither can commit or disturb what the
@@ -69,12 +110,14 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
 
 @property (retain) NSMutableDictionary *values;
 @property (retain) NSMutableArray *actions;
+@property (retain) NSMutableArray *completions;
 @property (assign, getter=isImplicit) BOOL implicit;
 @end
 
 @implementation CATransaction
 @synthesize values=_values;
 @synthesize actions=_actions;
+@synthesize completions=_completions;
 @synthesize implicit=_implicit;
 
 + (void) begin
@@ -190,6 +233,49 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
           forKey: kCATransactionDisableActions];
 }
 
++ (void) setCompletionTarget: (id)target selector: (SEL)selector
+{
+  NSInvocation *invocation;
+
+  if (target == nil || selector == NULL)
+    {
+      return;
+    }
+
+  invocation = [NSInvocation invocationWithMethodSignature:
+                 [target methodSignatureForSelector: selector]];
+  [invocation setTarget: target];
+  [invocation setSelector: selector];
+  [invocation retainArguments];
+  [[[self topTransaction] completions] addObject: invocation];
+}
+
+#if defined(__BLOCKS__)
++ (void (^)(void)) completionBlock
+{
+  return [self valueForKey: kCATransactionCompletionBlock];
+}
+
++ (void) setCompletionBlock: (void (^)(void))block
+{
+  CATransaction *transaction = [self topTransaction];
+
+  /* Each block set adds to what will run; the one most recently set is also
+     what the getter answers, and a nil clears that without taking away what
+     was already asked for. */
+  if (block != NULL)
+    {
+      CACompletionBlockHolder *holder =
+        [[CACompletionBlockHolder alloc] initWithBlock: block];
+
+      [[transaction completions] addObject: holder];
+      [holder release];
+    }
+
+  [transaction setValue: block forKey: kCATransactionCompletionBlock];
+}
+#endif
+
 + (id) valueForKey: (NSString *)key
 {
   return [[self topTransaction] valueForKey: key];
@@ -224,6 +310,7 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
     return nil;
 
   _actions = [[NSMutableArray alloc] init];
+  _completions = [[NSMutableArray alloc] init];
 
   /* The values an outermost transaction starts with.  There is no timing
      function until one is set. */
@@ -240,6 +327,7 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
 {
   [_values release];
   [_actions release];
+  [_completions release];
 
   [super dealloc];
 }
@@ -297,6 +385,24 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
                     arguments: arguments];
     }
   [_actions removeAllObjects];
+
+  /* Whatever was asked to be told about the commit is told on a later turn
+     of this thread's run loop rather than here, so that a caller committing
+     is not made to wait on it. */
+  {
+    NSInvocation *completion;
+
+    for (completion in _completions)
+      {
+        [[NSRunLoop currentRunLoop] performSelector: @selector(invoke)
+                                             target: completion
+                                           argument: nil
+                                              order: 0
+                                              modes: [NSArray arrayWithObject:
+                                                       NSDefaultRunLoopMode]];
+      }
+    [_completions removeAllObjects];
+  }
 }
 
 - (void)registerAction: (NSObject<CAAction> *)action
