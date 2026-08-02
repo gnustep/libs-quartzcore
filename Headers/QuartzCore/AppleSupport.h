@@ -60,9 +60,16 @@
 #define CAPropertyAnimation GSCAPropertyAnimation
 #define CABasicAnimation GSCABasicAnimation
 #define CAKeyframeAnimation GSCAKeyframeAnimation
+#define kCAAnimationLinear kGSCAAnimationLinear
 #define kCAAnimationDiscrete GSCAAnimationDiscrete
+#define kCAAnimationPaced kGSCAAnimationPaced
+#define kCAAnimationCubic kGSCAAnimationCubic
+#define kCAAnimationCubicPaced kGSCAAnimationCubicPaced
 #define CATransition GSCATransition
+#define kCATransitionFade kGSCATransitionFade
 #define kCATransitionMoveIn kGSCATransitionMoveIn
+#define kCATransitionPush kGSCATransitionPush
+#define kCATransitionReveal kGSCATransitionReveal
 #define kCATransitionFromTop kGSCATransitionFromTop
 #define kCATransitionFromBottom kGSCATransitionFromBottom
 #define kCATransitionFromLeft kGSCATransitionFromLeft
@@ -96,6 +103,8 @@
 #define kCAGravityTopRight kGSCAGravityTopRight
 #define kCAGravityBottomLeft kGSCAGravityBottomLeft
 #define kCAGravityBottomRight kGSCAGravityBottomRight
+#define kCAOnOrderIn kGSCAOnOrderIn
+#define kCAOnOrderOut kGSCAOnOrderOut
 #define kCATransition kGSCATransition
 
 #define CALayer GSCALayer

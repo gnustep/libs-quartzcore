@@ -46,6 +46,10 @@ extern NSString *const kCAGravityTopLeft;
 extern NSString *const kCAGravityTopRight;
 extern NSString *const kCAGravityBottomLeft;
 extern NSString *const kCAGravityBottomRight;
+
+/* action keys */
+extern NSString *const kCAOnOrderIn;
+extern NSString *const kCAOnOrderOut;
 extern NSString *const kCATransition;
 
 @class CAAnimation;
