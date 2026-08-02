@@ -22,3 +22,27 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <QuartzCore/CALayer.h>
+
+@interface CAScrollLayer : CALayer
+{
+  NSString *_scrollMode;
+}
+
+/* Which way this layer will scroll: one of the four names below. */
+@property (copy) NSString *scrollMode;
+
+/* Moves the origin of the bounds to the given point, as far as the scroll
+   mode allows. */
+- (void) scrollToPoint: (CGPoint)p;
+
+/* Scrolls the least amount that brings the rectangle into view. */
+- (void) scrollToRect: (CGRect)r;
+
+@end
+
+extern NSString *const kCAScrollNone;
+extern NSString *const kCAScrollVertically;
+extern NSString *const kCAScrollHorizontally;
+extern NSString *const kCAScrollBoth;

@@ -103,6 +103,11 @@
 /* CAReplicatorLayer.h */
 
 /* CAScrollLayer.h */
+#undef CAScrollLayer
+#undef kCAScrollNone
+#undef kCAScrollVertically
+#undef kCAScrollHorizontally
+#undef kCAScrollBoth
 
 /* CAShapeLayer.h */
 
