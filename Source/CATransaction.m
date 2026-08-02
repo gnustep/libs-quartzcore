@@ -37,6 +37,13 @@ NSString *kCATransactionDisableActions = @"disableActions";
 
 static NSMutableArray *transactionStack = nil;
 
+/* +lock and +unlock hand out a recursive lock for callers to hold across a
+   read, a change and a write.  How deep the calling thread has gone is kept
+   beside it, so that unlocking more often than locking does nothing rather
+   than unlocking somebody else's hold. */
+static NSRecursiveLock *transactionLock = nil;
+static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
+
 @interface CATransaction ()
 
 - (void) commit;
@@ -86,20 +93,50 @@ static NSMutableArray *transactionStack = nil;
 
 + (void) flush
 {
-  /* TODO: flushing transaction means committing the implicit
-     animation immediately after all nested explicit transaction
-     are committed.
-     */
+  CATransaction *top = [transactionStack lastObject];
+
+  /* Only the implicit transaction is flushed, and only once nothing
+     explicit is still open on top of it: an explicit transaction is the
+     caller's to commit, and the flush waits for it. */
+  if (top != nil && [top isImplicit])
+    {
+      [top commit];
+      [transactionStack removeLastObject];
+    }
 }
 
 + (void) lock
 {
-  NSLog(@"+[CATransaction lock] unimplemented");
+  NSNumber *depth;
+
+  if (transactionLock == nil)
+    {
+      transactionLock = [NSRecursiveLock new];
+    }
+
+  [transactionLock lock];
+
+  depth = [[[NSThread currentThread] threadDictionary]
+            objectForKey: CATransactionLockDepthKey];
+  [[[NSThread currentThread] threadDictionary]
+    setObject: [NSNumber numberWithInt: [depth intValue] + 1]
+       forKey: CATransactionLockDepthKey];
 }
 
 + (void) unlock
 {
-  NSLog(@"+[CATransaction unlock] unimplemented");
+  NSMutableDictionary *thread = [[NSThread currentThread] threadDictionary];
+  int depth = [[thread objectForKey: CATransactionLockDepthKey] intValue];
+
+  /* Unlocking what this thread never locked does nothing at all. */
+  if (depth <= 0)
+    {
+      return;
+    }
+
+  [thread setObject: [NSNumber numberWithInt: depth - 1]
+             forKey: CATransactionLockDepthKey];
+  [transactionLock unlock];
 }
 
 + (CFTimeInterval) animationDuration
