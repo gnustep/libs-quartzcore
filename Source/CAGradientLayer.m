@@ -62,4 +62,9 @@ NSString *const kCAGradientLayerConic = @"conic";
   [super dealloc];
 }
 
+/* TODO: draw the gradient.  The properties above are held and read back,
+   but nothing fills the backing store, so a gradient layer draws as a plain
+   layer does.  The colours and the locations map onto a CGGradient drawn
+   between startPoint and endPoint. */
+
 @end
