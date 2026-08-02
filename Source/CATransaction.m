@@ -35,7 +35,26 @@ NSString *kCATransactionAnimationDuration = @"animationDuration";
 NSString *kCATransactionAnimationTimingFunction= @"animationTimingFunction";
 NSString *kCATransactionDisableActions = @"disableActions";
 
-static NSMutableArray *transactionStack = nil;
+/* A thread has a transaction stack of its own.  What one thread has begun is
+   nothing to do with another, and neither can commit or disturb what the
+   other holds open, so the stack lives in the thread rather than beside the
+   class.  Being per-thread, it needs no lock of its own. */
+static NSString * const CATransactionStackKey = @"CATransactionStack";
+
+static NSMutableArray *
+CATransactionStack(void)
+{
+  NSMutableDictionary *thread = [[NSThread currentThread] threadDictionary];
+  NSMutableArray *stack = [thread objectForKey: CATransactionStackKey];
+
+  if (stack == nil)
+    {
+      stack = [NSMutableArray array];
+      [thread setObject: stack forKey: CATransactionStackKey];
+    }
+
+  return stack;
+}
 
 /* +lock and +unlock hand out a recursive lock for callers to hold across a
    read, a change and a write.  How deep the calling thread has gone is kept
@@ -60,17 +79,13 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
 
 + (void) begin
 {
+  NSMutableArray *stack = CATransactionStack();
   CATransaction *enclosingTransaction;
   CATransaction *newTransaction;
 
-  if (!transactionStack)
-    {
-      transactionStack = [NSMutableArray new];
-    }
-
   /* A transaction starts out with the values of the one it is nested in;
      changing them affects only the new transaction. */
-  enclosingTransaction = [transactionStack lastObject];
+  enclosingTransaction = [stack lastObject];
   newTransaction = [CATransaction new];
   if (enclosingTransaction)
     {
@@ -79,21 +94,25 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
         [enclosingTransaction values]];
     }
 
-  [transactionStack addObject: newTransaction];
+  [stack addObject: newTransaction];
   [newTransaction release];
 }
 
 + (void) commit
 {
+  NSMutableArray *stack;
   CATransaction *topTransaction = [self topTransaction];
+
   [topTransaction commit];
 
-  [transactionStack removeObjectAtIndex: [transactionStack count]-1];
+  stack = CATransactionStack();
+  [stack removeObjectAtIndex: [stack count]-1];
 }
 
 + (void) flush
 {
-  CATransaction *top = [transactionStack lastObject];
+  NSMutableArray *stack = CATransactionStack();
+  CATransaction *top = [stack lastObject];
 
   /* Only the implicit transaction is flushed, and only once nothing
      explicit is still open on top of it: an explicit transaction is the
@@ -101,7 +120,7 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
   if (top != nil && [top isImplicit])
     {
       [top commit];
-      [transactionStack removeLastObject];
+      [stack removeLastObject];
     }
 }
 
@@ -184,13 +203,15 @@ static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
 /* ***** Private class methods ******* */
 + (CATransaction *) topTransaction
 {
-  if(![transactionStack lastObject])
+  NSMutableArray *stack = CATransactionStack();
+
+  if(![stack lastObject])
     {
       [CATransaction begin];
-      [[transactionStack lastObject] setImplicit: YES];
+      [[stack lastObject] setImplicit: YES];
     }
 
-  return [transactionStack lastObject];
+  return [stack lastObject];
 }
 
 /* ***** Instance methods ****** */
