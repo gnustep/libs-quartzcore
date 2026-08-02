@@ -97,7 +97,6 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize renderer=_renderer;
 @synthesize superlayer=_superlayer;
 @synthesize sublayers=_sublayers;
-@synthesize frame=_frame;
 @synthesize bounds=_bounds;
 @synthesize anchorPoint=_anchorPoint;
 @synthesize position=_position;
@@ -157,12 +156,11 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 
 - (void) setRenderer: (CARenderer *)renderer
 {
-  if(renderer != _renderer)
-    {
-      CARenderer * temp = _renderer;
-      _renderer = renderer;
-      [temp release];
-    }
+  /* A layer does not own its renderer; the renderer owns the layer.  What
+     stood here released the renderer it was letting go of, which it had
+     never retained, so a renderer given a layer and then given nil was
+     released once too often and died under its owner. */
+  _renderer = renderer;
 }
 
 /* *** dynamic synthesis of properties *** */
@@ -250,6 +248,10 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   if ([key isEqualToString: @"shouldRasterize"])
     {
       return [NSNumber numberWithBool: NO];
+    }
+  if ([key isEqualToString: @"contentsScale"])
+    {
+      return [NSNumber numberWithDouble: 1.0];
     }
   if ([key isEqualToString: @"opacity"])
     {
@@ -520,8 +522,54 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 #endif
 
+/* The rectangle the bounds size occupies around the anchor point, with the
+   layer transform applied.  Its origin is relative to the position. */
+- (CGRect) _transformedBoundsRect
+{
+  CGAffineTransform affine;
+  CGRect r;
+
+  affine = CGAffineTransformMake(_transform.m11, _transform.m12,
+                                 _transform.m21, _transform.m22,
+                                 _transform.m41, _transform.m42);
+  r = CGRectMake(-_anchorPoint.x * _bounds.size.width,
+                 -_anchorPoint.y * _bounds.size.height,
+                 _bounds.size.width, _bounds.size.height);
+  return CGRectApplyAffineTransform(r, affine);
+}
+
+- (CGRect) frame
+{
+  CGRect r = [self _transformedBoundsRect];
+
+  r.origin.x += _position.x;
+  r.origin.y += _position.y;
+  return r;
+}
+
+- (void) setFrame: (CGRect)frame
+{
+  CGAffineTransform affine;
+  CGRect bounds = _bounds;
+  CGRect r;
+
+  affine = CGAffineTransformMake(_transform.m11, _transform.m12,
+                                 _transform.m21, _transform.m22,
+                                 _transform.m41, _transform.m42);
+  frame = CGRectStandardize(frame);
+  bounds.size = CGSizeApplyAffineTransform(frame.size,
+                                           CGAffineTransformInvert(affine));
+  [self setBounds: bounds];
+
+  r = [self _transformedBoundsRect];
+  [self setPosition: CGPointMake(frame.origin.x - r.origin.x,
+                                 frame.origin.y - r.origin.y)];
+}
+
 - (void) setBounds: (CGRect)bounds
 {
+  bounds = CGRectStandardize(bounds);
+
   if (CGRectEqualToRect(bounds, _bounds))
     return;
 
@@ -883,6 +931,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
 
+  [layer removeFromSuperlayer];
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
 }
@@ -899,6 +948,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
 
+  [layer removeFromSuperlayer];
   [mutableSublayers insertObject: layer atIndex: index];
   [layer setSuperlayer: self];
 }
@@ -906,8 +956,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSInteger siblingIndex;
 
-  NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
+  [layer removeFromSuperlayer];
+  siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex];
   [layer setSuperlayer: self];
 }
@@ -915,8 +967,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSInteger siblingIndex;
 
-  NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
+  [layer removeFromSuperlayer];
+  siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
 }
@@ -1199,18 +1253,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       /* Return the value */
       return action;
     }
-  /* It's nil? That's it. Now we can only generate our own animation. */
-
-  /***********************/
-
-  /* construct new animation */
-  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath: key];
-  if ([self isPresentationLayer])
-    [animation setFromValue: [self valueForKeyPath: key]];
-  else
-    [animation setFromValue: [[self presentationLayer] valueForKeyPath: key]];
-  return animation;
-
+  /* It's nil? That's it: nothing here offers an action.  Saying so is the
+     answer.  What a change with no action of its own should do is for the
+     caller to decide, and CAImplicitAnimationObserver is the caller that
+     decides, by building an animation of its own. */
+  return nil;
 }
 
 - (id)valueForUndefinedKey: (NSString *)key
