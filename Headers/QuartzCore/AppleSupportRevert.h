@@ -107,6 +107,16 @@
 /* CAShapeLayer.h */
 
 /* CATextLayer.h */
+#undef CATextLayer
+#undef kCAAlignmentNatural
+#undef kCAAlignmentLeft
+#undef kCAAlignmentRight
+#undef kCAAlignmentCenter
+#undef kCAAlignmentJustified
+#undef kCATruncationNone
+#undef kCATruncationStart
+#undef kCATruncationEnd
+#undef kCATruncationMiddle
 
 /* CATiledLayer.h */
 
