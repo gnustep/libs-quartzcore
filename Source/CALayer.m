@@ -721,7 +721,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
         [layer setSuperlayer: nil];
     }
 
-  _sublayers = [sublayers mutableCopy];
+  /* Kept as a real array even when handed nothing, so that a layer given no
+     sublayers can still be given some later. */
+  _sublayers = sublayers != nil
+    ? [sublayers mutableCopy] : [[NSMutableArray alloc] init];
   [oldSublayers release];
 
   for (layer in _sublayers)
@@ -754,9 +757,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (NSArray *) sublayers
 {
+  /* A layer with none answers nothing at all rather than an empty array.
+     The array itself is kept either way, so sublayers can still be added. */
   if (![self isPresentationLayer])
     {
-      return _sublayers;
+      return [_sublayers count] > 0 ? _sublayers : nil;
     }
   else
     {
@@ -765,7 +770,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
         {
           [presentationSublayers addObject: [modelSublayer presentationLayer]];
         }
-      return presentationSublayers;
+      return [presentationSublayers count] > 0 ? presentationSublayers : nil;
     }
 }
 
