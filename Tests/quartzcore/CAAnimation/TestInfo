@@ -1,0 +1,3 @@
+# The layer bookkeeping this checks is internal to this implementation,
+# and Apple does not raise where it does.
+APPLE_SKIP_TESTS="copyinit.m"

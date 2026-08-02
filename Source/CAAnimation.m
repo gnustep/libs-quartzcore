@@ -199,14 +199,17 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
     {
       if ([[self class] shouldArchiveValueForKey: keys[i]])
         {
-          [self encodeWithCoder: aCoder];
+          [aCoder encodeObject: [self valueForKey: keys[i]]
+                        forKey: keys[i]];
         }
     }
 }
 
 - (id) copyWithZone: (NSZone *)zone
 {
-  id theCopy = [[self class] allocWithZone: zone];
+  /* -init and not just +allocWithZone:, or the copy is left without the
+     things -init sets up for it. */
+  id theCopy = [[[self class] allocWithZone: zone] init];
   if (!theCopy)
     return nil;
 
@@ -339,11 +342,12 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
 - (id) initWithCoder:(NSCoder *)aDecoder
 {
-  self = [self init];
+  self = [super initWithCoder: aDecoder];
   if (!self)
     return nil;
 
-  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  static NSString * keys[] = {@"keyPath", @"additive", @"cumulative",
+    @"valueFunction"};
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       if ([aDecoder containsValueForKey: keys[i]])
@@ -358,12 +362,16 @@ NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
 
 - (void) encodeWithCoder: (NSCoder *)aCoder
 {
-  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  [super encodeWithCoder: aCoder];
+
+  static NSString * keys[] = {@"keyPath", @"additive", @"cumulative",
+    @"valueFunction"};
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       if ([[self class] shouldArchiveValueForKey: keys[i]])
         {
-          [self encodeWithCoder: aCoder];
+          [aCoder encodeObject: [self valueForKey: keys[i]]
+                        forKey: keys[i]];
         }
     }
 }
@@ -612,6 +620,40 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize fromValue=_fromValue;
 @synthesize byValue=_byValue;
 @synthesize toValue=_toValue;
+
+- (id) initWithCoder: (NSCoder *)aDecoder
+{
+  self = [super initWithCoder: aDecoder];
+  if (!self)
+    return nil;
+
+  static NSString * keys[] = {@"fromValue", @"byValue", @"toValue"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([aDecoder containsValueForKey: keys[i]])
+        {
+          [self setValue: [aDecoder decodeObjectForKey: keys[i]]
+                  forKey: keys[i]];
+        }
+    }
+
+  return self;
+}
+
+- (void) encodeWithCoder: (NSCoder *)aCoder
+{
+  [super encodeWithCoder: aCoder];
+
+  static NSString * keys[] = {@"fromValue", @"byValue", @"toValue"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([[self class] shouldArchiveValueForKey: keys[i]])
+        {
+          [aCoder encodeObject: [self valueForKey: keys[i]]
+                        forKey: keys[i]];
+        }
+    }
+}
 
 - (id) copyWithZone: (NSZone *)zone
 {
@@ -1028,6 +1070,40 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize calculationMode=_calculationMode;
 @synthesize values=_values;
 
+- (id) initWithCoder: (NSCoder *)aDecoder
+{
+  self = [super initWithCoder: aDecoder];
+  if (!self)
+    return nil;
+
+  static NSString * keys[] = {@"calculationMode", @"values"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([aDecoder containsValueForKey: keys[i]])
+        {
+          [self setValue: [aDecoder decodeObjectForKey: keys[i]]
+                  forKey: keys[i]];
+        }
+    }
+
+  return self;
+}
+
+- (void) encodeWithCoder: (NSCoder *)aCoder
+{
+  [super encodeWithCoder: aCoder];
+
+  static NSString * keys[] = {@"calculationMode", @"values"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([[self class] shouldArchiveValueForKey: keys[i]])
+        {
+          [aCoder encodeObject: [self valueForKey: keys[i]]
+                        forKey: keys[i]];
+        }
+    }
+}
+
 - (id) copyWithZone: (NSZone *)zone
 {
   id theCopy = [super copyWithZone: zone];
@@ -1098,6 +1174,42 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
     }
 
   return self;
+}
+
+- (id) initWithCoder: (NSCoder *)aDecoder
+{
+  self = [super initWithCoder: aDecoder];
+  if (!self)
+    return nil;
+
+  static NSString * keys[] = {@"mass", @"stiffness", @"damping",
+    @"initialVelocity"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([aDecoder containsValueForKey: keys[i]])
+        {
+          [self setValue: [aDecoder decodeObjectForKey: keys[i]]
+                  forKey: keys[i]];
+        }
+    }
+
+  return self;
+}
+
+- (void) encodeWithCoder: (NSCoder *)aCoder
+{
+  [super encodeWithCoder: aCoder];
+
+  static NSString * keys[] = {@"mass", @"stiffness", @"damping",
+    @"initialVelocity"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      if ([[self class] shouldArchiveValueForKey: keys[i]])
+        {
+          [aCoder encodeObject: [self valueForKey: keys[i]]
+                        forKey: keys[i]];
+        }
+    }
 }
 
 - (id) copyWithZone: (NSZone *)zone
