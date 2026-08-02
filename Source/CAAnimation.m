@@ -36,7 +36,7 @@
 #import "CAMediaTimingFunction+FrameworkPrivate.h"
 #import "CALayer+FrameworkPrivate.h"
 
-NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
+NSString *const kCAAnimationDiscrete = @"discrete";
 
 @interface CAAnimation ()
 @property (retain) NSPointerArray *layers;
