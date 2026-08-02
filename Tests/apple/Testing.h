@@ -62,4 +62,35 @@ static void testResult__(int passed, const char *fmt, ...)
 
 #define SKIP(msg__) { fprintf(stderr, "Skipped test:    %s\n", (msg__)); }
 
+/* PASS_RUNS passes when the code completes without raising; PASS_EXCEPTION
+   passes when it raises, and when an expected name is given, only for that
+   name.  Both report through testResult__, so a hopeful one dashes rather
+   than fails, exactly as in gnustep-tests. */
+#define PASS_RUNS(code__, fmt__, ...) \
+  do { \
+    int _ran__ = 1; \
+    @try { code__; } \
+    @catch (NSException *_e__) { \
+      _ran__ = 0; \
+      fprintf(stderr, "%s: %s\n", [[_e__ name] UTF8String], \
+        [[_e__ reason] UTF8String]); \
+    } \
+    testResult__(_ran__, "%s:%d ... " fmt__, \
+      __FILE__, __LINE__, ##__VA_ARGS__); \
+  } while (0)
+
+#define PASS_EXCEPTION(code__, expect__, fmt__, ...) \
+  do { \
+    int _matched__ = 0; \
+    @try { code__; } \
+    @catch (NSException *_e__) { \
+      _matched__ = (nil == (expect__) || [[_e__ name] isEqual: (expect__)]); \
+      if (!_matched__) \
+        fprintf(stderr, "Expected '%s' and got '%s'\n", \
+          [(expect__) UTF8String], [[_e__ name] UTF8String]); \
+    } \
+    testResult__(_matched__, "%s:%d ... " fmt__, \
+      __FILE__, __LINE__, ##__VA_ARGS__); \
+  } while (0)
+
 #endif /* Testing_h */
