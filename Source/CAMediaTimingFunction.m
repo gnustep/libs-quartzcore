@@ -35,6 +35,8 @@
 #import "QuartzCore/CAMediaTimingFunction.h"
 #import "CAMediaTimingFunction+FrameworkPrivate.h"
 
+#include <math.h>
+
 NSString *const kCAMediaTimingFunctionDefault = @"kCAMediaTimingFunctionDefault";
 NSString *const kCAMediaTimingFunctionEaseInEaseOut = @"kCAMediaTimingFunctionEaseInEaseOut";
 NSString *const kCAMediaTimingFunctionEaseIn = @"kCAMediaTimingFunctionEaseIn";
@@ -166,23 +168,73 @@ static inline CGFloat evaluateDerivationAtParameterWithCoefficients(CGFloat t, C
   return coefficients[1] + 2*t*coefficients[2] + 3*t*t*coefficients[3];
 }
 
-static inline CGFloat calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(CGFloat x, CGFloat coefficientsX[])
+static const CGFloat _epsilon = 0.00001;
+
+/* The slope of x(t) is zero at t=0 when the first control point sits on the
+   y axis, and at t=1 when the second sits on the line x=1.  Both hold for
+   the named functions: linear at each end, ease in at t=1, ease out at t=0.
+   Dividing by that slope is what this has to avoid. */
+static inline CGFloat calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(CGFloat x, CGFloat coefficientsX[], BOOL *solved)
 {
   // see http://en.wikipedia.org/wiki/Newton's_method
 
   // start with X being the correct value
   CGFloat t = x;
+  int i;
+
+  *solved = NO;
 
   // iterate several times
-  const CGFloat epsilon = 0.00001;
-  for(int i = 0; i < 10; i++)
+  for(i = 0; i < 10; i++)
     {
       CGFloat x2 = evaluateAtParameterWithCoefficients(t, coefficientsX) - x;
-      CGFloat d = evaluateDerivationAtParameterWithCoefficients(t, coefficientsX);
+      CGFloat d;
 
-      CGFloat dt = x2/d;
+      if (fabs(x2) < _epsilon)
+        {
+          *solved = YES;
+          return t;
+        }
 
-      t = t - dt;
+      d = evaluateDerivationAtParameterWithCoefficients(t, coefficientsX);
+      if (fabs(d) < 1e-6)
+        {
+          break;
+        }
+
+      t = t - x2/d;
+    }
+
+  return t;
+}
+
+/* Halving the interval always converges, where Newton's method needs a
+   slope to work with. */
+static inline CGFloat calcParameterViaBisectionUsingXAndCoefficientsForX(CGFloat x, CGFloat coefficientsX[])
+{
+  CGFloat lower = 0.0;
+  CGFloat upper = 1.0;
+  CGFloat t = x;
+  int i;
+
+  for (i = 0; i < 60; i++)
+    {
+      CGFloat x2 = evaluateAtParameterWithCoefficients(t, coefficientsX);
+
+      if (fabs(x2 - x) < _epsilon)
+        {
+          return t;
+        }
+
+      if (x > x2)
+        {
+          lower = t;
+        }
+      else
+        {
+          upper = t;
+        }
+      t = (upper - lower) * 0.5 + lower;
     }
 
   return t;
@@ -190,21 +242,33 @@ static inline CGFloat calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(CGF
 
 static inline CGFloat calcParameterUsingXAndCoefficientsForX (CGFloat x, CGFloat coefficientsX[])
 {
-  // for the time being, we'll guess Newton-Raphson always
-  // returns the correct value.
+  BOOL solved;
+  CGFloat t = calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(x, coefficientsX, &solved);
 
-  // if we find it doesn't find the solution often enough,
-  // we can add additional calculation methods.
+  if (solved)
+    {
+      return t;
+    }
 
-  CGFloat t = calcParameterViaNewtonRaphsonUsingXAndCoefficientsForX(x, coefficientsX);
-
-  return t;
+  return calcParameterViaBisectionUsingXAndCoefficientsForX(x, coefficientsX);
 }
 
 - (CGFloat) evaluateYAtX: (CGFloat)x
 {
-  CGFloat t = calcParameterUsingXAndCoefficientsForX(x, _coefficientsX);
-  CGFloat y = evaluateAtParameterWithCoefficients(t, _coefficientsY);
+  CGFloat t, y;
+
+  /* The curve is only defined between its first and last control point. */
+  if (x <= 0.0)
+    {
+      return 0.0;
+    }
+  if (x >= 1.0)
+    {
+      return 1.0;
+    }
+
+  t = calcParameterUsingXAndCoefficientsForX(x, _coefficientsX);
+  y = evaluateAtParameterWithCoefficients(t, _coefficientsY);
 
   return y;
 }
