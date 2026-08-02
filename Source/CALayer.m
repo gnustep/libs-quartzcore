@@ -1254,18 +1254,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       /* Return the value */
       return action;
     }
-  /* It's nil? That's it. Now we can only generate our own animation. */
-
-  /***********************/
-
-  /* construct new animation */
-  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath: key];
-  if ([self isPresentationLayer])
-    [animation setFromValue: [self valueForKeyPath: key]];
-  else
-    [animation setFromValue: [[self presentationLayer] valueForKeyPath: key]];
-  return animation;
-
+  /* It's nil? That's it: nothing here offers an action.  Saying so is the
+     answer.  What a change with no action of its own should do is for the
+     caller to decide, and CAImplicitAnimationObserver is the caller that
+     decides, by building an animation of its own. */
+  return nil;
 }
 
 - (id)valueForUndefinedKey: (NSString *)key
