@@ -1380,6 +1380,62 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   return [layer _pointFromRoot: q];
 }
 
+- (BOOL) containsPoint: (CGPoint)p
+{
+  /* The point is in this layer's own coordinate system, so the bounds are
+     what it is measured against, origin and all. */
+  return CGRectContainsPoint([self bounds], p);
+}
+
+- (CALayer *) hitTest: (CGPoint)p
+{
+  CGPoint  local = [self _pointFromSuperlayer: p];
+  CALayer *found = nil;
+  CGFloat  foundZ = 0.0;
+  NSInteger i;
+
+  /* A layer that masks its contents hides whatever falls outside it, so
+     nothing there can be hit, sublayers included. */
+  if ([self masksToBounds] && ![self containsPoint: local])
+    {
+      return nil;
+    }
+
+  /* Sublayers are tried from the top down: the last one added lies over the
+     others, and a higher zPosition lifts one above them all.  Walking the
+     array backwards means the later of two equals is met first, so a plain
+     greater-than keeps it. */
+  for (i = (NSInteger)[_sublayers count] - 1; i >= 0; i--)
+    {
+      CALayer *sublayer = [_sublayers objectAtIndex: i];
+      CALayer *hit;
+
+      if ([sublayer isHidden])
+        {
+          continue;
+        }
+
+      hit = [sublayer hitTest: local];
+      if (hit == nil)
+        {
+          continue;
+        }
+
+      if (found == nil || [sublayer zPosition] > foundZ)
+        {
+          found = hit;
+          foundZ = [sublayer zPosition];
+        }
+    }
+
+  if (found != nil)
+    {
+      return found;
+    }
+
+  return [self containsPoint: local] ? self : nil;
+}
+
 /* A rectangle converts as the bounding box of the four converted corners,
  * since a transform on the way may rotate or skew it. */
 - (CGRect) _boxOfCorners: (CGPoint *)c
