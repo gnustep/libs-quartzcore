@@ -65,6 +65,13 @@ static CAImplicitAnimationObserver * sharedObserver;
       return;
     }
 
+  /* The property still takes its new value; only the animation that would
+     have carried it there is dropped. */
+  if ([CATransaction disableActions])
+    {
+      return;
+    }
+
   id from = [change valueForKey: NSKeyValueChangeOldKey];
   id to = [change valueForKey: NSKeyValueChangeNewKey];
 
