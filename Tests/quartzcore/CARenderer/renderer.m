@@ -146,6 +146,72 @@ int main(void)
 
   END_SET("what a renderer holds")
 
+  START_SET("a renderer that has been given nothing")
+
+  const char *whyEmpty = "";
+  NSOpenGLContext *emptyContext = usableContext(&whyEmpty);
+  CARenderer *empty;
+
+  if (emptyContext == nil)
+    {
+      SKIP("%s", whyEmpty)
+    }
+
+  empty = [CARenderer rendererWithNSOpenGLContext: emptyContext options: nil];
+  if (empty == nil)
+    {
+      SKIP("there is no renderer to ask anything of")
+    }
+
+  testHopeful = YES;
+  PASS(CGRectIsNull([empty bounds]), "it has no bounds until given some");
+  PASS(isinf([empty nextFrameTime]), "and nothing is due to be drawn");
+  testHopeful = NO;
+
+  END_SET("a renderer that has been given nothing")
+
+  START_SET("beginning and ending a frame")
+
+  const char *whyFrame = "";
+  NSOpenGLContext *frameContext = usableContext(&whyFrame);
+  CARenderer *framed;
+  CALayer *framedLayer;
+
+  if (frameContext == nil)
+    {
+      SKIP("%s", whyFrame)
+    }
+
+  framed = [CARenderer rendererWithNSOpenGLContext: frameContext options: nil];
+  if (framed == nil)
+    {
+      SKIP("there is no renderer to ask anything of")
+    }
+
+  framedLayer = [CALayer layer];
+  [framedLayer setBounds: CGRectMake(0, 0, 40, 30)];
+  [framed setLayer: framedLayer];
+  [framed setBounds: CGRectMake(0, 0, 64, 48)];
+
+  PASS_RUNS([framed beginFrameAtTime: 0.0 timeStamp: NULL],
+            "a frame can be begun");
+  PASS_RUNS([framed endFrame], "and ended");
+  PASS_RUNS([framed beginFrameAtTime: 1.0 timeStamp: NULL];
+            [framed endFrame],
+            "and another begun and ended after it");
+
+  /* What nextFrameTime answers once a frame has run is left alone here.
+     Giving the layer its bounds asks for an implicit animation, and
+     beginning a frame commits the transaction holding it, so the layer is
+     genuinely animating by this point.  Apple answers infinity either way,
+     which may only mean its renderer schedules nothing when it has no
+     display to drive, so there is nothing here worth pinning. */
+
+  PASS_RUNS([framed endFrame],
+            "ending a frame that was never begun does nothing");
+
+  END_SET("beginning and ending a frame")
+
   [pool release];
   return 0;
 }
