@@ -101,6 +101,7 @@
 #undef CARenderer
 
 /* CAReplicatorLayer.h */
+#undef CAReplicatorLayer
 
 /* CAScrollLayer.h */
 
@@ -109,6 +110,7 @@
 /* CATextLayer.h */
 
 /* CATiledLayer.h */
+#undef CATiledLayer
 
 /* CATransaction.h */
 #undef CATransaction
