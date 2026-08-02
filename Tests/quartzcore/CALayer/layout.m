@@ -87,6 +87,50 @@ int main(void)
 
   END_SET("laying out a tree")
 
+  /* A layer whose sublayers have changed has them to arrange again. */
+  START_SET("what makes a layer want laying out")
+
+  CALayer *root = [CALayer layer];
+  CALayer *first = [CALayer layer];
+
+  [root setBounds: CGRectMake(0, 0, 100, 100)];
+  [root addSublayer: first];
+  [root layoutIfNeeded];
+  PASS([root needsLayout] == NO, "a layer just laid out is settled");
+
+  [root addSublayer: [CALayer layer]];
+  PASS([root needsLayout] == YES, "adding a sublayer unsettles it");
+
+  [root layoutIfNeeded];
+  [root insertSublayer: [CALayer layer] atIndex: 0];
+  PASS([root needsLayout] == YES, "so does inserting one at an index");
+
+  [root layoutIfNeeded];
+  [root insertSublayer: [CALayer layer] below: first];
+  PASS([root needsLayout] == YES, "and inserting one below another");
+
+  [root layoutIfNeeded];
+  [root insertSublayer: [CALayer layer] above: first];
+  PASS([root needsLayout] == YES, "and inserting one above another");
+
+  [root layoutIfNeeded];
+  [first removeFromSuperlayer];
+  PASS([root needsLayout] == YES,
+       "a sublayer taking itself away unsettles the layer it leaves");
+
+  [root layoutIfNeeded];
+  [root setBounds: CGRectMake(0, 0, 200, 200)];
+  PASS([root needsLayout] == YES, "and so does its own bounds changing");
+
+  CALayer *newcomer = [CALayer layer];
+
+  [newcomer layoutIfNeeded];
+  [root addSublayer: newcomer];
+  PASS([newcomer needsLayout] == NO,
+       "though the layer that was added is not itself unsettled");
+
+  END_SET("what makes a layer want laying out")
+
   [pool release];
   return 0;
 }

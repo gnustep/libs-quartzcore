@@ -570,6 +570,9 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     {
       [self setNeedsDisplay];
     }
+
+  /* Whatever it holds has a different amount of room now. */
+  [self setNeedsLayout];
 }
 
 - (void)setBackgroundColor: (CGColorRef)backgroundColor
@@ -963,14 +966,20 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [layer removeFromSuperlayer];
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
 }
 
 - (void)removeFromSuperlayer
 {
-  NSMutableArray * mutableSublayersOfSuperlayer = (NSMutableArray*)[[self superlayer] sublayers];
+  CALayer * above = [self superlayer];
+  NSMutableArray * mutableSublayersOfSuperlayer
+    = (NSMutableArray*)[above sublayers];
 
   [mutableSublayersOfSuperlayer removeObject: self];
   [self setSuperlayer: nil];
+
+  /* The layer it has left has one fewer to arrange. */
+  [above setNeedsLayout];
 }
 
 - (void) insertSublayer: (CALayer *)layer atIndex: (unsigned)index
@@ -980,6 +989,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [layer removeFromSuperlayer];
   [mutableSublayers insertObject: layer atIndex: index];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
 }
 
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
@@ -991,6 +1001,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
 }
 
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
@@ -1002,6 +1013,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
 }
 
 - (CALayer *) rootLayer
