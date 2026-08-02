@@ -156,12 +156,11 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 
 - (void) setRenderer: (CARenderer *)renderer
 {
-  if(renderer != _renderer)
-    {
-      CARenderer * temp = _renderer;
-      _renderer = renderer;
-      [temp release];
-    }
+  /* A layer does not own its renderer; the renderer owns the layer.  What
+     stood here released the renderer it was letting go of, which it had
+     never retained, so a renderer given a layer and then given nil was
+     released once too often and died under its owner. */
+  _renderer = renderer;
 }
 
 /* *** dynamic synthesis of properties *** */
