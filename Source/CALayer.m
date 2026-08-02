@@ -456,6 +456,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   [_backingStore release];
   [_animations release];
   [_animationKeys release];
+  [_dynamicPropertyValueDict release];
 
   [super dealloc];
 }
