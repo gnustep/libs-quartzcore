@@ -69,6 +69,7 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @property (nonatomic, retain) NSMutableDictionary *dynamicPropertyValueDict;
 
 - (void)setModelLayer: (id)modelLayer;
+- (void)layoutTreeIfNeeded;
 @end
 
 @implementation CALayer
@@ -615,6 +616,9 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
       [self.backingStore refresh];
     }
+
+  /* Having drawn, the layer no longer wants drawing. */
+  _needsDisplay = NO;
 }
 
 - (void) displayIfNeeded
@@ -655,10 +659,52 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 /* MARK: - Layout methods */
 - (void) layoutIfNeeded
 {
+  CALayer * top = self;
+
+  /* Up through the superlayers for as long as they want laying out too, so
+     that the whole tree below the highest one is laid out at once. */
+  while ([top superlayer] && [[top superlayer] needsLayout])
+    {
+      top = [top superlayer];
+    }
+
+  [top layoutTreeIfNeeded];
+}
+
+- (void) layoutTreeIfNeeded
+{
+  CALayer * sublayer;
+
+  if (_needsLayout)
+    {
+      [self layoutSublayers];
+      _needsLayout = NO;
+    }
+
+  for (sublayer in _sublayers)
+    {
+      [sublayer layoutTreeIfNeeded];
+    }
 }
 
 - (void) layoutSublayers
 {
+  /* The delegate is asked first, and the layout manager only if the delegate
+     has nothing to say. */
+  if ([_delegate respondsToSelector: @selector(layoutSublayersOfLayer:)])
+    {
+      [_delegate layoutSublayersOfLayer: self];
+    }
+  else if ([_layoutManager respondsToSelector:
+             @selector(layoutSublayersOfLayer:)])
+    {
+      [_layoutManager layoutSublayersOfLayer: self];
+    }
+}
+
+- (BOOL) needsLayout
+{
+  return _needsLayout;
 }
 
 - (void) setNeedsLayout
