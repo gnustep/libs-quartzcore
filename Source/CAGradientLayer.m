@@ -22,3 +22,44 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/Foundation.h>
+#import "QuartzCore/CAGradientLayer.h"
+
+NSString *const kCAGradientLayerAxial = @"axial";
+NSString *const kCAGradientLayerRadial = @"radial";
+NSString *const kCAGradientLayerConic = @"conic";
+
+@implementation CAGradientLayer
+
+@synthesize colors = _colors;
+@synthesize locations = _locations;
+@synthesize startPoint = _startPoint;
+@synthesize endPoint = _endPoint;
+@synthesize type = _type;
+
+- (id) init
+{
+  self = [super init];
+  if (self == nil)
+    {
+      return nil;
+    }
+
+  _startPoint = CGPointMake(0.5, 0.0);
+  _endPoint = CGPointMake(0.5, 1.0);
+  _type = [kCAGradientLayerAxial copy];
+
+  return self;
+}
+
+- (void) dealloc
+{
+  [_colors release];
+  [_locations release];
+  [_type release];
+
+  [super dealloc];
+}
+
+@end

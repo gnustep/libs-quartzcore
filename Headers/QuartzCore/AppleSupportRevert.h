@@ -56,6 +56,10 @@
 /* CAEAGLLayer.h */
 
 /* CAGradientLayer.h */
+#undef CAGradientLayer
+#undef kCAGradientLayerAxial
+#undef kCAGradientLayerRadial
+#undef kCAGradientLayerConic
 
 /* CAImplicitAnimationObserver.h */
 #undef CAImplicitAnimationObserver
