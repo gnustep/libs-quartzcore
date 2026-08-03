@@ -26,10 +26,10 @@
 
 #import "QuartzCore/CAMediaTiming.h"
 
-NSString *const kCAFillModeRemoved = @"kCAFillModeRemoved";
-NSString *const kCAFillModeForwards = @"kCAFillModeForwards";
-NSString *const kCAFillModeBackwards = @"kCAFillModeBackwards";
-NSString *const kCAFillModeBoth = @"kCAFillModeBoth";
-NSString *const kCAFillModeFrozen = @"kCAFillModeFrozen";
+NSString *const kCAFillModeRemoved = @"removed";
+NSString *const kCAFillModeForwards = @"forwards";
+NSString *const kCAFillModeBackwards = @"backwards";
+NSString *const kCAFillModeBoth = @"both";
+NSString *const kCAFillModeFrozen = @"frozen";
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

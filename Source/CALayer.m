@@ -47,18 +47,18 @@
 
 static CFTimeInterval currentFrameBeginTime = 0;
 
-NSString *const kCAGravityResize = @"CAGravityResize";
-NSString *const kCAGravityResizeAspect = @"CAGravityResizeAspect";
-NSString *const kCAGravityResizeAspectFill = @"CAGravityResizeAspectFill";
-NSString *const kCAGravityCenter = @"CAGravityCenter";
-NSString *const kCAGravityTop = @"CAGravityTop";
-NSString *const kCAGravityBottom = @"CAGravityBottom";
-NSString *const kCAGravityLeft = @"CAGravityLeft";
-NSString *const kCAGravityRight = @"CAGravityRight";
-NSString *const kCAGravityTopLeft = @"CAGravityTopLeft";
-NSString *const kCAGravityTopRight = @"CAGravityTopRight";
-NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
-NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
+NSString *const kCAGravityResize = @"resize";
+NSString *const kCAGravityResizeAspect = @"resizeAspect";
+NSString *const kCAGravityResizeAspectFill = @"resizeAspectFill";
+NSString *const kCAGravityCenter = @"center";
+NSString *const kCAGravityTop = @"top";
+NSString *const kCAGravityBottom = @"bottom";
+NSString *const kCAGravityLeft = @"left";
+NSString *const kCAGravityRight = @"right";
+NSString *const kCAGravityTopLeft = @"topLeft";
+NSString *const kCAGravityTopRight = @"topRight";
+NSString *const kCAGravityBottomLeft = @"bottomLeft";
+NSString *const kCAGravityBottomRight = @"bottomRight";
 
 @interface CALayer()
 @property (nonatomic, assign) CALayer * superlayer;
