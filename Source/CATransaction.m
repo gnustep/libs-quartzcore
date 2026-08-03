@@ -35,92 +35,159 @@ NSString *kCATransactionAnimationDuration = @"animationDuration";
 NSString *kCATransactionAnimationTimingFunction= @"animationTimingFunction";
 NSString *kCATransactionDisableActions = @"disableActions";
 
-static NSMutableArray *transactionStack = nil;
+/* A thread has a transaction stack of its own.  What one thread has begun is
+   nothing to do with another, and neither can commit or disturb what the
+   other holds open, so the stack lives in the thread rather than beside the
+   class.  Being per-thread, it needs no lock of its own. */
+static NSString * const CATransactionStackKey = @"CATransactionStack";
+
+static NSMutableArray *
+CATransactionStack(void)
+{
+  NSMutableDictionary *thread = [[NSThread currentThread] threadDictionary];
+  NSMutableArray *stack = [thread objectForKey: CATransactionStackKey];
+
+  if (stack == nil)
+    {
+      stack = [NSMutableArray array];
+      [thread setObject: stack forKey: CATransactionStackKey];
+    }
+
+  return stack;
+}
+
+/* +lock and +unlock hand out a recursive lock for callers to hold across a
+   read, a change and a write.  How deep the calling thread has gone is kept
+   beside it, so that unlocking more often than locking does nothing rather
+   than unlocking somebody else's hold. */
+static NSRecursiveLock *transactionLock = nil;
+static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
 
 @interface CATransaction ()
 
 - (void) commit;
 
-@property (assign) CFTimeInterval animationDuration;
-@property (retain) CAMediaTimingFunction *animationTimingFunction;
-@property (assign) BOOL disableActions;
+@property (retain) NSMutableDictionary *values;
 @property (retain) NSMutableArray *actions;
 @property (assign, getter=isImplicit) BOOL implicit;
 @end
 
 @implementation CATransaction
-@synthesize animationDuration=_animationDuration;
-@synthesize animationTimingFunction=_animationTimingFunction;
-@synthesize disableActions=_disableActions;
+@synthesize values=_values;
 @synthesize actions=_actions;
 @synthesize implicit=_implicit;
 
 + (void) begin
 {
-  if (!transactionStack)
+  NSMutableArray *stack = CATransactionStack();
+  CATransaction *enclosingTransaction;
+  CATransaction *newTransaction;
+
+  /* A transaction starts out with the values of the one it is nested in;
+     changing them affects only the new transaction. */
+  enclosingTransaction = [stack lastObject];
+  newTransaction = [CATransaction new];
+  if (enclosingTransaction)
     {
-      transactionStack = [NSMutableArray new];
+      [[newTransaction values] removeAllObjects];
+      [[newTransaction values] addEntriesFromDictionary:
+        [enclosingTransaction values]];
     }
 
-  CATransaction *newTransaction = [CATransaction new];
-  [transactionStack addObject: newTransaction];
+  [stack addObject: newTransaction];
   [newTransaction release];
 }
 
 + (void) commit
 {
+  NSMutableArray *stack;
   CATransaction *topTransaction = [self topTransaction];
+
   [topTransaction commit];
 
-  [transactionStack removeObjectAtIndex: [transactionStack count]-1];
+  stack = CATransactionStack();
+  [stack removeObjectAtIndex: [stack count]-1];
 }
 
 + (void) flush
 {
-  /* TODO: flushing transaction means committing the implicit
-     animation immediately after all nested explicit transaction
-     are committed.
-     */
+  NSMutableArray *stack = CATransactionStack();
+  CATransaction *top = [stack lastObject];
+
+  /* Only the implicit transaction is flushed, and only once nothing
+     explicit is still open on top of it: an explicit transaction is the
+     caller's to commit, and the flush waits for it. */
+  if (top != nil && [top isImplicit])
+    {
+      [top commit];
+      [stack removeLastObject];
+    }
 }
 
 + (void) lock
 {
-  NSLog(@"+[CATransaction lock] unimplemented");
+  NSNumber *depth;
+
+  if (transactionLock == nil)
+    {
+      transactionLock = [NSRecursiveLock new];
+    }
+
+  [transactionLock lock];
+
+  depth = [[[NSThread currentThread] threadDictionary]
+            objectForKey: CATransactionLockDepthKey];
+  [[[NSThread currentThread] threadDictionary]
+    setObject: [NSNumber numberWithInt: [depth intValue] + 1]
+       forKey: CATransactionLockDepthKey];
 }
 
 + (void) unlock
 {
-  NSLog(@"+[CATransaction unlock] unimplemented");
+  NSMutableDictionary *thread = [[NSThread currentThread] threadDictionary];
+  int depth = [[thread objectForKey: CATransactionLockDepthKey] intValue];
+
+  /* Unlocking what this thread never locked does nothing at all. */
+  if (depth <= 0)
+    {
+      return;
+    }
+
+  [thread setObject: [NSNumber numberWithInt: depth - 1]
+             forKey: CATransactionLockDepthKey];
+  [transactionLock unlock];
 }
 
 + (CFTimeInterval) animationDuration
 {
-  return [[self topTransaction] animationDuration];
+  return [[self valueForKey: kCATransactionAnimationDuration] doubleValue];
 }
 
 + (void) setAnimationDuration: (CFTimeInterval)animationDuration
 {
-  [[self topTransaction] setAnimationDuration: animationDuration];
+  [self setValue: [NSNumber numberWithDouble: animationDuration]
+          forKey: kCATransactionAnimationDuration];
 }
 
 + (CAMediaTimingFunction *) animationTimingFunction
 {
-  return [[self topTransaction] animationTimingFunction];
+  return [self valueForKey: kCATransactionAnimationTimingFunction];
 }
 
 + (void) setAnimationTimingFunction: (CAMediaTimingFunction *)function
 {
-  [[self topTransaction] setAnimationTimingFunction: function];
+  [self setValue: function forKey: kCATransactionAnimationTimingFunction];
 }
 
 + (BOOL) disableActions
 {
-    return [[self topTransaction] disableActions];
+  return [[self valueForKey: kCATransactionDisableActions] boolValue];
 }
 
 + (void) setDisableActions: (BOOL)disableActions
 {
-    [[self topTransaction] setDisableActions: disableActions];
+  [self setValue: [NSNumber numberWithBool: disableActions]
+          forKey: kCATransactionDisableActions];
 }
 
 + (id) valueForKey: (NSString *)key
@@ -136,13 +203,15 @@ static NSMutableArray *transactionStack = nil;
 /* ***** Private class methods ******* */
 + (CATransaction *) topTransaction
 {
-  if(![transactionStack lastObject])
+  NSMutableArray *stack = CATransactionStack();
+
+  if(![stack lastObject])
     {
       [CATransaction begin];
-      [[transactionStack lastObject] setImplicit: YES];
+      [[stack lastObject] setImplicit: YES];
     }
 
-  return [transactionStack lastObject];
+  return [stack lastObject];
 }
 
 /* ***** Instance methods ****** */
@@ -155,19 +224,43 @@ static NSMutableArray *transactionStack = nil;
     return nil;
 
   _actions = [[NSMutableArray alloc] init];
-  _animationDuration = 0.25;
-  _animationTimingFunction = [[CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault] retain];
-  _disableActions = NO;
+
+  /* The values an outermost transaction starts with.  There is no timing
+     function until one is set. */
+  _values = [[NSMutableDictionary alloc] init];
+  [_values setObject: [NSNumber numberWithDouble: 0.25]
+              forKey: kCATransactionAnimationDuration];
+  [_values setObject: [NSNumber numberWithBool: NO]
+              forKey: kCATransactionDisableActions];
 
   return self;
 }
 
 - (void) dealloc
 {
-  [_animationTimingFunction release];
+  [_values release];
   [_actions release];
 
   [super dealloc];
+}
+
+/* A transaction holds whatever keys are set on it, and reading one that was
+   never set answers nil rather than raising. */
+- (id) valueForKey: (NSString *)key
+{
+  return [_values objectForKey: key];
+}
+
+- (void) setValue: (id)value forKey: (NSString *)key
+{
+  if (value == nil)
+    {
+      [_values removeObjectForKey: key];
+    }
+  else
+    {
+      [_values setObject: value forKey: key];
+    }
 }
 
 - (void) commit
@@ -195,7 +288,7 @@ static NSMutableArray *transactionStack = nil;
       if ([action isKindOfClass: [CAAnimation class]])
         {
           CAAnimation * animation = (id)action;
-          if(![animation timingFunction])
+          if(![animation timingFunction] && [CATransaction animationTimingFunction])
             [animation setTimingFunction: [CATransaction animationTimingFunction]];
         }
 
