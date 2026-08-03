@@ -262,8 +262,12 @@ NSString *const kCATransitionFromRight = @"fromRight";
 
 - (CFTimeInterval) localTimeWithTimeAuthority: (id<CAMediaTiming>)timeAuthority
 {
+  return [self localTimeWithTimeAuthorityLocalTime: [timeAuthority localTime]];
+}
+
+- (CFTimeInterval) localTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
+{
   /* Slides */
-  CFTimeInterval timeAuthorityLocalTime = [timeAuthority localTime];
   CFTimeInterval activeTime = [self activeTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
   if (isinf([self duration]))
     return activeTime;
@@ -276,6 +280,18 @@ NSString *const kCATransitionFromRight = @"fromRight";
     }
 
   return localTime;
+}
+
+- (void) applyToLayer: (CALayer *)layer
+{
+  [self applyToLayer: layer
+    withTimeAuthorityLocalTime: [[layer modelLayer] localTime]];
+}
+
+- (void) applyToLayer: (CALayer *)layer
+  withTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
+{
+  /* noop. */
 }
 
 - (void)runActionForKey: (NSString *)key
@@ -409,8 +425,9 @@ NSString *const kCATransitionFromRight = @"fromRight";
 }
 
 - (void) applyToLayer: (CALayer *)layer
+  withTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
 {
-  CFTimeInterval theTime = [self localTimeWithTimeAuthority: [layer modelLayer]];
+  CFTimeInterval theTime = [self localTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
 
   /* FIXME: temporary check until we have fillMode implementation */
   /* Also, why do we get theTime < 0? */
@@ -1028,6 +1045,55 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize damping = _damping;
 @synthesize initialVelocity = _initialVelocity;
 @synthesize settlingDuration = _settlingDuration;
+@end
+
+@implementation CAAnimationGroup
+@synthesize animations=_animations;
+
++ (id) defaultValueForKey: (NSString *)key
+{
+  if ([key isEqualToString: @"animations"])
+    {
+      return nil;
+    }
+
+  return [super defaultValueForKey: key];
+}
+
+- (id) copyWithZone: (NSZone *)zone
+{
+  id theCopy = [super copyWithZone: zone];
+  if (!theCopy)
+    return nil;
+
+  [theCopy setAnimations: [self animations]];
+
+  return theCopy;
+}
+
+- (void) dealloc
+{
+  [_animations release];
+
+  [super dealloc];
+}
+
+- (void) applyToLayer: (CALayer *)layer
+  withTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
+{
+  /* The grouped animations are evaluated in the time space of the receiver.
+     Their durations are left as they are, so one that outlasts the group is
+     clipped by the group rather than scaled into it. */
+  CFTimeInterval theTime =
+    [self localTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
+
+  for (CAAnimation * animation in [self animations])
+    {
+      [animation applyToLayer: layer
+        withTimeAuthorityLocalTime: theTime];
+    }
+}
+
 @end
 
 @implementation CATransition

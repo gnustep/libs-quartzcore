@@ -31,8 +31,14 @@
 @interface CAAnimation (FrameworkPrivate)
 - (void) handleAddedToLayer: (CALayer *)layer;
 - (void) handleRemovedFromLayer: (CALayer *)layer;
-@end
 
-@interface CAPropertyAnimation (FrameworkPrivate)
+/* Local time in the receiver's own time space, given the local time of the
+   time authority it runs in.  The authority is the model layer for an
+   animation added to a layer, and the group for an animation inside a
+   CAAnimationGroup. */
+- (CFTimeInterval) localTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime;
+
 - (void) applyToLayer: (CALayer *)layer;
+- (void) applyToLayer: (CALayer *)layer
+  withTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime;
 @end
