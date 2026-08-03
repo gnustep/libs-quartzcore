@@ -230,6 +230,13 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   return [[self new] autorelease];
 }
 
++ (BOOL) needsDisplayForKey: (NSString *)key
+{
+  /* A subclass overrides this to have a change to one of its properties
+     redisplay the layer. */
+  return NO;
+}
+
 + (id) defaultValueForKey: (NSString *)key
 {
   if ([key isEqualToString:@"delegate"])
@@ -842,6 +849,17 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [[self animationForKey:key] handleRemovedFromLayer: self];
   [_animations removeObjectForKey: key];
   [_animationKeys removeObject: key];
+}
+
+- (void) removeAllAnimations
+{
+  for (CAAnimation * animation in [_animations allValues])
+    {
+      [animation handleRemovedFromLayer: self];
+    }
+
+  [_animations removeAllObjects];
+  [_animationKeys removeAllObjects];
 }
 
 - (CAAnimation *)animationForKey: (NSString *)key
