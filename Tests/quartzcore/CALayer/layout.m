@@ -125,8 +125,8 @@ int main(void)
 
   [root setSublayers: [NSArray arrayWithObject: [CALayer layer]]];
 
-  PASS_RUNS([root addSublayer: added];,
-            "a layer can be added after the sublayers were set outright")
+  PASS_RUNS([root addSublayer: added],
+            "a layer can be added after the sublayers were set outright");
   PASS([[root sublayers] count] == 2,
        "and it joins the one that was set");
   PASS([added superlayer] == root, "with this layer as its superlayer");
