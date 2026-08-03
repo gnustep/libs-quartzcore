@@ -900,16 +900,14 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       if (nextFrameTime > CACurrentMediaTime())
         {
           /* TODO: update for correctness once we support fillMode */
-          /* TODO: take into account animation groups once we support them */
 
           continue;
         }
 
-      if ([animation isKindOfClass: [CAPropertyAnimation class]])
+      if ([animation isKindOfClass: [CAPropertyAnimation class]] ||
+          [animation isKindOfClass: [CAAnimationGroup class]])
         {
-          CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
-
-          if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * [propertyAnimation repeatCount] * ([propertyAnimation autoreverses] ? 2 : 1))
+          if ([animation removedOnCompletion] && [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [animation duration] * [animation repeatCount] * ([animation autoreverses] ? 2 : 1))
             {
               /* FIXME: doesn't take into account speed */
 
@@ -917,7 +915,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
               continue; /* Prevents animation from applying for one frame longer than its duration */
             }
 
-          [propertyAnimation applyToLayer: self];
+          [animation applyToLayer: self];
 
         }
     }
