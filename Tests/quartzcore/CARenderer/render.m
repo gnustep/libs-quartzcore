@@ -19,6 +19,7 @@
 #import <QuartzCore/CABase.h>
 #import <QuartzCore/CARenderer.h>
 #import <QuartzCore/CALayer.h>
+#import <QuartzCore/CATransaction.h>
 
 #define WIDTH 64
 #define HEIGHT 48
@@ -167,6 +168,12 @@ int main(void)
     }
 
   clearErrors();
+
+  /* Setting a layer up outside a transaction starts an implicit animation
+     for every property, and the frame would show where each one began. */
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
   renderer = [CARenderer rendererWithNSOpenGLContext: context options: nil];
   if (renderer == nil)
     {
@@ -181,6 +188,8 @@ int main(void)
   [layer setPosition: CGPointMake(WIDTH / 2, HEIGHT / 2)];
   [layer setBackgroundColor: red];
   [renderer setLayer: layer];
+
+  [CATransaction commit];
 
   clearToBlue();
   PASS(pixelIs(WIDTH / 2, HEIGHT / 2, 0, 0, 255),
@@ -209,6 +218,12 @@ int main(void)
     }
 
   clearErrors();
+
+  /* Setting a layer up outside a transaction starts an implicit animation
+     for every property, and the frame would show where each one began. */
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
   renderer = [CARenderer rendererWithNSOpenGLContext: context options: nil];
   if (renderer == nil)
     {
@@ -225,16 +240,17 @@ int main(void)
   [layer setBackgroundColor: red];
   [renderer setLayer: layer];
 
+  [CATransaction commit];
+
   clearToBlue();
   renderFrame(renderer);
 
+  /* Nothing sets a projection or a viewport, so the vertices, which are in
+     points, are taken as normalised device coordinates.  Where a layer lands
+     has nothing to do with where it was put. */
+  testHopeful = YES;
   PASS(pixelIs(WIDTH / 4, HEIGHT / 4, 255, 0, 0),
        "the layer is painted where it sits");
-
-  /* Nothing sets a projection or a viewport, so the vertices, which are in
-     points, are taken as normalised device coordinates.  Anything two units
-     or more across therefore covers the whole drawable. */
-  testHopeful = YES;
   PASS(pixelIs(WIDTH * 3 / 4, HEIGHT * 3 / 4, 0, 0, 255),
        "and nothing is painted where it does not");
   testHopeful = NO;
@@ -257,6 +273,12 @@ int main(void)
     }
 
   clearErrors();
+
+  /* Setting a layer up outside a transaction starts an implicit animation
+     for every property, and the frame would show where each one began. */
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
   renderer = [CARenderer rendererWithNSOpenGLContext: context options: nil];
   if (renderer == nil)
     {
@@ -281,19 +303,21 @@ int main(void)
 
   [renderer setLayer: layer];
 
+  [CATransaction commit];
+
   clearToBlue();
   renderFrame(renderer);
 
-  /* Sublayers are drawn relative to the corner of their superlayer, which
-     is a translation of half its size.  Taken as normalised device
-     coordinates that puts the sublayer off the drawable entirely. */
+  /* A sublayer is drawn relative to the corner of its superlayer, which is a
+     translation of half its size.  Taken as normalised device coordinates
+     that puts the sublayer somewhere else entirely, and the superlayer is
+     the wrong size to be beside it. */
   testHopeful = YES;
   PASS(pixelIs(WIDTH / 4, HEIGHT / 4, 0, 255, 0),
        "a sublayer is painted over its superlayer");
-  testHopeful = NO;
-
   PASS(pixelIs(WIDTH * 3 / 4, HEIGHT * 3 / 4, 255, 0, 0),
        "and the superlayer is still there beside it");
+  testHopeful = NO;
 
   CGColorRelease(red);
   CGColorRelease(green);
@@ -315,6 +339,12 @@ int main(void)
     }
 
   clearErrors();
+
+  /* Setting a layer up outside a transaction starts an implicit animation
+     for every property, and the frame would show where each one began. */
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
   renderer = [CARenderer rendererWithNSOpenGLContext: context options: nil];
   if (renderer == nil)
     {
@@ -329,6 +359,8 @@ int main(void)
   [layer setPosition: CGPointMake(WIDTH / 2, HEIGHT / 2)];
   [layer setBackgroundColor: red];
   [renderer setLayer: layer];
+
+  [CATransaction commit];
 
   clearToBlue();
   renderFrame(renderer);
@@ -360,6 +392,12 @@ int main(void)
     }
 
   clearErrors();
+
+  /* Setting a layer up outside a transaction starts an implicit animation
+     for every property, and the frame would show where each one began. */
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
   renderer = [CARenderer rendererWithNSOpenGLContext: context options: nil];
   if (renderer == nil)
     {
@@ -367,6 +405,8 @@ int main(void)
     }
 
   [renderer setBounds: CGRectMake(0, 0, WIDTH, HEIGHT)];
+  [CATransaction commit];
+
   clearToBlue();
   renderFrame(renderer);
 
