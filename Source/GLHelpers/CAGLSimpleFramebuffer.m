@@ -42,9 +42,13 @@ static NSMutableArray * framebufferStack = nil;
 - (id)initWithWidth: (CGFloat) width
              height: (CGFloat) height
 {
+  GLint previousFramebuffer = 0;
+
   self = [super init];
   if (!self)
     return nil;
+
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &previousFramebuffer);
 
   glGenFramebuffers(1, &_framebufferID);
 
@@ -65,6 +69,11 @@ static NSMutableArray * framebufferStack = nil;
 
   glBindFramebuffer(GL_FRAMEBUFFER_EXT, _framebufferID);
   glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, [_texture textureTarget], [_texture textureID], 0);
+
+  /* Attaching the texture needs this one bound, but a framebuffer that has
+     only been created is not on the stack -bind and -unbind keep, so leave
+     bound whatever was bound before. */
+  glBindFramebuffer(GL_FRAMEBUFFER_EXT, previousFramebuffer);
 
   return self;
 }
