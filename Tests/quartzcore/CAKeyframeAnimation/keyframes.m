@@ -160,6 +160,25 @@ int main(void)
 
   END_SET("time outside the duration")
 
+  START_SET("a keyframe animation with no duration")
+
+  CALayer *layer = [CALayer layer];
+  CAKeyframeAnimation *k =
+    [CAKeyframeAnimation animationWithKeyPath: @"opacity"];
+
+  /* The values end somewhere other than they start, so that holding the
+     last one can be told apart from holding the first. */
+  [k setValues: [NSArray arrayWithObjects:
+    number(0.0), number(0.25), number(1.0), nil]];
+  [k setDuration: 0.0];
+
+  PASS(CLOSE(valueAt(k, 1.0, layer), 1.0),
+       "with no time to run through them it holds the last value");
+  PASS(CLOSE(valueAt(k, 0.0, layer), 1.0),
+       "and it holds it at the time it begins as well");
+
+  END_SET("a keyframe animation with no duration")
+
   START_SET("values that are not numbers")
 
   CALayer *layer = [CALayer layer];

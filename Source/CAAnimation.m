@@ -709,7 +709,9 @@ static id addValues(id value, id byValue, CGFloat sign)
     All supplied values need to be of same data type.
    */
 
-  float fraction = theTime / _duration;
+  /* An animation with no duration has no extent to be part way through: it
+     is at its end from the moment it begins. */
+  float fraction = _duration > 0.0 ? theTime / _duration : 1.0;
 
   /* apply media timing function, if set */
   if ([self timingFunction])
@@ -1211,7 +1213,7 @@ static NSUInteger segmentForFraction(NSArray *keyTimes, NSUInteger segments,
       return [_values objectAtIndex: 0];
     }
 
-  fraction = theTime / _duration;
+  fraction = _duration > 0.0 ? theTime / _duration : 1.0;
   if ([self timingFunction])
     {
       fraction = [[self timingFunction] evaluateYAtX: fraction];
