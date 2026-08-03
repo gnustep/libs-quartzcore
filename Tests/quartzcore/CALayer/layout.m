@@ -118,6 +118,21 @@ int main(void)
 
   END_SET("replacing the sublayers outright")
 
+  START_SET("adding to sublayers that were set outright")
+
+  CALayer *root = settled(NULL);
+  CALayer *added = [CALayer layer];
+
+  [root setSublayers: [NSArray arrayWithObject: [CALayer layer]]];
+
+  PASS_RUNS([root addSublayer: added];,
+            "a layer can be added after the sublayers were set outright")
+  PASS([[root sublayers] count] == 2,
+       "and it joins the one that was set");
+  PASS([added superlayer] == root, "with this layer as its superlayer");
+
+  END_SET("adding to sublayers that were set outright")
+
   START_SET("the bounds changing")
 
   CALayer *root = settled(NULL);
