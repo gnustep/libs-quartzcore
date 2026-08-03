@@ -1142,11 +1142,144 @@ static NSUInteger segmentForFraction(NSArray *keyTimes, NSUInteger segments,
   return index;
 }
 
+/* A path is run through as a list of segments: a line-to or a curve-to is one
+   segment ending at a keyframe point, and a move-to only says where the next
+   one starts.  A quadratic curve is kept as the cubic that draws it. */
+typedef struct
+{
+  CGPoint start;
+  CGPoint control1;
+  CGPoint control2;
+  CGPoint end;
+  BOOL curved;
+} GSCAPathSegment;
+
+typedef struct
+{
+  GSCAPathSegment * segments;
+  NSUInteger count;
+  NSUInteger capacity;
+  CGPoint current;
+  CGPoint subpathStart;
+} GSCAPathSegments;
+
+static void addPathSegment(GSCAPathSegments *list, GSCAPathSegment segment)
+{
+  if (list->count == list->capacity)
+    {
+      list->capacity = list->capacity ? list->capacity * 2 : 8;
+      list->segments = realloc(list->segments,
+                               list->capacity * sizeof(GSCAPathSegment));
+    }
+
+  list->segments[list->count++] = segment;
+}
+
+static void addPathLine(GSCAPathSegments *list, CGPoint end)
+{
+  GSCAPathSegment segment;
+
+  segment.start = list->current;
+  segment.control1 = list->current;
+  segment.control2 = end;
+  segment.end = end;
+  segment.curved = NO;
+  addPathSegment(list, segment);
+  list->current = end;
+}
+
+static void collectPathSegment(void *info, const CGPathElement *element)
+{
+  GSCAPathSegments * list = (GSCAPathSegments *)info;
+  GSCAPathSegment segment;
+
+  switch (element->type)
+    {
+      case kCGPathElementMoveToPoint:
+        list->current = element->points[0];
+        list->subpathStart = list->current;
+        break;
+
+      case kCGPathElementAddLineToPoint:
+        addPathLine(list, element->points[0]);
+        break;
+
+      case kCGPathElementAddQuadCurveToPoint:
+        {
+          CGPoint control = element->points[0];
+          CGPoint end = element->points[1];
+
+          segment.start = list->current;
+          segment.control1 = CGPointMake(
+            list->current.x + 2.0 / 3.0 * (control.x - list->current.x),
+            list->current.y + 2.0 / 3.0 * (control.y - list->current.y));
+          segment.control2 = CGPointMake(
+            end.x + 2.0 / 3.0 * (control.x - end.x),
+            end.y + 2.0 / 3.0 * (control.y - end.y));
+          segment.end = end;
+          segment.curved = YES;
+          addPathSegment(list, segment);
+          list->current = end;
+          break;
+        }
+
+      case kCGPathElementAddCurveToPoint:
+        segment.start = list->current;
+        segment.control1 = element->points[0];
+        segment.control2 = element->points[1];
+        segment.end = element->points[2];
+        segment.curved = YES;
+        addPathSegment(list, segment);
+        list->current = segment.end;
+        break;
+
+      case kCGPathElementCloseSubpath:
+        addPathLine(list, list->subpathStart);
+        break;
+    }
+}
+
+/* Where a segment is when it is FRACTION of the way along. */
+static CGPoint pointOnPathSegment(GSCAPathSegment segment, float fraction)
+{
+  float t = fraction;
+  float u;
+
+  if (!segment.curved)
+    {
+      return CGPointMake(
+        linearInterpolation(segment.start.x, segment.end.x, t),
+        linearInterpolation(segment.start.y, segment.end.y, t));
+    }
+
+  u = 1.0 - t;
+  return CGPointMake(
+    u * u * u * segment.start.x + 3 * u * u * t * segment.control1.x
+      + 3 * u * t * t * segment.control2.x + t * t * t * segment.end.x,
+    u * u * u * segment.start.y + 3 * u * u * t * segment.control1.y
+      + 3 * u * t * t * segment.control2.y + t * t * t * segment.end.y);
+}
+
 @implementation CAKeyframeAnimation
 @synthesize calculationMode=_calculationMode;
 @synthesize values=_values;
 @synthesize keyTimes=_keyTimes;
 @synthesize timingFunctions=_timingFunctions;
+
+- (CGPathRef) path
+{
+  return _path;
+}
+
+- (void) setPath: (CGPathRef)path
+{
+  if (path == _path)
+    return;
+
+  CGPathRetain(path);
+  CGPathRelease(_path);
+  _path = path;
+}
 
 + (id) defaultValueForKey: (NSString *)key
 {
@@ -1180,8 +1313,52 @@ static NSUInteger segmentForFraction(NSArray *keyTimes, NSUInteger segments,
   [_values release];
   [_keyTimes release];
   [_timingFunctions release];
+  CGPathRelease(_path);
 
   [super dealloc];
+}
+
+/* The point the path has reached FRACTION of the way through the animation.
+   The end of each line or curve is a keyframe, and the points between two of
+   them are taken from the line or the curve itself. */
+- (id) valueOnPathAtFraction: (float)fraction
+{
+  GSCAPathSegments list;
+  NSUInteger index;
+  float within = 0.0;
+  CGPoint point;
+
+  list.segments = NULL;
+  list.count = 0;
+  list.capacity = 0;
+  list.current = CGPointZero;
+  list.subpathStart = CGPointZero;
+
+  CGPathApply(_path, &list, collectPathSegment);
+
+  if (list.count == 0)
+    {
+      free(list.segments);
+      return nil;
+    }
+
+  if ([_calculationMode isEqualToString: kCAAnimationDiscrete])
+    {
+      /* The keyframes are the point each segment ends at, with the point the
+         path starts from before them. */
+      index = segmentForFraction(_keyTimes, list.count + 1, fraction, &within);
+      point = index == 0 ? list.segments[0].start
+                         : list.segments[index - 1].end;
+    }
+  else
+    {
+      index = segmentForFraction(_keyTimes, list.count, fraction, &within);
+      point = pointOnPathSegment(list.segments[index], within);
+    }
+
+  free(list.segments);
+
+  return [NSValue valueWithBytes: &point objCType: @encode(CGPoint)];
 }
 
 - (id) calculatedAnimationValueAtTime: (CFTimeInterval)theTime
@@ -1194,8 +1371,9 @@ static NSUInteger segmentForFraction(NSArray *keyTimes, NSUInteger segments,
     other mode interpolates between the two values the time falls between,
     which is what a basic animation does with a from value and a to value.
 
-    Only the linear and discrete modes are calculated.  The paced modes are
-    taken as linear, and an animation along a path is not supported.
+    A path stands in place of the values, and the point it reaches is the
+    value.  Only the linear and discrete modes are calculated; the paced
+    modes are taken as linear.
    */
 
   NSUInteger count = [_values count];
@@ -1204,11 +1382,11 @@ static NSUInteger segmentForFraction(NSArray *keyTimes, NSUInteger segments,
   float within = 0.0;
   CABasicAnimation *segment;
 
-  if (count == 0)
+  if (_path == NULL && count == 0)
     {
       return nil;
     }
-  if (count == 1)
+  if (_path == NULL && count == 1)
     {
       return [_values objectAtIndex: 0];
     }
@@ -1224,6 +1402,11 @@ static NSUInteger segmentForFraction(NSArray *keyTimes, NSUInteger segments,
     fraction = 0.0;
   if (fraction > 1.0)
     fraction = 1.0;
+
+  if (_path != NULL)
+    {
+      return [self valueOnPathAtFraction: fraction];
+    }
 
   if ([_calculationMode isEqualToString: kCAAnimationDiscrete])
     {
