@@ -331,7 +331,7 @@ int main(void)
   [c applyToLayer: other];
 
   PASS(CLOSE([other opacity], 0.25),
-       "applying one that calculates no value leaves the layer alone");
+       "applying one with no values of its own leaves the layer where it was");
 
   END_SET("applying an animation to a layer")
 
