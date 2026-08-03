@@ -251,13 +251,30 @@ NSString *const kCATransitionFromRight = @"fromRight";
 - (CFTimeInterval) activeTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
 {
   /* Slides */
-  CFTimeInterval activeTime = (timeAuthorityLocalTime - [self beginTime]) * [self speed] + [self timeOffset];
+  CFTimeInterval activeTime =
+    [self unclampedActiveTimeWithTimeAuthorityLocalTime: timeAuthorityLocalTime];
 
   /* FIXME: should not be necessary */
   if (activeTime < 0)
     activeTime = 0;
 
   return activeTime;
+}
+
+/* The active time as the slides give it, before the line above hides the
+   part of it that runs before the animation begins.  Whether an animation
+   has begun, and whether it is over, can only be told from this. */
+- (CFTimeInterval) unclampedActiveTimeWithTimeAuthorityLocalTime: (CFTimeInterval)timeAuthorityLocalTime
+{
+  return (timeAuthorityLocalTime - [self beginTime]) * [self speed]
+    + [self timeOffset];
+}
+
+/* How long the animation runs for altogether, which is what the layer uses
+   to decide it is over.  Zero means it has no end. */
+- (CFTimeInterval) activeDuration
+{
+  return [self duration] * [self repeatCount] * ([self autoreverses] ? 2 : 1);
 }
 
 - (CFTimeInterval) localTimeWithTimeAuthority: (id<CAMediaTiming>)timeAuthority
@@ -410,13 +427,44 @@ NSString *const kCATransitionFromRight = @"fromRight";
 
 - (void) applyToLayer: (CALayer *)layer
 {
-  CFTimeInterval theTime = [self localTimeWithTimeAuthority: [layer modelLayer]];
+  /* The model layer keeps the time, falling back to the layer itself, since
+     -modelLayer answers nothing until #35 lands. */
+  CALayer * authority = [layer modelLayer] ? [layer modelLayer] : layer;
+  CFTimeInterval activeTime =
+    [self unclampedActiveTimeWithTimeAuthorityLocalTime: [authority localTime]];
+  CFTimeInterval activeDuration = [self activeDuration];
+  NSString * fillMode = [self fillMode];
+  CFTimeInterval theTime;
 
-  /* FIXME: temporary check until we have fillMode implementation */
-  /* Also, why do we get theTime < 0? */
-  if (theTime < 0)
+  /* Outside its own run an animation leaves the layer alone unless its fill
+     mode says otherwise: backwards holds the value it starts from before it
+     begins, forwards holds the one it ends at once it is over, and both does
+     the two.  Any other fill mode, the one an animation starts with among
+     them, shows nothing at either end. */
+  if (activeTime < 0)
     {
-      return;
+      if (![fillMode isEqualToString: kCAFillModeBackwards]
+          && ![fillMode isEqualToString: kCAFillModeBoth])
+        {
+          return;
+        }
+
+      theTime = 0;
+    }
+  else if (activeDuration > 0 && activeTime > activeDuration)
+    {
+      if (![fillMode isEqualToString: kCAFillModeForwards]
+          && ![fillMode isEqualToString: kCAFillModeBoth])
+        {
+          return;
+        }
+
+      /* An animation that reverses ends where it began. */
+      theTime = [self autoreverses] ? 0.0 : [self duration];
+    }
+  else
+    {
+      theTime = [self localTimeWithTimeAuthority: authority];
     }
 
   id modelValue = [[layer modelLayer] valueForKeyPath: [self keyPath]];
