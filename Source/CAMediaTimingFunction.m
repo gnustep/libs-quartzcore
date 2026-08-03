@@ -35,11 +35,11 @@
 #import "QuartzCore/CAMediaTimingFunction.h"
 #import "CAMediaTimingFunction+FrameworkPrivate.h"
 
-NSString *const kCAMediaTimingFunctionDefault = @"kCAMediaTimingFunctionDefault";
-NSString *const kCAMediaTimingFunctionEaseInEaseOut = @"kCAMediaTimingFunctionEaseInEaseOut";
-NSString *const kCAMediaTimingFunctionEaseIn = @"kCAMediaTimingFunctionEaseIn";
-NSString *const kCAMediaTimingFunctionEaseOut = @"kCAMediaTimingFunctionEaseOut";
-NSString *const kCAMediaTimingFunctionLinear = @"kCAMediaTimingFunctionLinear";
+NSString *const kCAMediaTimingFunctionDefault = @"default";
+NSString *const kCAMediaTimingFunctionEaseInEaseOut = @"easeInEaseOut";
+NSString *const kCAMediaTimingFunctionEaseIn = @"easeIn";
+NSString *const kCAMediaTimingFunctionEaseOut = @"easeOut";
+NSString *const kCAMediaTimingFunctionLinear = @"linear";
 
 
 // start and end point are implicitly (0.0, 0.0) and (1.0, 1.0)
