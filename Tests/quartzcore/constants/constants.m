@@ -98,6 +98,19 @@ int main(void)
 
   testHopeful = NO;
 
+  PASS([kCATransition isEqualToString: @"transition"],
+       "kCATransition is \"transition\"");
+  PASS([kCATransitionMoveIn isEqualToString: @"moveIn"],
+       "kCATransitionMoveIn is \"moveIn\"");
+  PASS([kCATransitionFromTop isEqualToString: @"fromTop"],
+       "kCATransitionFromTop is \"fromTop\"");
+  PASS([kCATransitionFromBottom isEqualToString: @"fromBottom"],
+       "kCATransitionFromBottom is \"fromBottom\"");
+  PASS([kCATransitionFromLeft isEqualToString: @"fromLeft"],
+       "kCATransitionFromLeft is \"fromLeft\"");
+  PASS([kCATransitionFromRight isEqualToString: @"fromRight"],
+       "kCATransitionFromRight is \"fromRight\"");
+
   END_SET("Core Animation string constants")
 
   [pool release];

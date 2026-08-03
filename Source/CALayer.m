@@ -60,6 +60,8 @@ NSString *const kCAGravityTopRight = @"topRight";
 NSString *const kCAGravityBottomLeft = @"bottomLeft";
 NSString *const kCAGravityBottomRight = @"bottomRight";
 
+NSString *const kCATransition = @"transition";
+
 @interface CALayer()
 @property (nonatomic, assign) CALayer * superlayer;
 @property (nonatomic, retain) NSMutableDictionary * animations;
