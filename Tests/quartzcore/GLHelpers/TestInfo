@@ -1,3 +1,3 @@
 # The GL helpers and the backing store are GNUstep classes with no
 # counterpart in Apple QuartzCore.
-APPLE_SKIP_TESTS="glhelpers.m"
+APPLE_SKIP_TESTS="glhelpers.m shaders.m"
