@@ -691,25 +691,6 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           from = [NSValue valueWithBytes: &fromPt objCType: @encode(CGPoint)];
           to = [NSValue valueWithBytes: &toPt objCType: @encode(CGPoint)];
         }
-#if GNUSTEP
-      if (!strcmp([from objCType], @encode(NSPoint)))
-        {
-          static BOOL warned = NO;
-          if (!warned)
-            {
-              NSLog(@"CAAnimation: one time warning: bug in gnustep-base: despite storing cgpoint, we ended up with a nspoint.");
-              if (sizeof(NSPoint) != sizeof(CGPoint))
-                NSLog(@"(that's even more problematic since currently sizeof(NSPoint)==%d and sizeof(CGPoint)==%d.", sizeof(NSPoint), sizeof(CGPoint));
-            }
-          warned = YES;
-
-          NSPoint fromPt = [from pointValue];
-          NSPoint toPt = [to pointValue];
-          NSPoint valuePt = NSMakePoint(linearInterpolation(fromPt.x, toPt.x, fraction),
-                                        linearInterpolation(fromPt.y, toPt.y, fraction));
-          return [NSValue valueWithPoint: valuePt];
-        }
-#endif
       if (!strcmp([from objCType], @encode(CGPoint)))
         {
 
@@ -739,25 +720,6 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           to = [NSValue valueWithBytes: &toSz objCType: @encode(CGSize)];
 
         }
-#if GNUSTEP
-      if (!strcmp([from objCType], @encode(NSSize)))
-        {
-          static BOOL warned = NO;
-          if (!warned)
-            {
-              NSLog(@"CAAnimation: one time warning: bug in gnustep-base: despite storing cgsize, we ended up with a nssize.");
-              if (sizeof(NSSize) != sizeof(CGSize))
-                NSLog(@"(that's even more problematic since currently sizeof(NSSize)==%d and sizeof(CGSize)==%d.", sizeof(NSSize), sizeof(CGSize));
-            }
-          warned = YES;
-
-          NSSize fromSz = [from sizeValue];
-          NSSize toSz = [to sizeValue];
-          NSSize valueSz = NSMakeSize(linearInterpolation(fromSz.width, toSz.height, fraction),
-                                      linearInterpolation(fromSz.width, toSz.height, fraction));
-          return [NSValue valueWithSize: valueSz];
-        }
-#endif
       if (!strcmp([from objCType], @encode(CGSize)))
         {
 
@@ -788,28 +750,6 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
           from = [NSValue valueWithBytes:&fromRect objCType:@encode(CGRect)];
           to = [NSValue valueWithBytes:&toRect objCType:@encode(CGRect)];
         }
-#if GNUSTEP
-      if (!strcmp([from objCType], @encode(NSRect)))
-        {
-          static BOOL warned = NO;
-          if (!warned)
-            {
-              NSLog(@"CAAnimation: one time warning: bug in gnustep-base: despite storing cgrect, we ended up with a nsrect.");
-              if (sizeof(NSRect) != sizeof(CGRect))
-                NSLog(@"(that's even more problematic since currently sizeof(NSRect)==%d and sizeof(CGRect)==%d.", sizeof(NSRect), sizeof(CGRect));
-            }
-          warned = YES;
-
-          NSRect fromRect = [from rectValue];
-          NSRect toRect = [to rectValue];
-          NSRect valueRect = NSMakeRect(linearInterpolation(fromRect.origin.x, toRect.origin.x, fraction),
-                                        linearInterpolation(fromRect.origin.y, toRect.origin.y, fraction),
-                                        linearInterpolation(fromRect.size.width, toRect.size.width, fraction),
-                                        linearInterpolation(fromRect.size.height, toRect.size.height, fraction));
-          return [NSValue valueWithRect: valueRect];
-        }
-#endif
-
       if (!strcmp([from objCType], @encode(CGRect)))
         {
           /* NSValue doesn't come with CGRect support.
