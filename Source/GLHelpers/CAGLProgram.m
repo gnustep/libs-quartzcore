@@ -78,22 +78,19 @@
 
 - (void) validate
 {
-  [_shaders makeObjectsPerformSelector: @selector(compile)
-                            withObject: nil];
+  /* A program has to be linked before GL will validate it, and linking a
+     second time would attach every shader twice. */
+  if ([self linkStatus] == GL_FALSE)
+    {
+      [self link];
+    }
 
-  /* TODO: Make printing logs depend on a user default */
-  [_shaders makeObjectsPerformSelector: @selector(printLog)
-                            withObject: nil];
-
-  [_shaders makeObjectsPerformSelector: @selector(attachToProgram:)
-                            withObject: self];
-
-  glLinkProgram(_programID);
+  glValidateProgram(_programID);
 }
 - (GLint) validateStatus
 {
   GLint status;
-  glGetProgramiv(_programID, GL_LINK_STATUS, &status);
+  glGetProgramiv(_programID, GL_VALIDATE_STATUS, &status);
   return status;
 }
 - (void) printValidateLog
