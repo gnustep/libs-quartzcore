@@ -36,7 +36,20 @@
 #import "CAMediaTimingFunction+FrameworkPrivate.h"
 #import "CALayer+FrameworkPrivate.h"
 
-NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
+NSString *const kCAAnimationLinear = @"linear";
+NSString *const kCAAnimationDiscrete = @"discrete";
+NSString *const kCAAnimationPaced = @"paced";
+NSString *const kCAAnimationCubic = @"cubic";
+NSString *const kCAAnimationCubicPaced = @"cubicPaced";
+
+NSString *const kCATransitionFade = @"fade";
+NSString *const kCATransitionMoveIn = @"moveIn";
+NSString *const kCATransitionPush = @"push";
+NSString *const kCATransitionReveal = @"reveal";
+NSString *const kCATransitionFromTop = @"fromTop";
+NSString *const kCATransitionFromBottom = @"fromBottom";
+NSString *const kCATransitionFromLeft = @"fromLeft";
+NSString *const kCATransitionFromRight = @"fromRight";
 
 @interface CAAnimation ()
 @property (retain) NSPointerArray *layers;

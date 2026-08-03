@@ -27,49 +27,49 @@
 #import <Foundation/Foundation.h>
 #import "QuartzCore/CAFilter.h"
 
-NSString *const kCAFilterClear = @"kCAFilterClear";
-NSString *const kCAFilterCopy = @"kCAFilterCopy";
-NSString *const kCAFilterDestAtop = @"kCAFilterDestAtop";
-NSString *const kCAFilterDestIn = @"kCAFilterDestIn";
-NSString *const kCAFilterDestOut = @"kCAFilterDestOut";
-NSString *const kCAFilterDestOver = @"kCAFilterDestOver";
+NSString *const kCAFilterClear = @"clear";
+NSString *const kCAFilterCopy = @"copy";
+NSString *const kCAFilterDestAtop = @"destAtop";
+NSString *const kCAFilterDestIn = @"destIn";
+NSString *const kCAFilterDestOut = @"destOut";
+NSString *const kCAFilterDestOver = @"destOver";
 NSString *const kCAFilterFog = @"kCAFilterFog";
-NSString *const kCAFilterGaussianBlur = @"kCAFilterGaussianBlur";
-NSString *const kCAFilterLanczos = @"kCAFilterLanczos";
+NSString *const kCAFilterGaussianBlur = @"gaussianBlur";
+NSString *const kCAFilterLanczos = @"lanczos";
 NSString *const kCAFilterLighting = @"kCAFilterLighting";
-NSString *const kCAFilterLinear = @"kCAFilterLinear";
-NSString *const kCAFilterMultiply = @"kCAFilterMultiply";
-NSString *const kCAFilterMultiplyColor = @"kCAFilterMultiplyColor";
+NSString *const kCAFilterLinear = @"linear";
+NSString *const kCAFilterMultiply = @"multiply";
+NSString *const kCAFilterMultiplyColor = @"multiplyColor";
 NSString *const kCAFilterMultiplyGradient = @"kCAFilterMultiplyGradient";
-NSString *const kCAFilterNearest = @"kCAFilterNearest";
-NSString *const kCAFilterPageCurl = @"kCAFilterPageCurl";
-NSString *const kCAFilterPlusL = @"kCAFilterPlusL";
-NSString *const kCAFilterSourceAtop = @"kCAFilterSourceAtop";
-NSString *const kCAFilterSourceIn = @"kCAFilterSourceIn";
-NSString *const kCAFilterSourceOut = @"kCAFilterSourceOut";
-NSString *const kCAFilterSourceOver = @"kCAFilterSourceOver";
-NSString *const kCAFilterTrilinear = @"kCAFilterTrilinear";
-NSString *const kCAFilterXor = @"kCAFilterXor";
+NSString *const kCAFilterNearest = @"nearest";
+NSString *const kCAFilterPageCurl = @"pageCurl";
+NSString *const kCAFilterPlusL = @"plusL";
+NSString *const kCAFilterSourceAtop = @"sourceAtop";
+NSString *const kCAFilterSourceIn = @"sourceIn";
+NSString *const kCAFilterSourceOut = @"sourceOut";
+NSString *const kCAFilterSourceOver = @"sourceOver";
+NSString *const kCAFilterTrilinear = @"trilinear";
+NSString *const kCAFilterXor = @"xor";
 
-NSString *const kCAFilterColorInvert = @"kCAFilterColorInvert";
-NSString *const kCAFilterColorMatrix = @"kCAFilterColorMatrix";
-NSString *const kCAFilterColorMonochrome = @"kCAFilterColorMonochrome";
-NSString *const kCAFilterColorHueRotate = @"kCAFilterColorHueRotate";
-NSString *const kCAFilterColorSaturate = @"kCAFilterColorSaturate";
-NSString *const kCAFilterPlusD = @"kCAFilterPlusD";
+NSString *const kCAFilterColorInvert = @"colorInvert";
+NSString *const kCAFilterColorMatrix = @"colorMatrix";
+NSString *const kCAFilterColorMonochrome = @"colorMonochrome";
+NSString *const kCAFilterColorHueRotate = @"colorHueRotate";
+NSString *const kCAFilterColorSaturate = @"colorSaturate";
+NSString *const kCAFilterPlusD = @"plusD";
 
-NSString *const kCAFilterNormalBlendMode = @"kCAFilterNormalBlendMode";
-NSString *const kCAFilterMultiplyBlendMode = @"kCAFilterMultiplyBlendMode";
-NSString *const kCAFilterScreenBlendMode = @"kCAFilterScreenBlendMode";
-NSString *const kCAFilterOverlayBlendMode = @"kCAFilterOverlayBlendMode";
-NSString *const kCAFilterDarkenBlendMode = @"kCAFilterDarkenBlendMode";
-NSString *const kCAFilterLightenBlendMode = @"kCAFilterLightenBlendMode";
-NSString *const kCAFilterColorDodgeBlendMode = @"kCAFilterColorDodgeBlendMode";
-NSString *const kCAFilterColorBurnBlendMode = @"kCAFilterColorBurnBlendMode";
-NSString *const kCAFilterSoftLightBlendMode = @"kCAFilterSoftLightBlendMode";
-NSString *const kCAFilterHardLightBlendMode = @"kCAFilterHardLightBlendMode";
-NSString *const kCAFilterDifferenceBlendMode = @"kCAFilterDifferenceBlendMode";
-NSString *const kCAFilterExclusionBlendMode = @"kCAFilterExclusionBlendMode";
+NSString *const kCAFilterNormalBlendMode = @"normalBlendMode";
+NSString *const kCAFilterMultiplyBlendMode = @"multiplyBlendMode";
+NSString *const kCAFilterScreenBlendMode = @"screenBlendMode";
+NSString *const kCAFilterOverlayBlendMode = @"overlayBlendMode";
+NSString *const kCAFilterDarkenBlendMode = @"darkenBlendMode";
+NSString *const kCAFilterLightenBlendMode = @"lightenBlendMode";
+NSString *const kCAFilterColorDodgeBlendMode = @"colorDodgeBlendMode";
+NSString *const kCAFilterColorBurnBlendMode = @"colorBurnBlendMode";
+NSString *const kCAFilterSoftLightBlendMode = @"softLightBlendMode";
+NSString *const kCAFilterHardLightBlendMode = @"hardLightBlendMode";
+NSString *const kCAFilterDifferenceBlendMode = @"differenceBlendMode";
+NSString *const kCAFilterExclusionBlendMode = @"exclusionBlendMode";
 
 @implementation CAFilter
 @end

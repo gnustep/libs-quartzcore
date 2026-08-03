@@ -228,6 +228,29 @@ CATransform3D CATransform3DInvert(CATransform3D t)
     }
 }
 
+CATransform3D CATransform3DMakeAffineTransform(CGAffineTransform m)
+{
+  CATransform3D t = CATransform3DIdentity;
+  t.m11 = m.a;  t.m12 = m.b;
+  t.m21 = m.c;  t.m22 = m.d;
+  t.m41 = m.tx; t.m42 = m.ty;
+  return t;
+}
+
+bool CATransform3DIsAffine(CATransform3D t)
+{
+  return t.m13 == 0 && t.m14 == 0
+      && t.m23 == 0 && t.m24 == 0
+      && t.m31 == 0 && t.m32 == 0 && t.m34 == 0
+      && t.m43 == 0
+      && t.m33 == 1 && t.m44 == 1;
+}
+
+CGAffineTransform CATransform3DGetAffineTransform(CATransform3D t)
+{
+  return CGAffineTransformMake(t.m11, t.m12, t.m21, t.m22, t.m41, t.m42);
+}
+
 @implementation NSValue (CATransform3D)
 
 + (NSValue *) valueWithCATransform3D:(CATransform3D)transform
