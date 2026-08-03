@@ -274,6 +274,15 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
          just like Opal's Objective-C class instances */
       return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
     }
+  if ([key isEqualToString: @"borderColor"])
+    {
+      /* opaque black, as for the shadow colour above */
+      return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
+    }
+  if ([key isEqualToString: @"contentsGravity"])
+    {
+      return kCAGravityResize;
+    }
   if ([key isEqualToString: @"shadowOffset"])
     {
       CGSize offset = CGSizeMake(0.0, -3.0);
@@ -325,6 +334,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
         @"backgroundColor", @"borderColor", @"contentsScale",
+        @"contentsGravity",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
@@ -760,7 +770,34 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (id) modelLayer
 {
-  return _modelLayer;
+  /* A layer that is not standing in for another one is its own model.
+     -isPresentationLayer reads the ivar directly, so it is unaffected. */
+  return _modelLayer ? _modelLayer : self;
+}
+
+- (void) setSublayers: (NSArray *)sublayers
+{
+  NSArray *oldSublayers = _sublayers;
+  CALayer *layer;
+
+  if (sublayers == _sublayers)
+    return;
+
+  /* The layers on their way out lose their superlayer, and the ones coming
+     in take this layer as theirs. */
+  for (layer in oldSublayers)
+    {
+      if (![sublayers containsObject: layer])
+        [layer setSuperlayer: nil];
+    }
+
+  _sublayers = [sublayers mutableCopy];
+  [oldSublayers release];
+
+  for (layer in _sublayers)
+    {
+      [layer setSuperlayer: self];
+    }
 }
 
 - (void) setModelLayer: (id)modelLayer
