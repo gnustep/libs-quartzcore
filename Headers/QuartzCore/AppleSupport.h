@@ -75,6 +75,7 @@
 #define CACurrentMediaTime GSCACurrentMediaTime
 
 /* CADisplayLink.h */
+#define CADisplayLink GSCADisplayLink
 
 /* CAEAGLLayer.h */
 

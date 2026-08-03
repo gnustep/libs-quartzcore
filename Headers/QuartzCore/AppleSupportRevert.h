@@ -52,6 +52,7 @@
 #undef CACurrentMediaTime
 
 /* CADisplayLink.h */
+#undef CADisplayLink
 
 /* CAEAGLLayer.h */
 
