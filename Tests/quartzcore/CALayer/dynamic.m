@@ -33,6 +33,9 @@ DYNAMIC_LAYER(DynLongLongLayer, long long)
 DYNAMIC_LAYER(DynFloatLayer, float)
 DYNAMIC_LAYER(DynDoubleLayer, double)
 DYNAMIC_LAYER(DynPointLayer, CGPoint)
+DYNAMIC_LAYER(DynSizeLayer, CGSize)
+DYNAMIC_LAYER(DynRectLayer, CGRect)
+DYNAMIC_LAYER(DynTransformLayer, CATransform3D)
 
 @interface DynObjectLayer : CALayer
 @property (nonatomic, retain) NSString *p;
@@ -133,23 +136,50 @@ int main(void)
 
   START_SET("a dynamic property holding a structure")
 
-  /* Apple synthesises these too. */
-  testHopeful = YES;
-  @try
-    {
-      DynPointLayer *l = [DynPointLayer layer];
+  DynPointLayer *point = [DynPointLayer layer];
+  DynSizeLayer *size = [DynSizeLayer layer];
+  DynRectLayer *rect = [DynRectLayer layer];
+  DynTransformLayer *transform = [DynTransformLayer layer];
 
-      [l setP: CGPointMake(3, 4)];
-      PASS([l p].x == 3 && [l p].y == 4,
-           "a CGPoint dynamic property keeps what it is set to");
-    }
-  @catch (NSException *e)
-    {
-      PASS(NO, "a CGPoint dynamic property keeps what it is set to");
-    }
-  testHopeful = NO;
+  PASS([point p].x == 0 && [point p].y == 0, "a fresh CGPoint property is 0");
+  [point setP: CGPointMake(3, 4)];
+  PASS([point p].x == 3 && [point p].y == 4,
+       "a CGPoint dynamic property keeps what it is set to");
+
+  PASS([size p].width == 0 && [size p].height == 0,
+       "a fresh CGSize property is 0");
+  [size setP: CGSizeMake(5, 6)];
+  PASS([size p].width == 5 && [size p].height == 6,
+       "a CGSize dynamic property keeps what it is set to");
+
+  /* Not the zero rectangle: an unset one reads as the null rectangle. */
+  PASS(CGRectIsNull([rect p]), "a fresh CGRect property is the null rectangle");
+  [rect setP: CGRectMake(1, 2, 3, 4)];
+  PASS(CGRectEqualToRect([rect p], CGRectMake(1, 2, 3, 4)),
+       "a CGRect dynamic property keeps what it is set to");
+
+  /* Nor the zero transform: an unset one reads as the identity. */
+  PASS(CATransform3DIsIdentity([transform p]),
+       "a fresh CATransform3D property is the identity");
+  [transform setP: CATransform3DMakeScale(2, 3, 4)];
+  PASS([transform p].m11 == 2 && [transform p].m22 == 3
+       && [transform p].m33 == 4,
+       "a CATransform3D dynamic property keeps what it is set to");
 
   END_SET("a dynamic property holding a structure")
+
+  START_SET("a structure property set by its key")
+
+  DynPointLayer *l = [DynPointLayer layer];
+  CGPoint p = CGPointMake(7, 8);
+
+  [l setValue: [NSValue valueWithBytes: &p objCType: @encode(CGPoint)]
+       forKey: @"p"];
+  PASS([l p].x == 7 && [l p].y == 8,
+       "a structure set by its key reaches the property");
+  PASS([l valueForKey: @"p"] != nil, "and can be read back by key");
+
+  END_SET("a structure property set by its key")
 
   [pool release];
   return 0;

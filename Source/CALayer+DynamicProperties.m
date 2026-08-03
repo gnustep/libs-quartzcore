@@ -251,6 +251,34 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
       return method_getImplementation(method);
     }
 
+  if ([type hasPrefix: @"{CGPoint="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForPoints));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"{CGSize="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForSizes));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"{CGRect="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForRects));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"{CATransform3D="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForTransforms));
+      return method_getImplementation(method);
+    }
+
   [NSException raise: NSGenericException
               format: @"%@ is not a supported data type for dynamic synthesis", type];
 
@@ -370,6 +398,34 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
       /* unsigned long long integers */
       Method method = class_getInstanceMethod([self class],
                                               @selector(_dynamicPropertySetterForUnsignedLongLongIntegers:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"{CGPoint="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForPoints:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"{CGSize="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForSizes:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"{CGRect="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForRects:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"{CATransform3D="])
+    {
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForTransforms:));
       return method_getImplementation(method);
     }
 
@@ -511,6 +567,60 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
 - (unsigned long long int) _dynamicPropertyGetterForUnsignedLongLongIntegers
 {
   return [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] unsignedLongLongValue];
+}
+
+- (void) _dynamicPropertySetterForPoints: (CGPoint)point
+{
+  [_dynamicPropertyValueDict setValue: [NSValue valueWithBytes: &point objCType: @encode(CGPoint)] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (CGPoint) _dynamicPropertyGetterForPoints
+{
+  CGPoint point = CGPointZero;
+
+  [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] getValue: &point];
+  return point;
+}
+
+- (void) _dynamicPropertySetterForSizes: (CGSize)size
+{
+  [_dynamicPropertyValueDict setValue: [NSValue valueWithBytes: &size objCType: @encode(CGSize)] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (CGSize) _dynamicPropertyGetterForSizes
+{
+  CGSize size = CGSizeZero;
+
+  [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] getValue: &size];
+  return size;
+}
+
+- (void) _dynamicPropertySetterForRects: (CGRect)rect
+{
+  [_dynamicPropertyValueDict setValue: [NSValue valueWithBytes: &rect objCType: @encode(CGRect)] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (CGRect) _dynamicPropertyGetterForRects
+{
+  /* An unset rectangle reads as the null rectangle rather than the zero one,
+     and an unset transform as the identity. */
+  CGRect rect = CGRectNull;
+
+  [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] getValue: &rect];
+  return rect;
+}
+
+- (void) _dynamicPropertySetterForTransforms: (CATransform3D)transform
+{
+  [_dynamicPropertyValueDict setValue: [NSValue valueWithBytes: &transform objCType: @encode(CATransform3D)] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (CATransform3D) _dynamicPropertyGetterForTransforms
+{
+  CATransform3D transform = CATransform3DIdentity;
+
+  [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] getValue: &transform];
+  return transform;
 }
 
 - (void) _dynamicPropertySetterForUnsignedLongLongIntegers: (unsigned long long int)number
