@@ -37,9 +37,16 @@
 #undef CAPropertyAnimation
 #undef CABasicAnimation
 #undef CAKeyframeAnimation
+#undef kCAAnimationLinear
 #undef kCAAnimationDiscrete
+#undef kCAAnimationPaced
+#undef kCAAnimationCubic
+#undef kCAAnimationCubicPaced
 #undef CATransition
+#undef kCATransitionFade
 #undef kCATransitionMoveIn
+#undef kCATransitionPush
+#undef kCATransitionReveal
 #undef kCATransitionFromTop
 #undef kCATransitionFromBottom
 #undef kCATransitionFromLeft
@@ -73,6 +80,8 @@
 #undef kCAGravityTopRight
 #undef kCAGravityBottomLeft
 #undef kCAGravityBottomRight
+#undef kCAOnOrderIn
+#undef kCAOnOrderOut
 #undef kCATransition
 
 #undef CALayer

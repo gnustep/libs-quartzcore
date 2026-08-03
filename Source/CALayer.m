@@ -47,18 +47,22 @@
 
 static CFTimeInterval currentFrameBeginTime = 0;
 
-NSString *const kCAGravityResize = @"CAGravityResize";
-NSString *const kCAGravityResizeAspect = @"CAGravityResizeAspect";
-NSString *const kCAGravityResizeAspectFill = @"CAGravityResizeAspectFill";
-NSString *const kCAGravityCenter = @"CAGravityCenter";
-NSString *const kCAGravityTop = @"CAGravityTop";
-NSString *const kCAGravityBottom = @"CAGravityBottom";
-NSString *const kCAGravityLeft = @"CAGravityLeft";
-NSString *const kCAGravityRight = @"CAGravityRight";
-NSString *const kCAGravityTopLeft = @"CAGravityTopLeft";
-NSString *const kCAGravityTopRight = @"CAGravityTopRight";
-NSString *const kCAGravityBottomLeft = @"CAGravityBottomLeft";
-NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
+NSString *const kCAGravityResize = @"resize";
+NSString *const kCAGravityResizeAspect = @"resizeAspect";
+NSString *const kCAGravityResizeAspectFill = @"resizeAspectFill";
+NSString *const kCAGravityCenter = @"center";
+NSString *const kCAGravityTop = @"top";
+NSString *const kCAGravityBottom = @"bottom";
+NSString *const kCAGravityLeft = @"left";
+NSString *const kCAGravityRight = @"right";
+NSString *const kCAGravityTopLeft = @"topLeft";
+NSString *const kCAGravityTopRight = @"topRight";
+NSString *const kCAGravityBottomLeft = @"bottomLeft";
+NSString *const kCAGravityBottomRight = @"bottomRight";
+
+NSString *const kCAOnOrderIn = @"onOrderIn";
+NSString *const kCAOnOrderOut = @"onOrderOut";
+NSString *const kCATransition = @"transition";
 
 @interface CALayer()
 @property (nonatomic, assign) CALayer * superlayer;
@@ -71,6 +75,24 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 - (void)setModelLayer: (id)modelLayer;
 @end
 
+
+/* The 2D part of a layer transform, as an affine transform. */
+static CGAffineTransform
+CALayerAffineOf(CATransform3D t)
+{
+  return CGAffineTransformMake(t.m11, t.m12, t.m21, t.m22, t.m41, t.m42);
+}
+
+/* Apply `t` about `pivot` rather than about the origin. */
+static CGPoint
+CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
+{
+  CGPoint q = CGPointMake(p.x - pivot.x, p.y - pivot.y);
+
+  q = CGPointApplyAffineTransform(q, t);
+  return CGPointMake(q.x + pivot.x, q.y + pivot.y);
+}
+
 @implementation CALayer
 
 @synthesize delegate=_delegate;
@@ -79,7 +101,6 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 @synthesize renderer=_renderer;
 @synthesize superlayer=_superlayer;
 @synthesize sublayers=_sublayers;
-@synthesize frame=_frame;
 @synthesize bounds=_bounds;
 @synthesize anchorPoint=_anchorPoint;
 @synthesize position=_position;
@@ -139,12 +160,11 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
 
 - (void) setRenderer: (CARenderer *)renderer
 {
-  if(renderer != _renderer)
-    {
-      CARenderer * temp = _renderer;
-      _renderer = renderer;
-      [temp release];
-    }
+  /* A layer does not own its renderer; the renderer owns the layer.  What
+     stood here released the renderer it was letting go of, which it had
+     never retained, so a renderer given a layer and then given nil was
+     released once too often and died under its owner. */
+  _renderer = renderer;
 }
 
 /* *** dynamic synthesis of properties *** */
@@ -232,6 +252,10 @@ NSString *const kCAGravityBottomRight = @"CAGravityBottomRight";
   if ([key isEqualToString: @"shouldRasterize"])
     {
       return [NSNumber numberWithBool: NO];
+    }
+  if ([key isEqualToString: @"contentsScale"])
+    {
+      return [NSNumber numberWithDouble: 1.0];
     }
   if ([key isEqualToString: @"opacity"])
     {
@@ -502,8 +526,54 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 #endif
 
+/* The rectangle the bounds size occupies around the anchor point, with the
+   layer transform applied.  Its origin is relative to the position. */
+- (CGRect) _transformedBoundsRect
+{
+  CGAffineTransform affine;
+  CGRect r;
+
+  affine = CGAffineTransformMake(_transform.m11, _transform.m12,
+                                 _transform.m21, _transform.m22,
+                                 _transform.m41, _transform.m42);
+  r = CGRectMake(-_anchorPoint.x * _bounds.size.width,
+                 -_anchorPoint.y * _bounds.size.height,
+                 _bounds.size.width, _bounds.size.height);
+  return CGRectApplyAffineTransform(r, affine);
+}
+
+- (CGRect) frame
+{
+  CGRect r = [self _transformedBoundsRect];
+
+  r.origin.x += _position.x;
+  r.origin.y += _position.y;
+  return r;
+}
+
+- (void) setFrame: (CGRect)frame
+{
+  CGAffineTransform affine;
+  CGRect bounds = _bounds;
+  CGRect r;
+
+  affine = CGAffineTransformMake(_transform.m11, _transform.m12,
+                                 _transform.m21, _transform.m22,
+                                 _transform.m41, _transform.m42);
+  frame = CGRectStandardize(frame);
+  bounds.size = CGSizeApplyAffineTransform(frame.size,
+                                           CGAffineTransformInvert(affine));
+  [self setBounds: bounds];
+
+  r = [self _transformedBoundsRect];
+  [self setPosition: CGPointMake(frame.origin.x - r.origin.x,
+                                 frame.origin.y - r.origin.y)];
+}
+
 - (void) setBounds: (CGRect)bounds
 {
+  bounds = CGRectStandardize(bounds);
+
   if (CGRectEqualToRect(bounds, _bounds))
     return;
 
@@ -865,6 +935,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
 
+  [layer removeFromSuperlayer];
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
 }
@@ -881,6 +952,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
 
+  [layer removeFromSuperlayer];
   [mutableSublayers insertObject: layer atIndex: index];
   [layer setSuperlayer: self];
 }
@@ -888,8 +960,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSInteger siblingIndex;
 
-  NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
+  [layer removeFromSuperlayer];
+  siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex];
   [layer setSuperlayer: self];
 }
@@ -897,8 +971,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
 {
   NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSInteger siblingIndex;
 
-  NSInteger siblingIndex = [mutableSublayers indexOfObject: sibling];
+  [layer removeFromSuperlayer];
+  siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
 }
@@ -1181,18 +1257,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       /* Return the value */
       return action;
     }
-  /* It's nil? That's it. Now we can only generate our own animation. */
-
-  /***********************/
-
-  /* construct new animation */
-  CABasicAnimation * animation = [CABasicAnimation animationWithKeyPath: key];
-  if ([self isPresentationLayer])
-    [animation setFromValue: [self valueForKeyPath: key]];
-  else
-    [animation setFromValue: [[self presentationLayer] valueForKeyPath: key]];
-  return animation;
-
+  /* It's nil? That's it: nothing here offers an action.  Saying so is the
+     answer.  What a change with no action of its own should do is for the
+     caller to decide, and CAImplicitAnimationObserver is the caller that
+     decides, by building an animation of its own. */
+  return nil;
 }
 
 - (id)valueForUndefinedKey: (NSString *)key
@@ -1248,12 +1317,193 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [super setValue: value forUndefinedKey: key];
 }
 
+/* Geometry conversion.
+ *
+ * A point is carried from a layer to the space its superlayer uses, and the
+ * other way, one level at a time; a conversion between any two layers is the
+ * first walked up to its root and the second walked back down.  Going up, the
+ * point is taken relative to the layer's bounds origin and anchor point, put
+ * through the layer's own transform and offset by its position, and then, if
+ * the superlayer carries a sublayer transform, put through that about the
+ * superlayer's anchor point.  Going down reverses each of those steps.
+ *
+ * A layer with no superlayer is its own root, so two layers in different trees
+ * convert through the root each of them has.
+ */
+
+/* The point moved from this layer's space into its superlayer's space. */
+- (CGPoint) _pointToSuperlayer: (CGPoint)p
+{
+  CGRect        b = [self bounds];
+  CGPoint       anchor = [self anchorPoint];
+  CGPoint       position = [self position];
+  CALayer      *above = [self superlayer];
+  CGPoint       q;
+
+  q = CGPointMake(p.x - b.origin.x - anchor.x * b.size.width,
+                  p.y - b.origin.y - anchor.y * b.size.height);
+  q = CGPointApplyAffineTransform(q, CALayerAffineOf([self transform]));
+  q = CGPointMake(q.x + position.x, q.y + position.y);
+
+  if (above != nil)
+    {
+      CATransform3D st = [above sublayerTransform];
+
+      if (!CATransform3DIsIdentity(st))
+        {
+          CGRect  sb = [above bounds];
+          CGPoint sa = [above anchorPoint];
+
+          q = CALayerApplyAbout(CALayerAffineOf(st), q,
+                CGPointMake(sa.x * sb.size.width, sa.y * sb.size.height));
+        }
+    }
+  return q;
+}
+
+/* The reverse: a point in the superlayer's space moved into this layer's. */
+- (CGPoint) _pointFromSuperlayer: (CGPoint)p
+{
+  CGRect        b = [self bounds];
+  CGPoint       anchor = [self anchorPoint];
+  CGPoint       position = [self position];
+  CALayer      *above = [self superlayer];
+  CGPoint       q = p;
+
+  if (above != nil)
+    {
+      CATransform3D st = [above sublayerTransform];
+
+      if (!CATransform3DIsIdentity(st))
+        {
+          CGRect  sb = [above bounds];
+          CGPoint sa = [above anchorPoint];
+
+          q = CALayerApplyAbout(CGAffineTransformInvert(CALayerAffineOf(st)), q,
+                CGPointMake(sa.x * sb.size.width, sa.y * sb.size.height));
+        }
+    }
+
+  q = CGPointMake(q.x - position.x, q.y - position.y);
+  q = CGPointApplyAffineTransform(q,
+        CGAffineTransformInvert(CALayerAffineOf([self transform])));
+  return CGPointMake(q.x + b.origin.x + anchor.x * b.size.width,
+                     q.y + b.origin.y + anchor.y * b.size.height);
+}
+
+- (CGPoint) _pointToRoot: (CGPoint)p
+{
+  CALayer *layer = self;
+  CGPoint  q = p;
+
+  while (layer != nil)
+    {
+      q = [layer _pointToSuperlayer: q];
+      layer = [layer superlayer];
+    }
+  return q;
+}
+
+- (CGPoint) _pointFromRoot: (CGPoint)p
+{
+  CGPoint q = p;
+
+  if ([self superlayer] != nil)
+    {
+      q = [[self superlayer] _pointFromRoot: q];
+    }
+  return [self _pointFromSuperlayer: q];
+}
+
+- (CGPoint) convertPoint: (CGPoint)p fromLayer: (CALayer *)layer
+{
+  return [self _pointFromRoot: [layer _pointToRoot: p]];
+}
+
+- (CGPoint) convertPoint: (CGPoint)p toLayer: (CALayer *)layer
+{
+  CGPoint q = [self _pointToRoot: p];
+
+  if (layer == nil)
+    {
+      return q;
+    }
+  return [layer _pointFromRoot: q];
+}
+
+/* A rectangle converts as the bounding box of the four converted corners,
+ * since a transform on the way may rotate or skew it. */
+- (CGRect) _boxOfCorners: (CGPoint *)c
+{
+  CGFloat minX, maxX, minY, maxY;
+  int     i;
+
+  minX = maxX = c[0].x;
+  minY = maxY = c[0].y;
+  for (i = 1; i < 4; i++)
+    {
+      if (c[i].x < minX) minX = c[i].x;
+      if (c[i].x > maxX) maxX = c[i].x;
+      if (c[i].y < minY) minY = c[i].y;
+      if (c[i].y > maxY) maxY = c[i].y;
+    }
+  return CGRectMake(minX, minY, maxX - minX, maxY - minY);
+}
+
+- (CGRect) convertRect: (CGRect)r fromLayer: (CALayer *)layer
+{
+  CGPoint c[4];
+
+  r = CGRectStandardize(r);
+  c[0] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMinY(r))
+                  fromLayer: layer];
+  c[1] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMinY(r))
+                  fromLayer: layer];
+  c[2] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMaxY(r))
+                  fromLayer: layer];
+  c[3] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMaxY(r))
+                  fromLayer: layer];
+  return [self _boxOfCorners: c];
+}
+
+- (CGRect) convertRect: (CGRect)r toLayer: (CALayer *)layer
+{
+  CGPoint c[4];
+
+  r = CGRectStandardize(r);
+  c[0] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMinY(r))
+                    toLayer: layer];
+  c[1] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMinY(r))
+                    toLayer: layer];
+  c[2] = [self convertPoint: CGPointMake(CGRectGetMaxX(r), CGRectGetMaxY(r))
+                    toLayer: layer];
+  c[3] = [self convertPoint: CGPointMake(CGRectGetMinX(r), CGRectGetMaxY(r))
+                    toLayer: layer];
+  return [self _boxOfCorners: c];
+}
+
+/* The affine part of the layer transform.  A transform that is not affine has
+ * no affine equivalent, and is reported as the identity rather than as the six
+ * elements that happen to sit in those places. */
+- (CGAffineTransform) affineTransform
+{
+  CATransform3D t = [self transform];
+
+  if (!CATransform3DIsAffine(t))
+    {
+      return CGAffineTransformIdentity;
+    }
+  return CATransform3DGetAffineTransform(t);
+}
+
+/* Setting it replaces the whole transform rather than concatenating. */
+- (void) setAffineTransform: (CGAffineTransform)affineTransform
+{
+  [self setTransform: CATransform3DMakeAffineTransform(affineTransform)];
+}
+
 /* Unimplemented functions: */
 #if 0
-- (CGPoint) convertPoint: (CGPoint)p fromLayer: (CALayer *)l;
-- (CGPoint) convertPoint: (CGPoint)p toLayer: (CALayer *)l;
-- (CGRect) convertRect: (CGRect)p fromLayer: (CALayer *)l;
-- (CGRect) convertRect: (CGRect)p toLayer: (CALayer *)l;
 - (void)setNeedsLayout;
 - (void)layoutIfNeeded;
 

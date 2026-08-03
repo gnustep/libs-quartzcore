@@ -1,0 +1,3 @@
+# The constants below are exported by Apple but not declared in its public
+# headers, so this file cannot be compiled against them.
+APPLE_SKIP_TESTS="private.m"

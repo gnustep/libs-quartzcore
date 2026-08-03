@@ -25,16 +25,16 @@
 
 #import "QuartzCore/CAShapeLayer.h"
 
-NSString *const kCAFillRuleNonZero = @"kCAFillRuleNonZero";
-NSString *const kCAFillRuleEvenOdd = @"kCAFillRuleEvenOdd";
+NSString *const kCAFillRuleNonZero = @"non-zero";
+NSString *const kCAFillRuleEvenOdd = @"even-odd";
                                     
-NSString *const kCALineJoinMiter = @"kCALineJoinMiter";
-NSString *const kCALineJoinRound = @"kCALineJoinRound";
-NSString *const kCALineJoinBevel = @"kCALineJoinBevel";
+NSString *const kCALineJoinMiter = @"miter";
+NSString *const kCALineJoinRound = @"round";
+NSString *const kCALineJoinBevel = @"bevel";
                                     
-NSString *const kCALineCapButt = @"kCALineCapButt";
-NSString *const kCALineCapRound = @"kCALineCapRound";
-NSString *const kCALineCapSquare = @"kCALineCapSquare";
+NSString *const kCALineCapButt = @"butt";
+NSString *const kCALineCapRound = @"round";
+NSString *const kCALineCapSquare = @"square";
 
 @implementation CAShapeLayer
 @synthesize path = _path;

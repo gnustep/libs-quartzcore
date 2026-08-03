@@ -1,0 +1,3 @@
+# A standalone layer answers nil from -animationKeys throughout on Apple, so
+# the implicit animation this file checks cannot be observed there.
+APPLE_SKIP_TESTS="implicit.m"

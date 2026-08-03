@@ -30,16 +30,16 @@
 
 @end
 
-NSString *const kCAValueFunctionRotateX = @"kCAValueFunctionRotateX";
-NSString *const kCAValueFunctionRotateY = @"kCAValueFunctionRotateY";
-NSString *const kCAValueFunctionRotateZ = @"kCAValueFunctionRotateZ";
+NSString *const kCAValueFunctionRotateX = @"rotateX";
+NSString *const kCAValueFunctionRotateY = @"rotateY";
+NSString *const kCAValueFunctionRotateZ = @"rotateZ";
                                             
-NSString *const kCAValueFunctionScale = @"kCAValueFunctionScale";
-NSString *const kCAValueFunctionScaleX = @"kCAValueFunctionScaleX";
-NSString *const kCAValueFunctionScaleY = @"kCAValueFunctionScaleY";
-NSString *const kCAValueFunctionScaleZ = @"kCAValueFunctionScaleZ";
+NSString *const kCAValueFunctionScale = @"scale";
+NSString *const kCAValueFunctionScaleX = @"scaleX";
+NSString *const kCAValueFunctionScaleY = @"scaleY";
+NSString *const kCAValueFunctionScaleZ = @"scaleZ";
                                             
-NSString *const kCAValueFunctionTranslate = @"kCAValueFunctionTranslate";
-NSString *const kCAValueFunctionTranslateX = @"kCAValueFunctionTranslateX";
-NSString *const kCAValueFunctionTranslateY = @"kCAValueFunctionTranslateY";
-NSString *const kCAValueFunctionTranslateZ = @"kCAValueFunctionTranslateZ";
+NSString *const kCAValueFunctionTranslate = @"translate";
+NSString *const kCAValueFunctionTranslateX = @"translateX";
+NSString *const kCAValueFunctionTranslateY = @"translateY";
+NSString *const kCAValueFunctionTranslateZ = @"translateZ";
