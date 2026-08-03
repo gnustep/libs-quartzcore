@@ -111,6 +111,25 @@ int main(void)
   PASS([kCATransitionFromRight isEqualToString: @"fromRight"],
        "kCATransitionFromRight is \"fromRight\"");
 
+  PASS([kCAAnimationLinear isEqualToString: @"linear"],
+       "kCAAnimationLinear is \"linear\"");
+  PASS([kCAAnimationPaced isEqualToString: @"paced"],
+       "kCAAnimationPaced is \"paced\"");
+  PASS([kCAAnimationCubic isEqualToString: @"cubic"],
+       "kCAAnimationCubic is \"cubic\"");
+  PASS([kCAAnimationCubicPaced isEqualToString: @"cubicPaced"],
+       "kCAAnimationCubicPaced is \"cubicPaced\"");
+  PASS([kCATransitionFade isEqualToString: @"fade"],
+       "kCATransitionFade is \"fade\"");
+  PASS([kCATransitionPush isEqualToString: @"push"],
+       "kCATransitionPush is \"push\"");
+  PASS([kCATransitionReveal isEqualToString: @"reveal"],
+       "kCATransitionReveal is \"reveal\"");
+  PASS([kCAOnOrderIn isEqualToString: @"onOrderIn"],
+       "kCAOnOrderIn is \"onOrderIn\"");
+  PASS([kCAOnOrderOut isEqualToString: @"onOrderOut"],
+       "kCAOnOrderOut is \"onOrderOut\"");
+
   END_SET("Core Animation string constants")
 
   [pool release];

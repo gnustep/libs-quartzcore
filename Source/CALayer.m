@@ -60,6 +60,8 @@ NSString *const kCAGravityTopRight = @"topRight";
 NSString *const kCAGravityBottomLeft = @"bottomLeft";
 NSString *const kCAGravityBottomRight = @"bottomRight";
 
+NSString *const kCAOnOrderIn = @"onOrderIn";
+NSString *const kCAOnOrderOut = @"onOrderOut";
 NSString *const kCATransition = @"transition";
 
 @interface CALayer()
