@@ -110,12 +110,18 @@
   NSArray * _keyTimes;
   NSArray * _timingFunctions;
   CGPathRef _path;
+  NSArray * _tensionValues;
+  NSArray * _continuityValues;
+  NSArray * _biasValues;
 }
 @property(copy) NSString* calculationMode;
 @property(copy) NSArray* values;
 @property(copy) NSArray* keyTimes;
 @property(copy) NSArray* timingFunctions;
 @property(assign) CGPathRef path; /* retained by CG */
+@property(copy) NSArray* tensionValues;
+@property(copy) NSArray* continuityValues;
+@property(copy) NSArray* biasValues;
 
 @end
 

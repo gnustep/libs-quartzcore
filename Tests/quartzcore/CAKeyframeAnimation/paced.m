@@ -103,8 +103,13 @@ int main(void)
 
   [k setCalculationMode: kCAAnimationCubicPaced];
 
-  PASS(CLOSE(pointAt(k, 1.0, layer).x, 55),
-       "cubic pacing paces as well, the smoothing not being calculated");
+  /* Cubic pacing places the values by distance as pacing does, and then
+     draws its curve through them, which moves the point a little off the
+     straight line between the two it falls between. */
+  PASS(fabs(pointAt(k, 1.0, layer).x - 55) < 1.5,
+       "cubic pacing paces as well, its curve moving the point only a little");
+  PASS(pointAt(k, 1.0, layer).x > 20,
+       "and nowhere near where an animation that did not pace would put it");
 
   END_SET("cubic pacing")
 

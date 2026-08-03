@@ -1358,11 +1358,42 @@ static float distanceBetweenValues(id from, id to)
   return -1.0;
 }
 
+/* One component of a curve through the keyframes, in the shape Apple's
+   tension, continuity and bias describe: tension tightens the curve,
+   continuity breaks it either side of a point, and bias leans it towards the
+   stretch before or after.  All three are zero unless given, which draws an
+   ordinary smooth curve through the points.
+
+   The stretch runs from P0 to P1, and PPREV and PNEXT are the points either
+   side of it. */
+static float curveThroughComponent(float pPrev, float p0, float p1,
+                                   float pNext,
+                                   float t0, float c0, float b0,
+                                   float t1, float c1, float b1,
+                                   float fraction)
+{
+  float leaving = (1 - t0) * (1 + b0) * (1 + c0) / 2 * (p0 - pPrev)
+                + (1 - t0) * (1 - b0) * (1 - c0) / 2 * (p1 - p0);
+  float arriving = (1 - t1) * (1 + b1) * (1 - c1) / 2 * (p1 - p0)
+                 + (1 - t1) * (1 - b1) * (1 + c1) / 2 * (pNext - p1);
+  float s = fraction;
+  float s2 = s * s;
+  float s3 = s2 * s;
+
+  return (2 * s3 - 3 * s2 + 1) * p0
+       + (s3 - 2 * s2 + s) * leaving
+       + (-2 * s3 + 3 * s2) * p1
+       + (s3 - s2) * arriving;
+}
+
 @implementation CAKeyframeAnimation
 @synthesize calculationMode=_calculationMode;
 @synthesize values=_values;
 @synthesize keyTimes=_keyTimes;
 @synthesize timingFunctions=_timingFunctions;
+@synthesize tensionValues=_tensionValues;
+@synthesize continuityValues=_continuityValues;
+@synthesize biasValues=_biasValues;
 
 - (CGPathRef) path
 {
@@ -1411,9 +1442,80 @@ static float distanceBetweenValues(id from, id to)
   [_values release];
   [_keyTimes release];
   [_timingFunctions release];
+  [_tensionValues release];
+  [_continuityValues release];
+  [_biasValues release];
   CGPathRelease(_path);
 
   [super dealloc];
+}
+
+/* Whether the animation draws a curve through its values rather than going
+   straight from one to the next. */
+- (BOOL) isCurved
+{
+  return [_calculationMode isEqualToString: kCAAnimationCubic]
+    || [_calculationMode isEqualToString: kCAAnimationCubicPaced];
+}
+
+/* The tension, continuity or bias at one keyframe.  Any that was not given
+   is zero, which is the curve Apple draws without them. */
+static float shapeValue(NSArray *values, NSUInteger index)
+{
+  if (index >= [values count])
+    return 0.0;
+
+  return [[values objectAtIndex: index] floatValue];
+}
+
+/* The value the curve through the keyframes has WITHIN of the way along the
+   stretch that starts at INDEX.  Answers nil for a type the curve cannot be
+   drawn through, and the animation then goes straight from value to value. */
+- (id) curvedValueForSegment: (NSUInteger)index within: (float)within
+{
+  NSUInteger count = [_values count];
+  id previous = [_values objectAtIndex: index > 0 ? index - 1 : index];
+  id from = [_values objectAtIndex: index];
+  id to = [_values objectAtIndex: index + 1];
+  id next = [_values objectAtIndex: index + 2 < count ? index + 2 : index + 1];
+  float t0 = shapeValue(_tensionValues, index);
+  float c0 = shapeValue(_continuityValues, index);
+  float b0 = shapeValue(_biasValues, index);
+  float t1 = shapeValue(_tensionValues, index + 1);
+  float c1 = shapeValue(_continuityValues, index + 1);
+  float b1 = shapeValue(_biasValues, index + 1);
+
+  if ([from isKindOfClass: [NSNumber class]]
+      && [to isKindOfClass: [NSNumber class]])
+    {
+      return [NSNumber numberWithFloat:
+        curveThroughComponent([previous floatValue], [from floatValue],
+                              [to floatValue], [next floatValue],
+                              t0, c0, b0, t1, c1, b1, within)];
+    }
+
+  if ([from isKindOfClass: [NSValue class]]
+      && [to isKindOfClass: [NSValue class]]
+      && !strcmp([from objCType], [to objCType])
+      && !strcmp([from objCType], @encode(CGPoint)))
+    {
+      CGPoint pPrev, p0, p1, pNext, point;
+
+      [previous getValue: &pPrev];
+      [from getValue: &p0];
+      [to getValue: &p1];
+      [next getValue: &pNext];
+
+      point = CGPointMake(
+        curveThroughComponent(pPrev.x, p0.x, p1.x, pNext.x,
+                              t0, c0, b0, t1, c1, b1, within),
+        curveThroughComponent(pPrev.y, p0.y, p1.y, pNext.y,
+                              t0, c0, b0, t1, c1, b1, within));
+
+      return [NSValue valueWithBytes: &point objCType: @encode(CGPoint)];
+    }
+
+  return nil;
 }
 
 /* Whether the animation is paced, which means it covers the same distance in
@@ -1565,8 +1667,8 @@ static float distanceBetweenValues(id from, id to)
 
     A path stands in place of the values, and the point it reaches is the
     value.  A paced animation covers the same distance in each moment
-    instead, so keyTimes says nothing and is not read.  The cubic modes are
-    taken as their linear counterparts.
+    instead, so keyTimes says nothing and is not read.  A cubic one draws a
+    curve through the values rather than going straight from one to the next.
    */
 
   NSUInteger count = [_values count];
@@ -1611,6 +1713,16 @@ static float distanceBetweenValues(id from, id to)
   index = [self isPaced]
     ? [self pacedSegmentForFraction: fraction within: &within]
     : segmentForFraction(_keyTimes, count - 1, fraction, &within);
+
+  if ([self isCurved])
+    {
+      id curved = [self curvedValueForSegment: index within: within];
+
+      if (curved != nil)
+        {
+          return curved;
+        }
+    }
 
   segment = [CABasicAnimation animationWithKeyPath: [self keyPath]];
   [segment setDuration: 1.0];
