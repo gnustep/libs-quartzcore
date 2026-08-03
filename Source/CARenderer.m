@@ -260,6 +260,17 @@
 
   [_GLContext makeCurrentContext];
 
+  /* A layer's vertices are its bounds, in points.  Without a projection
+     they are taken as normalised device coordinates, where anything two
+     units or more across covers the whole drawable.  Map the renderer's
+     bounds onto it instead, so that a point is a point. */
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(CGRectGetMinX(_bounds), CGRectGetMaxX(_bounds),
+          CGRectGetMinY(_bounds), CGRectGetMaxY(_bounds),
+          -1.0, 1.0);
+
   glMatrixMode(GL_MODELVIEW);
 
   glEnableClientState(GL_VERTEX_ARRAY);
@@ -276,6 +287,9 @@
        withTransform: CATransform3DIdentity];
 
   /* Restore defaults */
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+
   glMatrixMode(GL_MODELVIEW);
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glDisableClientState(GL_VERTEX_ARRAY);
