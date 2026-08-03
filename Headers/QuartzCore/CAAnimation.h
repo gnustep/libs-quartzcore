@@ -158,8 +158,19 @@ extern NSString *const kCATransitionFromRight;
 
 /* *********************************** */
 
+/* What an animation tells its delegate.  Both methods are optional, so a
+   class conforms by naming the protocol whether or not it implements
+   either. */
+@protocol CAAnimationDelegate <NSObject>
+@optional
+- (void) animationDidStart: (CAAnimation *)animation;
+- (void) animationDidStop: (CAAnimation *)animation finished: (BOOL)finished;
+
+@end
+
 /* delegate methods for CAAnimation */
-/* a GNUstep extension */
+/* a GNUstep extension, kept for the code that names it; the protocol above
+   is the one Apple declares */
 @protocol GSCAAnimationDelegate <NSObject>
 - (void) animationDidStart: (CAAnimation *)animation;
 - (void) animationDidStop: (CAAnimation *)animation finished: (BOOL)finished;

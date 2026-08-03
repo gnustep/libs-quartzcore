@@ -218,6 +218,28 @@ extern NSString *const kCATransition;
 @property (nonatomic, assign) CGFloat anchorPointZ;
 @end
 
+/* What a layer asks of its delegate.  Every method is optional, so a class
+   conforms by naming the protocol whether or not it implements any of
+   them. */
+@protocol CALayerDelegate <NSObject>
+@optional
+- (void) displayLayer: (CALayer*)layer;
+- (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;
+- (void) layerWillDraw: (CALayer*)layer;
+- (void) layoutSublayersOfLayer: (CALayer*)layer;
+- (id<CAAction>) actionForLayer: (CALayer*)layer forKey: (NSString*)eventKey;
+@end
+
+/* What a layer asks of its layoutManager. */
+@protocol CALayoutManager <NSObject>
+@optional
+- (void) invalidateLayoutOfLayer: (CALayer*)layer;
+- (CGSize) preferredSizeOfLayer: (CALayer*)layer;
+- (void) layoutSublayersOfLayer: (CALayer*)layer;
+@end
+
+/* The same methods, declared on NSObject so that they can be sent to a
+   delegate or a layout manager held as a plain id. */
 @interface NSObject (CALayerActions)
 - (void) displayLayer: (CALayer*)layer;
 - (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;
