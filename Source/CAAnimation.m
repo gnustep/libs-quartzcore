@@ -1260,6 +1260,104 @@ static CGPoint pointOnPathSegment(GSCAPathSegment segment, float fraction)
       + 3 * u * t * t * segment.control2.y + t * t * t * segment.end.y);
 }
 
+/* How many pieces a curve is measured in.  A line is exact either way. */
+#define GSCA_PATH_STEPS 32
+
+static float distanceBetweenPoints(CGPoint a, CGPoint b)
+{
+  return sqrt((b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+}
+
+/* The length of a segment, measured along it rather than across it. */
+static float pathSegmentLength(GSCAPathSegment segment)
+{
+  CGPoint previous = segment.start;
+  float length = 0.0;
+  int step;
+
+  if (!segment.curved)
+    {
+      return distanceBetweenPoints(segment.start, segment.end);
+    }
+
+  for (step = 1; step <= GSCA_PATH_STEPS; step++)
+    {
+      CGPoint point = pointOnPathSegment(segment,
+                                         (float)step / GSCA_PATH_STEPS);
+
+      length += distanceBetweenPoints(previous, point);
+      previous = point;
+    }
+
+  return length;
+}
+
+/* How far along a segment to be in order to have travelled DISTANCE along
+   it.  A curve is not covered evenly as the fraction rises, so it is
+   measured in pieces and the piece the distance falls in is interpolated. */
+static float pathSegmentFractionForDistance(GSCAPathSegment segment,
+                                            float distance)
+{
+  CGPoint previous = segment.start;
+  float covered = 0.0;
+  int step;
+
+  if (distance <= 0.0)
+    return 0.0;
+
+  if (!segment.curved)
+    {
+      float length = distanceBetweenPoints(segment.start, segment.end);
+
+      return length > 0.0 ? distance / length : 0.0;
+    }
+
+  for (step = 1; step <= GSCA_PATH_STEPS; step++)
+    {
+      float fraction = (float)step / GSCA_PATH_STEPS;
+      CGPoint point = pointOnPathSegment(segment, fraction);
+      float piece = distanceBetweenPoints(previous, point);
+
+      if (covered + piece >= distance && piece > 0.0)
+        {
+          float within = (distance - covered) / piece;
+
+          return ((float)(step - 1) + within) / GSCA_PATH_STEPS;
+        }
+
+      covered += piece;
+      previous = point;
+    }
+
+  return 1.0;
+}
+
+/* The distance between two values, for pacing.  A type that cannot be
+   measured answers a negative number, and the animation is then spaced
+   evenly rather than by distance. */
+static float distanceBetweenValues(id from, id to)
+{
+  if ([from isKindOfClass: [NSNumber class]]
+      && [to isKindOfClass: [NSNumber class]])
+    {
+      return fabs([to doubleValue] - [from doubleValue]);
+    }
+
+  if ([from isKindOfClass: [NSValue class]]
+      && [to isKindOfClass: [NSValue class]]
+      && !strcmp([from objCType], [to objCType])
+      && !strcmp([from objCType], @encode(CGPoint)))
+    {
+      CGPoint a, b;
+
+      [from getValue: &a];
+      [to getValue: &b];
+      return distanceBetweenPoints(a, b);
+    }
+
+  return -1.0;
+}
+
 @implementation CAKeyframeAnimation
 @synthesize calculationMode=_calculationMode;
 @synthesize values=_values;
@@ -1318,6 +1416,70 @@ static CGPoint pointOnPathSegment(GSCAPathSegment segment, float fraction)
   [super dealloc];
 }
 
+/* Whether the animation is paced, which means it covers the same distance in
+   each moment rather than spending the same time between each pair of
+   values.  Apple's cubic pacing is taken as pacing. */
+- (BOOL) isPaced
+{
+  return [_calculationMode isEqualToString: kCAAnimationPaced]
+    || [_calculationMode isEqualToString: kCAAnimationCubicPaced];
+}
+
+/* Which pair of values a paced animation is between FRACTION of the way
+   through, and how far between them it is.  The values are placed by the
+   distance from one to the next; a type whose values cannot be measured is
+   spaced evenly, as an unpaced animation would space it. */
+- (NSUInteger) pacedSegmentForFraction: (float)fraction
+                                within: (float *)within
+{
+  NSUInteger count = [_values count];
+  NSUInteger index;
+  float * lengths = malloc((count - 1) * sizeof(float));
+  float total = 0.0;
+  float covered = 0.0;
+  float target;
+
+  for (index = 0; index + 1 < count; index++)
+    {
+      float length = distanceBetweenValues([_values objectAtIndex: index],
+                                           [_values objectAtIndex: index + 1]);
+
+      if (length < 0.0)
+        {
+          free(lengths);
+          return segmentForFraction(nil, count - 1, fraction, within);
+        }
+
+      lengths[index] = length;
+      total += length;
+    }
+
+  if (total <= 0.0)
+    {
+      free(lengths);
+      return segmentForFraction(nil, count - 1, fraction, within);
+    }
+
+  target = fraction * total;
+  for (index = 0; index + 2 < count; index++)
+    {
+      if (covered + lengths[index] >= target)
+        break;
+
+      covered += lengths[index];
+    }
+
+  *within = lengths[index] > 0.0 ? (target - covered) / lengths[index] : 0.0;
+  if (*within < 0.0)
+    *within = 0.0;
+  if (*within > 1.0)
+    *within = 1.0;
+
+  free(lengths);
+
+  return index;
+}
+
 /* The point the path has reached FRACTION of the way through the animation.
    The end of each line or curve is a keyframe, and the points between two of
    them are taken from the line or the curve itself. */
@@ -1350,6 +1512,36 @@ static CGPoint pointOnPathSegment(GSCAPathSegment segment, float fraction)
       point = index == 0 ? list.segments[0].start
                          : list.segments[index - 1].end;
     }
+  else if ([self isPaced])
+    {
+      /* Constant speed: the fraction says how far along the whole path to
+         be, not which segment to be in. */
+      float total = 0.0;
+      float target;
+      float covered = 0.0;
+
+      for (index = 0; index < list.count; index++)
+        {
+          total += pathSegmentLength(list.segments[index]);
+        }
+
+      target = fraction * total;
+      point = list.segments[list.count - 1].end;
+      for (index = 0; index < list.count; index++)
+        {
+          float length = pathSegmentLength(list.segments[index]);
+
+          if (covered + length >= target || index + 1 == list.count)
+            {
+              within = pathSegmentFractionForDistance(list.segments[index],
+                                                      target - covered);
+              point = pointOnPathSegment(list.segments[index], within);
+              break;
+            }
+
+          covered += length;
+        }
+    }
   else
     {
       index = segmentForFraction(_keyTimes, list.count, fraction, &within);
@@ -1372,8 +1564,9 @@ static CGPoint pointOnPathSegment(GSCAPathSegment segment, float fraction)
     which is what a basic animation does with a from value and a to value.
 
     A path stands in place of the values, and the point it reaches is the
-    value.  Only the linear and discrete modes are calculated; the paced
-    modes are taken as linear.
+    value.  A paced animation covers the same distance in each moment
+    instead, so keyTimes says nothing and is not read.  The cubic modes are
+    taken as their linear counterparts.
    */
 
   NSUInteger count = [_values count];
@@ -1415,7 +1608,9 @@ static CGPoint pointOnPathSegment(GSCAPathSegment segment, float fraction)
       return [_values objectAtIndex: index];
     }
 
-  index = segmentForFraction(_keyTimes, count - 1, fraction, &within);
+  index = [self isPaced]
+    ? [self pacedSegmentForFraction: fraction within: &within]
+    : segmentForFraction(_keyTimes, count - 1, fraction, &within);
 
   segment = [CABasicAnimation animationWithKeyPath: [self keyPath]];
   [segment setDuration: 1.0];
