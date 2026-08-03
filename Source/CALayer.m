@@ -1282,7 +1282,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     }
   if ([key isEqualToString: @"shadowPath"])
     {
-      return (id)[self shadowColor];
+      return (id)[self shadowPath];
     }
 
   return [super valueForUndefinedKey: key];
