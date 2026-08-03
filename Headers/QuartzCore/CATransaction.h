@@ -31,12 +31,16 @@
 
 @interface CATransaction : NSObject
 {
+  /* The three below are no longer read.  A transaction keeps its values in
+     _values so that it can also carry keys it does not define itself; they
+     stay declared to leave the layout of the class unchanged. */
   CFTimeInterval _animationDuration;
   CAMediaTimingFunction *_animationTimingFunction;
   BOOL _disableActions;
 
   NSMutableArray *_actions;
   BOOL _implicit;
+  NSMutableDictionary *_values;
 }
 
 + (void) begin;

@@ -41,28 +41,37 @@ static NSMutableArray *transactionStack = nil;
 
 - (void) commit;
 
-@property (assign) CFTimeInterval animationDuration;
-@property (retain) CAMediaTimingFunction *animationTimingFunction;
-@property (assign) BOOL disableActions;
+@property (retain) NSMutableDictionary *values;
 @property (retain) NSMutableArray *actions;
 @property (assign, getter=isImplicit) BOOL implicit;
 @end
 
 @implementation CATransaction
-@synthesize animationDuration=_animationDuration;
-@synthesize animationTimingFunction=_animationTimingFunction;
-@synthesize disableActions=_disableActions;
+@synthesize values=_values;
 @synthesize actions=_actions;
 @synthesize implicit=_implicit;
 
 + (void) begin
 {
+  CATransaction *enclosingTransaction;
+  CATransaction *newTransaction;
+
   if (!transactionStack)
     {
       transactionStack = [NSMutableArray new];
     }
 
-  CATransaction *newTransaction = [CATransaction new];
+  /* A transaction starts out with the values of the one it is nested in;
+     changing them affects only the new transaction. */
+  enclosingTransaction = [transactionStack lastObject];
+  newTransaction = [CATransaction new];
+  if (enclosingTransaction)
+    {
+      [[newTransaction values] removeAllObjects];
+      [[newTransaction values] addEntriesFromDictionary:
+        [enclosingTransaction values]];
+    }
+
   [transactionStack addObject: newTransaction];
   [newTransaction release];
 }
@@ -95,32 +104,34 @@ static NSMutableArray *transactionStack = nil;
 
 + (CFTimeInterval) animationDuration
 {
-  return [[self topTransaction] animationDuration];
+  return [[self valueForKey: kCATransactionAnimationDuration] doubleValue];
 }
 
 + (void) setAnimationDuration: (CFTimeInterval)animationDuration
 {
-  [[self topTransaction] setAnimationDuration: animationDuration];
+  [self setValue: [NSNumber numberWithDouble: animationDuration]
+          forKey: kCATransactionAnimationDuration];
 }
 
 + (CAMediaTimingFunction *) animationTimingFunction
 {
-  return [[self topTransaction] animationTimingFunction];
+  return [self valueForKey: kCATransactionAnimationTimingFunction];
 }
 
 + (void) setAnimationTimingFunction: (CAMediaTimingFunction *)function
 {
-  [[self topTransaction] setAnimationTimingFunction: function];
+  [self setValue: function forKey: kCATransactionAnimationTimingFunction];
 }
 
 + (BOOL) disableActions
 {
-    return [[self topTransaction] disableActions];
+  return [[self valueForKey: kCATransactionDisableActions] boolValue];
 }
 
 + (void) setDisableActions: (BOOL)disableActions
 {
-    [[self topTransaction] setDisableActions: disableActions];
+  [self setValue: [NSNumber numberWithBool: disableActions]
+          forKey: kCATransactionDisableActions];
 }
 
 + (id) valueForKey: (NSString *)key
@@ -155,19 +166,43 @@ static NSMutableArray *transactionStack = nil;
     return nil;
 
   _actions = [[NSMutableArray alloc] init];
-  _animationDuration = 0.25;
-  _animationTimingFunction = [[CAMediaTimingFunction functionWithName: kCAMediaTimingFunctionDefault] retain];
-  _disableActions = NO;
+
+  /* The values an outermost transaction starts with.  There is no timing
+     function until one is set. */
+  _values = [[NSMutableDictionary alloc] init];
+  [_values setObject: [NSNumber numberWithDouble: 0.25]
+              forKey: kCATransactionAnimationDuration];
+  [_values setObject: [NSNumber numberWithBool: NO]
+              forKey: kCATransactionDisableActions];
 
   return self;
 }
 
 - (void) dealloc
 {
-  [_animationTimingFunction release];
+  [_values release];
   [_actions release];
 
   [super dealloc];
+}
+
+/* A transaction holds whatever keys are set on it, and reading one that was
+   never set answers nil rather than raising. */
+- (id) valueForKey: (NSString *)key
+{
+  return [_values objectForKey: key];
+}
+
+- (void) setValue: (id)value forKey: (NSString *)key
+{
+  if (value == nil)
+    {
+      [_values removeObjectForKey: key];
+    }
+  else
+    {
+      [_values setObject: value forKey: key];
+    }
 }
 
 - (void) commit
@@ -195,7 +230,7 @@ static NSMutableArray *transactionStack = nil;
       if ([action isKindOfClass: [CAAnimation class]])
         {
           CAAnimation * animation = (id)action;
-          if(![animation timingFunction])
+          if(![animation timingFunction] && [CATransaction animationTimingFunction])
             [animation setTimingFunction: [CATransaction animationTimingFunction]];
         }
 
