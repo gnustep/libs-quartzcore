@@ -18,10 +18,9 @@ int main(void)
   PASS([t subtype] == nil, "it starts with no subtype");
   PASS([t duration] == 0.0, "it starts with a duration of 0");
 
-  /* Apple names this "fade"; the constant for it arrives with #26. */
-  testHopeful = YES;
   PASS([[t type] isEqualToString: @"fade"], "it starts as a fade");
-  testHopeful = NO;
+  PASS([[t type] isEqualToString: kCATransitionFade],
+       "which is the string the constant for it names");
 
   END_SET("the values a transition starts with")
 
