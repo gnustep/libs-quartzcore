@@ -30,7 +30,7 @@
 #import "GLESContext.h"
 #endif
 #if !(__APPLE__)
-#import <GL/gl.h>
+#import <GL/glew.h>
 #import <GL/glu.h>
 #else
 #import <OpenGL/gl.h>
