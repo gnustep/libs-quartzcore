@@ -616,6 +616,66 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
     return qr;
 
 }
+/* VALUE plus BYVALUE, or minus it where SIGN is -1.  Answers nil for a pair
+   of values a by value cannot be added to, which leaves the animation to
+   settle its ends some other way. */
+static id addValues(id value, id byValue, CGFloat sign)
+{
+  const char *type;
+
+  if ([value isKindOfClass: [NSNumber class]]
+      && [byValue isKindOfClass: [NSNumber class]])
+    {
+      return [NSNumber numberWithFloat:
+        [value floatValue] + sign * [byValue floatValue]];
+    }
+
+  if (![value isKindOfClass: [NSValue class]]
+      || ![byValue isKindOfClass: [NSValue class]])
+    {
+      return nil;
+    }
+
+  type = [value objCType];
+  if (strcmp(type, [byValue objCType]))
+    {
+      return nil;
+    }
+
+  if (!strcmp(type, @encode(CGPoint)))
+    {
+      CGPoint a = { 0 }; [value getValue: &a];
+      CGPoint b = { 0 }; [byValue getValue: &b];
+      CGPoint r = CGPointMake(a.x + sign * b.x, a.y + sign * b.y);
+
+      return [NSValue valueWithBytes: &r objCType: @encode(CGPoint)];
+    }
+
+  if (!strcmp(type, @encode(CGSize)))
+    {
+      CGSize a = { 0 }; [value getValue: &a];
+      CGSize b = { 0 }; [byValue getValue: &b];
+      CGSize r = CGSizeMake(a.width + sign * b.width,
+                            a.height + sign * b.height);
+
+      return [NSValue valueWithBytes: &r objCType: @encode(CGSize)];
+    }
+
+  if (!strcmp(type, @encode(CGRect)))
+    {
+      CGRect a = { { 0 } }; [value getValue: &a];
+      CGRect b = { { 0 } }; [byValue getValue: &b];
+      CGRect r = CGRectMake(a.origin.x + sign * b.origin.x,
+                            a.origin.y + sign * b.origin.y,
+                            a.size.width + sign * b.size.width,
+                            a.size.height + sign * b.size.height);
+
+      return [NSValue valueWithBytes: &r objCType: @encode(CGRect)];
+    }
+
+  return nil;
+}
+
 /** End helper math functions **/
 /*******************************/
 
@@ -638,22 +698,13 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
                               onLayer: (CALayer *)layer
 {
   /*
-    Currently supporting scenarios with:
-     - fromValue != nil
-     - toValue != nil
-     - byValue == nil
-    and
-     - fromValue != nil
-     - toValue == nil
-     - byValue == nil
-    and
-     - fromValue == nil
-     - toValue == nil
-     - byValue == nil
-    and
-     - fromValue == nil
-     - toValue != nil
-     - byValue == nil
+    A from value and a to value are interpolated between.  A by value
+    stands in for whichever end was not given: with a from value the
+    animation runs to that value plus the by value, with a to value it
+    starts at that value minus the by value, and on its own it works from
+    the value the layer already has.  A by value has no effect on a type it
+    cannot be added to, which is every type but a number, a point, a size
+    and a rectangle.
 
     All supplied values need to be of same data type.
    */
@@ -669,6 +720,23 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
   /* Calculate what will our actual from and to values be */
   id fromValue = _fromValue;
   id toValue = _toValue;
+
+  if (_byValue)
+    {
+      if (fromValue && !toValue)
+        {
+          toValue = addValues(fromValue, _byValue, 1.0);
+        }
+      else if (!fromValue && toValue)
+        {
+          fromValue = addValues(toValue, _byValue, -1.0);
+        }
+      else if (!fromValue && !toValue && _keyPath)
+        {
+          fromValue = [[layer modelLayer] valueForKeyPath: _keyPath];
+          toValue = addValues(fromValue, _byValue, 1.0);
+        }
+    }
 
   if (!toValue)
     toValue = [[layer modelLayer] valueForKeyPath: _keyPath];
