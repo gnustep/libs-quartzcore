@@ -37,7 +37,7 @@
 #import "CALayer+FrameworkPrivate.h"
 
 NSString *const kCAAnimationLinear = @"linear";
-NSString *const kCAAnimationDiscrete = @"CAAnimationDiscrete";
+NSString *const kCAAnimationDiscrete = @"discrete";
 NSString *const kCAAnimationPaced = @"paced";
 NSString *const kCAAnimationCubic = @"cubic";
 NSString *const kCAAnimationCubicPaced = @"cubicPaced";
