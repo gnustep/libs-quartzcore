@@ -387,7 +387,8 @@ NSString *const kCATransitionFromRight = @"fromRight";
   if (!theCopy)
     return nil;
 
-  static NSString * keys[] = {@"additive", @"cumulative", @"valueFunction"};
+  static NSString * keys[] = {@"keyPath", @"additive", @"cumulative",
+    @"valueFunction"};
   for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
     {
       id value = [self valueForKey: keys[i]];
@@ -624,6 +625,26 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize fromValue=_fromValue;
 @synthesize byValue=_byValue;
 @synthesize toValue=_toValue;
+
+- (id) copyWithZone: (NSZone *)zone
+{
+  id theCopy = [super copyWithZone: zone];
+  if (!theCopy)
+    return nil;
+
+  static NSString * keys[] = {@"fromValue", @"byValue", @"toValue"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id value = [self valueForKey: keys[i]];
+      if (value)
+        {
+          [theCopy setValue: value
+                     forKey: keys[i]];
+        }
+    }
+
+  return theCopy;
+}
 
 - (void) dealloc
 {
@@ -1020,6 +1041,26 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize calculationMode=_calculationMode;
 @synthesize values=_values;
 
+- (id) copyWithZone: (NSZone *)zone
+{
+  id theCopy = [super copyWithZone: zone];
+  if (!theCopy)
+    return nil;
+
+  static NSString * keys[] = {@"calculationMode", @"values"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id value = [self valueForKey: keys[i]];
+      if (value)
+        {
+          [theCopy setValue: value
+                     forKey: keys[i]];
+        }
+    }
+
+  return theCopy;
+}
+
 @end
 
 @implementation CASpringAnimation
@@ -1028,6 +1069,70 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize damping = _damping;
 @synthesize initialVelocity = _initialVelocity;
 @synthesize settlingDuration = _settlingDuration;
+
++ (id) defaultValueForKey: (NSString *)key
+{
+  if ([key isEqualToString: @"mass"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
+    }
+  if ([key isEqualToString: @"stiffness"])
+    {
+      return [NSNumber numberWithFloat: 100.0];
+    }
+  if ([key isEqualToString: @"damping"])
+    {
+      return [NSNumber numberWithFloat: 10.0];
+    }
+  if ([key isEqualToString: @"initialVelocity"])
+    {
+      return [NSNumber numberWithFloat: 0.0];
+    }
+
+  return [super defaultValueForKey: key];
+}
+
+- (id) init
+{
+  self = [super init];
+  if (!self)
+    return nil;
+
+  static NSString * keys[] = {@"mass", @"stiffness", @"damping",
+    @"initialVelocity"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id defaultValue = [[self class] defaultValueForKey: keys[i]];
+      if (defaultValue)
+        {
+          [self setValue: defaultValue
+                  forKey: keys[i]];
+        }
+    }
+
+  return self;
+}
+
+- (id) copyWithZone: (NSZone *)zone
+{
+  id theCopy = [super copyWithZone: zone];
+  if (!theCopy)
+    return nil;
+
+  static NSString * keys[] = {@"mass", @"stiffness", @"damping",
+    @"initialVelocity"};
+  for (int i = 0; i < sizeof(keys)/sizeof(keys[0]); i++)
+    {
+      id value = [self valueForKey: keys[i]];
+      if (value)
+        {
+          [theCopy setValue: value
+                     forKey: keys[i]];
+        }
+    }
+
+  return theCopy;
+}
 @end
 
 @implementation CATransition
