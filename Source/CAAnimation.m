@@ -625,22 +625,11 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
                               onLayer: (CALayer *)layer
 {
   /*
-    Currently supporting scenarios with:
-     - fromValue != nil
-     - toValue != nil
-     - byValue == nil
-    and
-     - fromValue != nil
-     - toValue == nil
-     - byValue == nil
-    and
-     - fromValue == nil
-     - toValue == nil
-     - byValue == nil
-    and
-     - fromValue == nil
-     - toValue != nil
-     - byValue == nil
+    An end the animation was not given is taken from the layer, so an
+    animation carrying only a from value runs to the value the layer
+    already has, and one carrying only a to value starts from it.
+
+    byValue is not supported yet.
 
     All supplied values need to be of same data type.
    */
@@ -657,8 +646,23 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
   id fromValue = _fromValue;
   id toValue = _toValue;
 
-  if (!toValue)
-    toValue = [[layer modelLayer] valueForKeyPath: _keyPath];
+  if ((!fromValue || !toValue) && _keyPath)
+    {
+      /* The layer being animated is the presentation layer, and the value
+         to fall back on is the one its model holds.  A layer that stands
+         in for no other one is its own model. */
+      CALayer *modelLayer = [layer modelLayer];
+      id layerValue;
+
+      if (!modelLayer)
+        modelLayer = layer;
+      layerValue = [modelLayer valueForKeyPath: _keyPath];
+
+      if (!fromValue)
+        fromValue = layerValue;
+      if (!toValue)
+        toValue = layerValue;
+    }
 
   if ([fromValue isKindOfClass: [NSNumber class]] &&
       [toValue isKindOfClass: [NSNumber class]])
