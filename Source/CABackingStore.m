@@ -104,9 +104,12 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
     return nil;
 
   CGContextRef context = createCGBitmapContext(width, height);
-  [self setContext: context];
+
+  /* -setContext: refreshes, and there is nowhere to refresh into until the
+     texture is here. */
   [self setContentsTexture: [CAGLTexture texture]];
   [self setOffscreenRenderTexture: nil]; /* set at a later time by layer */
+  [self setContext: context];
 
   CGContextRelease(context);
 
