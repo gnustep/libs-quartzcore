@@ -22,3 +22,95 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/Foundation.h>
+#import "QuartzCore/CATextLayer.h"
+
+NSString *const kCAAlignmentNatural = @"natural";
+NSString *const kCAAlignmentLeft = @"left";
+NSString *const kCAAlignmentRight = @"right";
+NSString *const kCAAlignmentCenter = @"center";
+NSString *const kCAAlignmentJustified = @"justified";
+
+NSString *const kCATruncationNone = @"none";
+NSString *const kCATruncationStart = @"start";
+NSString *const kCATruncationEnd = @"end";
+NSString *const kCATruncationMiddle = @"middle";
+
+@implementation CATextLayer
+
+@synthesize string = _string;
+@synthesize fontSize = _fontSize;
+@synthesize alignmentMode = _alignmentMode;
+@synthesize truncationMode = _truncationMode;
+@synthesize wrapped = _wrapped;
+
+- (id) init
+{
+  self = [super init];
+  if (self == nil)
+    {
+      return nil;
+    }
+
+  /* Apple starts with Helvetica at this size, held as a font object.  A
+     name is the same thing to the property, and is what there is to hold
+     here. */
+  _font = [@"Helvetica" retain];
+  _fontSize = 36.0;
+  _foregroundColor = CGColorCreateGenericRGB(1.0, 1.0, 1.0, 1.0);
+  _alignmentMode = [kCAAlignmentNatural copy];
+  _truncationMode = [kCATruncationNone copy];
+
+  return self;
+}
+
+- (void) dealloc
+{
+  [(id)_font release];
+  CGColorRelease(_foregroundColor);
+  [_string release];
+  [_alignmentMode release];
+  [_truncationMode release];
+
+  [super dealloc];
+}
+
+- (CFTypeRef) font
+{
+  return _font;
+}
+
+- (void) setFont: (CFTypeRef)font
+{
+  if (font == _font)
+    {
+      return;
+    }
+
+  [(id)font retain];
+  [(id)_font release];
+  _font = font;
+}
+
+- (CGColorRef) foregroundColor
+{
+  return _foregroundColor;
+}
+
+- (void) setForegroundColor: (CGColorRef)foregroundColor
+{
+  if (foregroundColor == _foregroundColor)
+    {
+      return;
+    }
+
+  CGColorRetain(foregroundColor);
+  CGColorRelease(_foregroundColor);
+  _foregroundColor = foregroundColor;
+}
+
+/* TODO: draw the text.  The properties above are held and read back, but
+   nothing draws a glyph, so a text layer draws as a plain layer does. */
+
+@end
