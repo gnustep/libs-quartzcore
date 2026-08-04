@@ -866,7 +866,7 @@ CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
 /* Put the outline of `rect` into the context, with its corners rounded by
    `radius`.  A radius of nothing leaves an ordinary rectangle, and one too
    large for the rectangle is brought down to the largest that fits. */
-static void
+void
 CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
 {
   CGFloat limit = (rect.size.width < rect.size.height
@@ -924,6 +924,8 @@ CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
       CALayerAddRoundedRect(context, area, radius);
       CGContextFillPath(context);
     }
+
+  [self drawBackgroundInContext: context];
 
   /* The contents are whatever -display left there, which is a backing store
      of this framework's own or an image the caller set.  Nothing is drawn
@@ -1234,8 +1236,13 @@ CALayerResizeAxis(struct CALayerAxis axis, CGFloat delta,
 {
 }
 
+- (void) drawBackgroundInContext: (CGContextRef)context
+{
+}
+
 - (void) drawInContext: (CGContextRef)context
 {
+  [self drawBackgroundInContext: context];
   [self drawContentInContext: context];
   if ([_delegate respondsToSelector: @selector(drawLayer:inContext:)])
     {

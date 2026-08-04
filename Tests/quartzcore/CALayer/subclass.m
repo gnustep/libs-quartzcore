@@ -15,6 +15,7 @@
 
 @interface CALayer (FrameworkPrivate)
 - (void) drawContentInContext: (CGContextRef)context;
+- (void) drawBackgroundInContext: (CGContextRef)context;
 @end
 
 static CGContextRef newContext(void)
@@ -73,6 +74,34 @@ static BOOL paintedExactly(CGContextRef context, int x0, int y0,
   return YES;
 }
 
+/* Whether the two contexts hold the same pixel at that point. */
+static BOOL samePixel(CGContextRef a, CGContextRef b, int x, int y)
+{
+  long o = ((SIDE - 1 - y) * SIDE + x) * 4;
+
+  return memcmp((unsigned char *)CGBitmapContextGetData(a) + o,
+                (unsigned char *)CGBitmapContextGetData(b) + o, 4) == 0;
+}
+
+/* An opaque image, for a layer's contents. */
+static CGImageRef blueImage(int w, int h)
+{
+  CGColorSpaceRef space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  CGContextRef c = CGBitmapContextCreate(NULL, w, h, 8, w * 4, space,
+                                         kCGImageAlphaPremultipliedFirst);
+  CGColorRef blue = CGColorCreateGenericRGB(0, 0, 1, 1);
+  CGImageRef image;
+
+  CGColorSpaceRelease(space);
+  memset(CGBitmapContextGetData(c), 0, w * h * 4);
+  CGContextSetFillColorWithColor(c, blue);
+  CGContextFillRect(c, CGRectMake(0, 0, w, h));
+  image = CGBitmapContextCreateImage(c);
+  CGColorRelease(blue);
+  CGContextRelease(c);
+  return image;
+}
+
 @interface Shaped : CALayer
 @end
 
@@ -83,6 +112,20 @@ static BOOL paintedExactly(CGContextRef context, int x0, int y0,
 
   CGContextSetFillColorWithColor(context, red);
   CGContextFillRect(context, CGRectMake(0, 0, 10, 10));
+  CGColorRelease(red);
+}
+@end
+
+@interface Backed : CALayer
+@end
+
+@implementation Backed
+- (void) drawBackgroundInContext: (CGContextRef)context
+{
+  CGColorRef red = CGColorCreateGenericRGB(1, 0, 0, 1);
+
+  CGContextSetFillColorWithColor(context, red);
+  CGContextFillRect(context, CGRectMake(0, 0, 40, 40));
   CGColorRelease(red);
 }
 @end
@@ -143,6 +186,49 @@ static void bothReachTheBackingStore(void)
   CGContextRelease(context);
 }
 
+/* A layer's own drawing has two places it can go: under the contents, where
+   a gradient goes, and over them, where a shape goes. */
+static void whichSideOfTheContents(void)
+{
+  CGImageRef image = blueImage(40, 40);
+  CGContextRef context = newContext();
+  Backed *under = [Backed layer];
+
+  [under setBounds: CGRectMake(0, 0, 40, 40)];
+  [under renderInContext: context];
+  PASS(paintedExactly(context, 0, 0, 40, 40),
+       "a layer drawing its background covers its bounds");
+  CGContextRelease(context);
+
+  CGContextRef backed = newContext();
+  Backed *b = [Backed layer];
+  [b setBounds: CGRectMake(0, 0, 40, 40)];
+  [b setContents: (id)image];
+  [b renderInContext: backed];
+
+  CGContextRef plain = newContext();
+  CALayer *p = [CALayer layer];
+  [p setBounds: CGRectMake(0, 0, 40, 40)];
+  [p setContents: (id)image];
+  [p renderInContext: plain];
+
+  PASS(samePixel(backed, plain, 20, 20),
+       "what a layer draws for its background is hidden by its contents");
+
+  CGContextRef shaped = newContext();
+  Shaped *s = [Shaped layer];
+  [s setBounds: CGRectMake(0, 0, 40, 40)];
+  [s setContents: (id)image];
+  [s renderInContext: shaped];
+  PASS(!samePixel(shaped, plain, 5, 5),
+       "while what it draws as content is over them");
+
+  CGImageRelease(image);
+  CGContextRelease(backed);
+  CGContextRelease(plain);
+  CGContextRelease(shaped);
+}
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -152,6 +238,7 @@ int main(void)
   aSubclassThatDraws();
   aPlainLayerDrawsNothing();
   bothReachTheBackingStore();
+  whichSideOfTheContents();
 
   END_SET("what a layer draws for itself")
 
