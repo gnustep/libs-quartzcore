@@ -24,6 +24,7 @@
 */
 
 #import "QuartzCore/CAShapeLayer.h"
+#import "CALayer+FrameworkPrivate.h"
 
 NSString *const kCAFillRuleNonZero = @"non-zero";
 NSString *const kCAFillRuleEvenOdd = @"even-odd";
@@ -208,6 +209,28 @@ NSString *const kCALineCapSquare = @"square";
   CGColorRelease(_strokeColor);
   _strokeColor = strokeColor;
   [self didChangeValueForKey: @"strokeColor"];
+}
+
+/* The path is drawn in the layer's own bounds coordinates, and is not cut to
+   the bounds unless the layer masks to them. */
+- (void) drawContentInContext: (CGContextRef)context
+{
+  if (_path == NULL)
+    return;
+
+  if (_fillColor)
+    {
+      CGContextAddPath(context, _path);
+      CGContextSetFillColorWithColor(context, _fillColor);
+      if ([_fillRule isEqualToString: kCAFillRuleEvenOdd])
+        {
+          CGContextEOFillPath(context);
+        }
+      else
+        {
+          CGContextFillPath(context);
+        }
+    }
 }
 
 @end
