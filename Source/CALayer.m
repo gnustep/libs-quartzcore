@@ -686,6 +686,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
       CGRect bounds = [self bounds];
 
+      if ([_delegate respondsToSelector: @selector(layerWillDraw:)])
+        {
+          [_delegate layerWillDraw: self];
+        }
+
       if (!_backingStore ||
           [_backingStore width] != bounds.size.width ||
           [_backingStore height] != bounds.size.height)
@@ -778,7 +783,26 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (void) setNeedsLayout
 {
+  /* The layout manager is told the moment a layout that was good becomes one
+     that is not.  A layer already wanting laying out says nothing more,
+     however often it is asked again. */
+  if (!_needsLayout
+      && [_layoutManager respondsToSelector: @selector(invalidateLayoutOfLayer:)])
+    {
+      [_layoutManager invalidateLayoutOfLayer: self];
+    }
+
   _needsLayout = YES;
+}
+
+- (CGSize) preferredFrameSize
+{
+  if ([_layoutManager respondsToSelector: @selector(preferredSizeOfLayer:)])
+    {
+      return [_layoutManager preferredSizeOfLayer: self];
+    }
+
+  return [self bounds].size;
 }
 
 - (void) addConstraint: (CAConstraint *)constraint

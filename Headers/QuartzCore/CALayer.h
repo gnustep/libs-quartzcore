@@ -212,6 +212,7 @@ extern NSString *const kCATransition;
 - (void) setNeedsLayout;
 - (void) layoutIfNeeded;
 - (void) layoutSublayers;
+- (CGSize) preferredFrameSize;
 - (void) addConstraint: (CAConstraint *)constraint;
 
 - (id) presentationLayer;
@@ -226,6 +227,7 @@ extern NSString *const kCATransition;
 @end
 
 @interface NSObject (CALayerActions)
+- (void) layerWillDraw: (CALayer*)layer;
 - (void) displayLayer: (CALayer*)layer;
 - (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;
 - (id<CAAction>) actionForLayer: (CALayer*)layer forKey: (NSString*)eventKey;
@@ -233,6 +235,8 @@ extern NSString *const kCATransition;
 
 @interface NSObject (CALayerLayoutManager)
 - (void) layoutSublayersOfLayer: (CALayer*)layer;
+- (void) invalidateLayoutOfLayer: (CALayer*)layer;
+- (CGSize) preferredSizeOfLayer: (CALayer*)layer;
 @end
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
