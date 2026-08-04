@@ -181,7 +181,7 @@ typedef unsigned int CAEdgeAntialiasingMask;
 @property (assign,getter=isGeometryFlipped) BOOL geometryFlipped; /* not supported yet */
 @property (nonatomic, assign)        CGColorRef backgroundColor; /* retained by CG */
 @property (assign)                   BOOL masksToBounds;
-@property (assign)                   CGRect contentsRect;
+@property (NONATOMIC_GSONLY,assign)  CGRect contentsRect;
 @property (assign,getter=isHidden)   BOOL hidden;
 @property (copy)                     NSString *contentsGravity;
 @property (assign)                   BOOL needsDisplayOnBoundsChange;
@@ -243,7 +243,7 @@ typedef unsigned int CAEdgeAntialiasingMask;
 @property (copy)                     NSArray *filters;
 @property (retain)                   id compositingFilter;
 @property (copy)                     NSArray *backgroundFilters;
-@property (assign)                   CGRect contentsCenter;
+@property (NONATOMIC_GSONLY,assign)  CGRect contentsCenter;
 @property (assign)                   CAEdgeAntialiasingMask edgeAntialiasingMask;
 @property (assign)                   float minificationFilterBias;
 @property (assign)                   BOOL allowsEdgeAntialiasing;
