@@ -240,6 +240,7 @@ typedef unsigned int CAAutoresizingMask;
 - (void) setNeedsDisplay;
 - (void) setNeedsDisplayInRect: (CGRect)r;
 - (void) drawInContext: (CGContextRef)context;
+- (void) renderInContext: (CGContextRef)context;
 - (BOOL) needsLayout;
 - (void) setNeedsLayout;
 - (void) layoutIfNeeded;

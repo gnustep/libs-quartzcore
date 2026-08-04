@@ -796,6 +796,109 @@ GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToR
   [self didChangeValueForKey: @"mask"];
 }
 
+/* *************************** */
+/* MARK: - Drawing into a context */
+
+/* Move the coordinate system to where a sublayer stands in its superlayer:
+   to the sublayer's position, turned by its transform about its anchor
+   point, back by the anchor point, and back again by the origin of the
+   sublayer's own bounds, so that afterwards the sublayer's bounds
+   coordinates are the coordinates of the context. */
+static void
+CALayerPlaceInContext(CALayer * layer, CGContextRef context)
+{
+  CGRect bounds = [layer bounds];
+  CGPoint anchor = [layer anchorPoint];
+  CGPoint position = [layer position];
+
+  CGContextTranslateCTM(context, position.x, position.y);
+  CGContextConcatCTM(context, CALayerAffineOf([layer transform]));
+  CGContextTranslateCTM(context, -anchor.x * bounds.size.width,
+                        -anchor.y * bounds.size.height);
+  CGContextTranslateCTM(context, -bounds.origin.x, -bounds.origin.y);
+}
+
+/* Turn the coordinate system by the layer's sublayerTransform, about the
+   layer's anchor point, before its sublayers are drawn. */
+static void
+CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
+{
+  CGRect bounds = [layer bounds];
+  CGPoint anchor = [layer anchorPoint];
+  CGFloat pivotX = bounds.origin.x + anchor.x * bounds.size.width;
+  CGFloat pivotY = bounds.origin.y + anchor.y * bounds.size.height;
+
+  CGContextTranslateCTM(context, pivotX, pivotY);
+  CGContextConcatCTM(context, CALayerAffineOf([layer sublayerTransform]));
+  CGContextTranslateCTM(context, -pivotX, -pivotY);
+}
+
+/* The layer is drawn in the coordinates of the context as they stand, so
+   where the layer itself is positioned in its own superlayer, and any
+   transform on it, do not come into it.  Its sublayers are placed around it
+   as usual, which is what moves the coordinate system for the calls further
+   down. */
+- (void) renderInContext: (CGContextRef)context
+{
+  CGRect area = [self bounds];
+  id layerContents = [self contents];
+  CALayer * sublayer;
+
+  if (context == NULL || [self isHidden] || [self opacity] <= 0.0)
+    return;
+
+  CGContextSaveGState(context);
+  CGContextSetAlpha(context, [self opacity]);
+
+  if ([self masksToBounds])
+    {
+      CGContextClipToRect(context, area);
+    }
+
+  if ([self backgroundColor])
+    {
+      CGContextSetFillColorWithColor(context, [self backgroundColor]);
+      CGContextFillRect(context, area);
+    }
+
+  /* The contents are whatever -display left there, which is a backing store
+     of this framework's own or an image the caller set.  Nothing is drawn
+     for a layer that was never displayed, and -drawInContext: is not called
+     from here. */
+#if GNUSTEP
+  if ([layerContents isKindOfClass: NSClassFromString(@"CGImage")])
+#else
+  if ([layerContents isKindOfClass: NSClassFromString(@"__NSCFType")]
+      && CFGetTypeID(layerContents) == CGImageGetTypeID())
+#endif
+    {
+      CGContextDrawImage(context, area, (CGImageRef)layerContents);
+    }
+  else if ([layerContents isKindOfClass: [CABackingStore class]])
+    {
+      CGImageRef image;
+
+      image = CGBitmapContextCreateImage([(CABackingStore *)layerContents
+                                           context]);
+      if (image)
+        {
+          CGContextDrawImage(context, area, image);
+          CGImageRelease(image);
+        }
+    }
+
+  CALayerApplySublayerTransform(self, context);
+  for (sublayer in [self sublayers])
+    {
+      CGContextSaveGState(context);
+      CALayerPlaceInContext(sublayer, context);
+      [sublayer renderInContext: context];
+      CGContextRestoreGState(context);
+    }
+
+  CGContextRestoreGState(context);
+}
+
 /* ******************** */
 /* MARK: - Autoresizing */
 
