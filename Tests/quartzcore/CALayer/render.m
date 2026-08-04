@@ -405,6 +405,22 @@ static void whatTheDelegateDrew(void)
   CGContextRelease(context);
 }
 
+static void gravityNames(void)
+{
+  CALayer *l = [CALayer layer];
+
+  PASS([[l contentsGravity] isEqualToString: kCAGravityResize],
+       "a new layer resizes its contents to its bounds");
+
+  [l setContentsGravity: kCAGravityTopLeft];
+  PASS([[l contentsGravity] isEqualToString: kCAGravityTopLeft],
+       "a gravity it knows is kept");
+
+  [l setContentsGravity: @"not a gravity"];
+  PASS([[l contentsGravity] isEqualToString: kCAGravityCenter],
+       "one it does not know becomes center, not the default");
+}
+
 static void nothingBadHappens(void)
 {
   CALayer *l = [CALayer layer];
@@ -426,6 +442,7 @@ int main(void)
   theBoundsOrigin();
   sublayerPlacement();
   whatTheDelegateDrew();
+  gravityNames();
   nothingBadHappens();
 
   END_SET("rendering a layer tree into a context")

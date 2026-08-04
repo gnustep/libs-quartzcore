@@ -116,7 +116,6 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize masksToBounds=_masksToBounds;
 @synthesize contentsRect=_contentsRect;
 @synthesize hidden=_hidden;
-@synthesize contentsGravity=_contentsGravity;
 @synthesize needsDisplayOnBoundsChange=_needsDisplayOnBoundsChange;
 @synthesize zPosition=_zPosition;
 @synthesize actions=_actions;
@@ -298,6 +297,10 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
     {
       return [NSNumber numberWithFloat: 3.0];
     }
+  if ([key isEqualToString: @"contentsGravity"])
+    {
+      return kCAGravityResize;
+    }
   if ([key isEqualToString: @"contentsCenter"])
     {
       CGRect rect = CGRectMake(0.0, 0.0, 1.0, 1.0);
@@ -373,6 +376,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"shadowColor", @"shadowOffset", @"shadowOpacity",
         @"shadowPath", @"shadowRadius",
 
+        @"contentsGravity",
         @"contentsCenter", @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
         @"edgeAntialiasingMask", @"drawsAsynchronously",
 
@@ -999,6 +1003,39 @@ CALayerResizeAxis(struct CALayerAxis axis, CGFloat delta,
     {
       [sublayer resizeWithOldSuperlayerSize: size];
     }
+}
+
+- (NSString *) contentsGravity
+{
+  return _contentsGravity;
+}
+
+/* Apple keeps a name it knows and answers center for anything else, which is
+   not the same as the default. */
+- (void) setContentsGravity: (NSString *)gravity
+{
+  static NSArray * known = nil;
+  NSString * chosen;
+
+  if (known == nil)
+    {
+      known = [[NSArray alloc] initWithObjects: kCAGravityResize,
+               kCAGravityResizeAspect, kCAGravityResizeAspectFill,
+               kCAGravityCenter, kCAGravityTop, kCAGravityBottom,
+               kCAGravityLeft, kCAGravityRight, kCAGravityTopLeft,
+               kCAGravityTopRight, kCAGravityBottomLeft,
+               kCAGravityBottomRight, nil];
+    }
+
+  chosen = [known containsObject: gravity] ? gravity : kCAGravityCenter;
+  if (chosen == _contentsGravity)
+    return;
+
+  [self willChangeValueForKey: @"contentsGravity"];
+  chosen = [chosen copy];
+  [_contentsGravity release];
+  _contentsGravity = chosen;
+  [self didChangeValueForKey: @"contentsGravity"];
 }
 
 /* ******************************* */
