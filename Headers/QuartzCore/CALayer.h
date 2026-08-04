@@ -52,6 +52,16 @@ extern NSString *const kCAOnOrderIn;
 extern NSString *const kCAOnOrderOut;
 extern NSString *const kCATransition;
 
+/* the edges of a layer, for -edgeAntialiasingMask */
+enum
+{
+  kCALayerLeftEdge = 1U << 0,
+  kCALayerRightEdge = 1U << 1,
+  kCALayerBottomEdge = 1U << 2,
+  kCALayerTopEdge = 1U << 3
+};
+typedef unsigned int CAEdgeAntialiasingMask;
+
 @class CAAnimation;
 @class CARenderer;
 
@@ -99,6 +109,17 @@ extern NSString *const kCATransition;
   id _modelLayer;
   CGColorRef _borderColor;
   CGFloat _contentsScale;
+
+  CALayer * _mask;
+  NSArray * _filters;
+  NSArray * _backgroundFilters;
+  id _compositingFilter;
+  CGRect _contentsCenter;
+  CAEdgeAntialiasingMask _edgeAntialiasingMask;
+  float _minificationFilterBias;
+  BOOL _allowsEdgeAntialiasing;
+  BOOL _allowsGroupOpacity;
+  BOOL _drawsAsynchronously;
 
   CGColorRef _shadowColor;
   CGSize _shadowOffset;
@@ -216,6 +237,18 @@ extern NSString *const kCATransition;
 @property (nonatomic, assign) CGColorRef borderColor; /* retained by CG */
 @property (nonatomic, assign) CGFloat contentsScale;
 @property (nonatomic, assign) CGFloat anchorPointZ;
+
+/* The renderer does not read any of the following yet. */
+@property (retain)                   CALayer *mask;
+@property (copy)                     NSArray *filters;
+@property (retain)                   id compositingFilter;
+@property (copy)                     NSArray *backgroundFilters;
+@property (assign)                   CGRect contentsCenter;
+@property (assign)                   CAEdgeAntialiasingMask edgeAntialiasingMask;
+@property (assign)                   float minificationFilterBias;
+@property (assign)                   BOOL allowsEdgeAntialiasing;
+@property (assign)                   BOOL allowsGroupOpacity;
+@property (assign)                   BOOL drawsAsynchronously;
 @end
 
 @interface NSObject (CALayerActions)
