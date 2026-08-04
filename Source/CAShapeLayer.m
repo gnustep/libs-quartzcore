@@ -551,6 +551,10 @@ CAShapeLayerTrimmedPath(CGPathRef path, CGFloat start, CGFloat end)
       CGPathRef stroked = _path;
       CGPathRef trimmed = NULL;
 
+      /* The stroke settings are set on the context, so they are kept to this
+         layer and do not reach anything drawn after it. */
+      CGContextSaveGState(context);
+
       /* strokeStart and strokeEnd take a part of the path, which is built by
          walking it and keeping the piece between the two. */
       if (_strokeStart > 0.0 || _strokeEnd < 1.0)
@@ -568,7 +572,29 @@ CAShapeLayerTrimmedPath(CGPathRef path, CGFloat start, CGFloat end)
       CGContextSetMiterLimit(context, _miterLimit);
       CGContextSetLineCap(context, CAShapeLayerLineCap(_lineCap));
       CGContextSetLineJoin(context, CAShapeLayerLineJoin(_lineJoin));
+
+      /* lineDashPattern holds the on and off lengths in user space, and
+         lineDashPhase is how far into that pattern the stroke starts. */
+      if ([_lineDashPattern count] > 0)
+        {
+          NSUInteger count = [_lineDashPattern count];
+          CGFloat *lengths = malloc(sizeof(CGFloat) * count);
+          NSUInteger i;
+
+          if (lengths != NULL)
+            {
+              for (i = 0; i < count; i++)
+                {
+                  lengths[i] = [[_lineDashPattern objectAtIndex: i]
+                                 floatValue];
+                }
+              CGContextSetLineDash(context, _lineDashPhase, lengths, count);
+              free(lengths);
+            }
+        }
+
       CGContextStrokePath(context);
+      CGContextRestoreGState(context);
 
       CGPathRelease(trimmed);
     }

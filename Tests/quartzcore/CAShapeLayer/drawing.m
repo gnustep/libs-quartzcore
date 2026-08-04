@@ -179,6 +179,94 @@ static void strokes(void)
   CGPathRelease(path);
 }
 
+/* Whether two contexts paint any point differently. */
+static BOOL differ(CGContextRef a, CGContextRef b)
+{
+  int x, y;
+
+  for (y = 0; y < SIDE; y++)
+    for (x = 0; x < SIDE; x++)
+      if (painted(a, x, y) != painted(b, x, y))
+        return YES;
+  return NO;
+}
+
+static CAShapeLayer *strokedShape(CGPathRef path, CGColorRef colour)
+{
+  CAShapeLayer *s = shape(path);
+
+  [s setFillColor: NULL];
+  [s setStrokeColor: colour];
+  [s setLineWidth: 4];
+  return s;
+}
+
+static NSArray *sixOnSixOff(void)
+{
+  return [NSArray arrayWithObjects: [NSNumber numberWithFloat: 6],
+                                    [NSNumber numberWithFloat: 6], nil];
+}
+
+static void dashes(void)
+{
+  CGPathRef path = rectPath(CGRectMake(10, 10, 40, 30));
+  CGContextRef solid = newContext();
+  CGContextRef dashed = newContext();
+  CGContextRef shifted = newContext();
+  CGColorRef blue = CGColorCreateGenericRGB(0, 0, 1, 1);
+  CAShapeLayer *plain = strokedShape(path, blue);
+  CAShapeLayer *cut = strokedShape(path, blue);
+  CAShapeLayer *moved = strokedShape(path, blue);
+
+  [cut setLineDashPattern: sixOnSixOff()];
+  [moved setLineDashPattern: sixOnSixOff()];
+  [moved setLineDashPhase: 6];
+
+  [plain renderInContext: solid];
+  [cut renderInContext: dashed];
+  [moved renderInContext: shifted];
+
+  PASS(paintedCount(dashed) > 0, "a dashed stroke draws part of the path");
+  PASS(paintedCount(dashed) < paintedCount(solid),
+       "and less of it than a solid stroke");
+  PASS(differ(dashed, shifted),
+       "lineDashPhase moves the pattern along the path");
+
+  CGColorRelease(blue);
+  CGContextRelease(solid);
+  CGContextRelease(dashed);
+  CGContextRelease(shifted);
+  CGPathRelease(path);
+}
+
+/* A dash set for the stroke must not reach anything drawn after it. */
+static void theDashDoesNotEscape(void)
+{
+  CGPathRef path = rectPath(CGRectMake(10, 10, 40, 30));
+  CGContextRef alone = newContext();
+  CGContextRef under = newContext();
+  CGColorRef blue = CGColorCreateGenericRGB(0, 0, 1, 1);
+  CAShapeLayer *dashedParent = strokedShape(path, blue);
+  CAShapeLayer *child = strokedShape(path, blue);
+  CAShapeLayer *lone = strokedShape(path, blue);
+
+  /* The sublayer is placed over the same part of the context as the layer
+     that holds it, so the two strokes fall on the same points. */
+  [child setPosition: CGPointMake(40, 30)];
+  [dashedParent setLineDashPattern: sixOnSixOff()];
+  [dashedParent addSublayer: child];
+  [dashedParent renderInContext: under];
+  [lone renderInContext: alone];
+
+  PASS(paintedCount(under) == paintedCount(alone),
+       "a sublayer stroked after a dashed one is drawn solid");
+
+  CGColorRelease(blue);
+  CGContextRelease(alone);
+  CGContextRelease(under);
+  CGPathRelease(path);
+}
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -187,6 +275,8 @@ int main(void)
 
   fills();
   strokes();
+  dashes();
+  theDashDoesNotEscape();
 
   END_SET("what a shape layer draws")
 
