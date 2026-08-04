@@ -92,18 +92,22 @@ static int chR, chG, chB;
 static int channelOf(CGFloat r, CGFloat g, CGFloat b)
 {
   CGContextRef context = newContext();
-  CGColorRef color = CGColorCreateGenericRGB(r, g, b, 1.0);
-  unsigned char *data;
+  CGColorRef colour = CGColorCreateGenericRGB(r, g, b, 1.0);
+  unsigned char *p;
   int i, found = 0;
 
-  CGContextSetFillColorWithColor(context, color);
-  CGContextFillRect(context, CGRectMake(0, 0, 4, 4));
-  data = CGBitmapContextGetData(context);
+  CGContextSetFillColorWithColor(context, colour);
+  CGContextFillRect(context, CGRectMake(0, 0, 20, 20));
+  p = (unsigned char *)CGBitmapContextGetData(context)
+      + ((H - 1 - 10) * W + 10) * 4;
+
+  /* Half strength, so the channel is the one byte near 128 rather than one
+     of the several at 255. */
   for (i = 0; i < 4; i++)
-    if (data[((H - 1) * W) * 4 + i] > 0)
+    if (p[i] > 100 && p[i] < 160)
       found = i;
 
-  CGColorRelease(color);
+  CGColorRelease(colour);
   CGContextRelease(context);
   return found;
 }
