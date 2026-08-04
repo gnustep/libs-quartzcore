@@ -62,6 +62,19 @@ enum
 };
 typedef unsigned int CAEdgeAntialiasingMask;
 
+/* which parts of a layer give way when its superlayer is resized */
+enum
+{
+  kCALayerNotSizable = 0,
+  kCALayerMinXMargin = 1U << 0,
+  kCALayerWidthSizable = 1U << 1,
+  kCALayerMaxXMargin = 1U << 2,
+  kCALayerMinYMargin = 1U << 3,
+  kCALayerHeightSizable = 1U << 4,
+  kCALayerMaxYMargin = 1U << 5
+};
+typedef unsigned int CAAutoresizingMask;
+
 @class CAAnimation;
 @class CARenderer;
 
@@ -116,6 +129,7 @@ typedef unsigned int CAEdgeAntialiasingMask;
   id _compositingFilter;
   CGRect _contentsCenter;
   CAEdgeAntialiasingMask _edgeAntialiasingMask;
+  CAAutoresizingMask _autoresizingMask;
   float _minificationFilterBias;
   BOOL _allowsEdgeAntialiasing;
   BOOL _allowsGroupOpacity;
@@ -239,6 +253,9 @@ typedef unsigned int CAEdgeAntialiasingMask;
 - (BOOL) contentsAreFlipped;
 - (BOOL) shouldArchiveValueForKey: (NSString *)key;
 
+- (void) resizeWithOldSuperlayerSize: (CGSize)size;
+- (void) resizeSublayersWithOldSize: (CGSize)size;
+
 @property (nonatomic, assign) CGColorRef borderColor; /* retained by CG */
 @property (nonatomic, assign) CGFloat contentsScale;
 @property (nonatomic, assign) CGFloat anchorPointZ;
@@ -254,6 +271,7 @@ typedef unsigned int CAEdgeAntialiasingMask;
 @property (assign)                   BOOL allowsEdgeAntialiasing;
 @property (assign)                   BOOL allowsGroupOpacity;
 @property (assign)                   BOOL drawsAsynchronously;
+@property (assign)                   CAAutoresizingMask autoresizingMask;
 @end
 
 @interface NSObject (CALayerActions)

@@ -133,6 +133,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize allowsEdgeAntialiasing=_allowsEdgeAntialiasing;
 @synthesize allowsGroupOpacity=_allowsGroupOpacity;
 @synthesize drawsAsynchronously=_drawsAsynchronously;
+@synthesize autoresizingMask=_autoresizingMask;
 
 @synthesize shadowColor=_shadowColor;
 @synthesize shadowOffset=_shadowOffset;
@@ -446,7 +447,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"mask", @"filters", @"backgroundFilters", @"compositingFilter",
         @"contentsCenter", @"edgeAntialiasingMask", @"minificationFilterBias",
         @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
-        @"drawsAsynchronously",
+        @"drawsAsynchronously", @"autoresizingMask",
 
         @"beginTime", @"timeOffset", @"repeatCount", @"repeatDuration",
         @"autoreverses", @"fillMode", @"duration", @"speed" };
@@ -520,6 +521,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       [self setAllowsEdgeAntialiasing: [layer allowsEdgeAntialiasing]];
       [self setAllowsGroupOpacity: [layer allowsGroupOpacity]];
       [self setDrawsAsynchronously: [layer drawsAsynchronously]];
+      [self setAutoresizingMask: [layer autoresizingMask]];
 
       [self setShadowColor: [layer shadowColor]];
       [self setShadowOffset: [layer shadowOffset]];
@@ -682,10 +684,14 @@ GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToR
 
 - (void) setBounds: (CGRect)bounds
 {
+  CGSize oldSize;
+
   bounds = CGRectStandardize(bounds);
 
   if (CGRectEqualToRect(bounds, _bounds))
     return;
+
+  oldSize = _bounds.size;
 
 #if !GNUSTEP
   _bounds = bounds;
@@ -695,6 +701,11 @@ GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToR
   _bounds = bounds;
   [self didChangeValueForKey: @"bounds"];
 #endif
+
+  if (!CGSizeEqualToSize(oldSize, bounds.size))
+    {
+      [self resizeSublayersWithOldSize: oldSize];
+    }
 
   if ([self needsDisplayOnBoundsChange])
     {
@@ -783,6 +794,108 @@ GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToR
   _mask = mask;
   [_mask setSuperlayer: self];
   [self didChangeValueForKey: @"mask"];
+}
+
+/* ******************** */
+/* MARK: - Autoresizing */
+
+/* One axis of the layer, described as the margin before it, its own extent,
+   and the margin after it. */
+struct CALayerAxis
+{
+  CGFloat before;
+  CGFloat extent;
+  CGFloat after;
+};
+
+/* Share `delta` out among whichever of the three parts give way.
+
+   Each part is worth a third of the change.  A part that does not give way
+   hands its third to the margins that do, or, where neither margin does, to
+   the extent.  So a layer whose leading margin and extent both give way sees
+   two thirds of the change in the margin and one third in the extent, while
+   one whose margins both give way and whose extent does not sees half in
+   each margin. */
+static struct CALayerAxis
+CALayerResizeAxis(struct CALayerAxis axis, CGFloat delta,
+                  BOOL beforeGivesWay, BOOL extentGivesWay,
+                  BOOL afterGivesWay)
+{
+  int margins = (beforeGivesWay ? 1 : 0) + (afterGivesWay ? 1 : 0);
+  CGFloat extentShare;
+  CGFloat marginShare;
+
+  if (!beforeGivesWay && !extentGivesWay && !afterGivesWay)
+    return axis;
+
+  if (extentGivesWay)
+    extentShare = margins ? delta / 3.0 : delta;
+  else
+    extentShare = 0.0;
+
+  marginShare = margins ? (delta - extentShare) / margins : 0.0;
+
+  if (beforeGivesWay)
+    axis.before += marginShare;
+  if (extentGivesWay)
+    axis.extent += extentShare;
+  if (afterGivesWay)
+    axis.after += marginShare;
+
+  return axis;
+}
+
+- (void) resizeWithOldSuperlayerSize: (CGSize)size
+{
+  CGSize now = [[self superlayer] bounds].size;
+  CGRect frame = [self frame];
+  struct CALayerAxis x, y;
+  BOOL resizesX, resizesY;
+
+  resizesX = (_autoresizingMask & (kCALayerMinXMargin | kCALayerWidthSizable
+                                   | kCALayerMaxXMargin)) != 0;
+  resizesY = (_autoresizingMask & (kCALayerMinYMargin | kCALayerHeightSizable
+                                   | kCALayerMaxYMargin)) != 0;
+  if (!resizesX && !resizesY)
+    return;
+
+  x.before = frame.origin.x;
+  x.extent = frame.size.width;
+  x.after = size.width - x.before - x.extent;
+  y.before = frame.origin.y;
+  y.extent = frame.size.height;
+  y.after = size.height - y.before - y.extent;
+
+  x = CALayerResizeAxis(x, now.width - size.width,
+                        (_autoresizingMask & kCALayerMinXMargin) != 0,
+                        (_autoresizingMask & kCALayerWidthSizable) != 0,
+                        (_autoresizingMask & kCALayerMaxXMargin) != 0);
+  y = CALayerResizeAxis(y, now.height - size.height,
+                        (_autoresizingMask & kCALayerMinYMargin) != 0,
+                        (_autoresizingMask & kCALayerHeightSizable) != 0,
+                        (_autoresizingMask & kCALayerMaxYMargin) != 0);
+
+  /* Apple lands the layer on whole points: the leading margin goes down to
+     the point below and the extent takes up the slack. */
+  if (resizesX)
+    {
+      frame.origin.x = floor(x.before);
+      frame.size.width = ceil(now.width - frame.origin.x - x.after);
+    }
+  if (resizesY)
+    {
+      frame.origin.y = floor(y.before);
+      frame.size.height = ceil(now.height - frame.origin.y - y.after);
+    }
+  [self setFrame: frame];
+}
+
+- (void) resizeSublayersWithOldSize: (CGSize)size
+{
+  for (CALayer * sublayer in [NSArray arrayWithArray: _sublayers])
+    {
+      [sublayer resizeWithOldSuperlayerSize: size];
+    }
 }
 
 /* ******************************* */
