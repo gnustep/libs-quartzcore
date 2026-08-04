@@ -25,6 +25,9 @@
 
 #import <Foundation/Foundation.h>
 #import "QuartzCore/CAGradientLayer.h"
+#import "CALayer+FrameworkPrivate.h"
+
+#include <stdlib.h>
 
 NSString *const kCAGradientLayerAxial = @"axial";
 NSString *const kCAGradientLayerRadial = @"radial";
@@ -62,9 +65,60 @@ NSString *const kCAGradientLayerConic = @"conic";
   [super dealloc];
 }
 
-/* TODO: draw the gradient.  The properties above are held and read back,
-   but nothing fills the backing store, so a gradient layer draws as a plain
-   layer does.  The colours and the locations map onto a CGGradient drawn
-   between startPoint and endPoint. */
+/* The gradient is drawn under the layer's contents, in the layer's own
+   bounds, with startPoint and endPoint as unit points in those bounds.  A
+   corner radius rounds it whether or not the layer masks to its bounds. */
+- (void) drawBackgroundInContext: (CGContextRef)context
+{
+  CGRect bounds = [self bounds];
+  NSUInteger count = [_colors count];
+  CGColorSpaceRef space;
+  CGGradientRef gradient;
+  CGFloat *stops;
+  CGPoint from, to;
+  NSUInteger i;
+
+  /* Two colours are the least that makes a gradient, and a location list,
+     where there is one, has an entry for each colour. */
+  if (count < 2)
+    return;
+  if (_locations != nil && [_locations count] != count)
+    return;
+  if (![_type isEqualToString: kCAGradientLayerAxial])
+    return;
+
+  stops = malloc(count * sizeof(CGFloat));
+  for (i = 0; i < count; i++)
+    {
+      if (_locations != nil)
+        stops[i] = [[_locations objectAtIndex: i] floatValue];
+      else
+        stops[i] = (CGFloat)i / (CGFloat)(count - 1);
+    }
+
+  /* Opal draws a gradient only in device RGB, and copies the locations
+     without checking for the NULL the documentation allows. */
+  space = CGColorSpaceCreateDeviceRGB();
+  gradient = CGGradientCreateWithColors(space, (CFArrayRef)_colors, stops);
+  CGColorSpaceRelease(space);
+  free(stops);
+  if (gradient == NULL)
+    return;
+
+  from = CGPointMake(CGRectGetMinX(bounds) + _startPoint.x * bounds.size.width,
+                     CGRectGetMinY(bounds)
+                       + _startPoint.y * bounds.size.height);
+  to = CGPointMake(CGRectGetMinX(bounds) + _endPoint.x * bounds.size.width,
+                   CGRectGetMinY(bounds) + _endPoint.y * bounds.size.height);
+
+  CGContextSaveGState(context);
+  CALayerAddRoundedRect(context, bounds, [self cornerRadius]);
+  CGContextClip(context);
+  CGContextDrawLinearGradient(context, gradient, from, to,
+                              kCGGradientDrawsBeforeStartLocation
+                              | kCGGradientDrawsAfterEndLocation);
+  CGContextRestoreGState(context);
+  CGGradientRelease(gradient);
+}
 
 @end
