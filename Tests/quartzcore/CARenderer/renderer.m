@@ -16,6 +16,7 @@
 #import <AppKit/AppKit.h>
 #import <QuartzCore/CARenderer.h>
 #import <QuartzCore/CALayer.h>
+#import <QuartzCore/CAGradientLayer.h>
 #import <QuartzCore/CAShapeLayer.h>
 #import <QuartzCore/CATransaction.h>
 #ifdef __APPLE__
@@ -510,6 +511,65 @@ int main(void)
   CGPathRelease(path);
 
   END_SET("a layer that draws content of its own")
+
+  START_SET("a layer that draws a gradient")
+
+  const char *whyGradient = "";
+  NSOpenGLContext *gradientContext = usableContext(&whyGradient);
+  CARenderer *filler;
+  int gx0, gy0, gx1, gy1, gradientPixels;
+  static unsigned char before[MAX_PIXELS];
+  static unsigned char after[MAX_PIXELS];
+
+  if (gradientContext == nil)
+    {
+      SKIP("%s", whyGradient)
+    }
+
+  filler = [CARenderer rendererWithNSOpenGLContext: gradientContext
+                                           options: nil];
+  if (filler == nil)
+    {
+      SKIP("there is no renderer to draw with")
+    }
+
+  /* The drawable is cleared to black, so the gradient runs between two
+     colours that are not it. */
+  CGColorRef first = CGColorCreateGenericRGB(1, 0, 0, 1);
+  CGColorRef second = CGColorCreateGenericRGB(0, 0, 1, 1);
+
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
+  CAGradientLayer *colourless = [CAGradientLayer layer];
+  [colourless setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [colourless setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [colourless setNeedsDisplay];
+
+  CAGradientLayer *coloured = [CAGradientLayer layer];
+  [coloured setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [coloured setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [coloured setColors: [NSArray arrayWithObjects: (id)first, (id)second, nil]];
+  [coloured setNeedsDisplay];
+
+  [CATransaction commit];
+
+  renderFrame(filler, colourless);
+  readDrawable(before);
+
+  renderFrame(filler, coloured);
+  readDrawable(after);
+  changedBox(before, after, &gx0, &gy0, &gx1, &gy1, &gradientPixels);
+  PASS(gx0 == 0 && gy0 == 0 && gx1 == drawableW - 1 && gy1 == drawableH - 1,
+       "the renderer draws a gradient over the whole layer");
+  PASS(gradientPixels == drawableW * drawableH, "and leaves none of it out");
+  PASS(memcmp(after, after + (drawableH - 1) * drawableW * 4, 4) != 0,
+       "the bottom of it is not the colour of the top");
+
+  CGColorRelease(first);
+  CGColorRelease(second);
+
+  END_SET("a layer that draws a gradient")
 
   [pool release];
   return 0;
