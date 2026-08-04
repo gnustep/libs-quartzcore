@@ -346,6 +346,37 @@ static void underTheContents(void)
   CGColorRelease(blue);
 }
 
+static void roundedAtTheCorners(void)
+{
+  CGColorRef red = opaque(1, 0, 0);
+  CGColorRef blue = opaque(0, 0, 1);
+  NSArray *two = [NSArray arrayWithObjects: (id)red, (id)blue, nil];
+  CGContextRef context = newContext();
+  CAGradientLayer *square = gradient(two);
+  int plain, rounded;
+
+  [square renderInContext: context];
+  plain = paintedCount(context);
+  PASS(painted(context, 0, 0), "a square gradient reaches into the corner");
+  CGContextRelease(context);
+
+  context = newContext();
+  CAGradientLayer *round = gradient(two);
+  [round setCornerRadius: 20];
+  [round renderInContext: context];
+  rounded = paintedCount(context);
+  PASS(!painted(context, 0, 0) && !painted(context, 1, 1),
+       "a corner radius takes the corner off the gradient");
+  PASS(rounded < plain && rounded > plain * 9 / 10,
+       "which costs it the corners and nothing else");
+  PASS(painted(context, 40, 30) && painted(context, 0, 30),
+       "the middle and the straight edges are still covered");
+  CGContextRelease(context);
+
+  CGColorRelease(red);
+  CGColorRelease(blue);
+}
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -358,6 +389,7 @@ int main(void)
   nothingToDraw();
   whereTheColoursSit();
   underTheContents();
+  roundedAtTheCorners();
 
   END_SET("what a gradient layer draws")
 
