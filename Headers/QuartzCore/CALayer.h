@@ -143,6 +143,8 @@ typedef unsigned int CAEdgeAntialiasingMask;
   NSMutableDictionary *_animations;
   NSMutableArray *_animationKeys;
   NSMutableArray *_observedKeyPaths;
+  NSMutableArray *_archivingKeyPaths;
+  NSMutableSet *_valuesThatWereSet;
   CABackingStore * _backingStore;
 
   /* TODO: add CAGLSimpleFramebuffer ivars for storing:
@@ -233,6 +235,9 @@ typedef unsigned int CAEdgeAntialiasingMask;
 
 - (CGAffineTransform) affineTransform;
 - (void) setAffineTransform: (CGAffineTransform)affineTransform;
+
+- (BOOL) contentsAreFlipped;
+- (BOOL) shouldArchiveValueForKey: (NSString *)key;
 
 @property (nonatomic, assign) CGColorRef borderColor; /* retained by CG */
 @property (nonatomic, assign) CGFloat contentsScale;

@@ -34,6 +34,7 @@
 #import "CALayer+FrameworkPrivate.h"
 #import "CAAnimation+FrameworkPrivate.h"
 #import "CAImplicitAnimationObserver.h"
+#import "CAArchivingObserver.h"
 #import <objc/runtime.h>
 #import "CALayer+DynamicProperties.h"
 #import "QuartzCore/CATransaction.h"
@@ -71,6 +72,7 @@ NSString *const kCATransition = @"transition";
 @property (retain) CABackingStore * backingStore;
 @property (nonatomic, assign) CARenderer * renderer;
 @property (nonatomic, retain) NSMutableDictionary *dynamicPropertyValueDict;
+@property (readonly) NSSet * valuesThatWereSet;
 
 - (void)setModelLayer: (id)modelLayer;
 @end
@@ -354,6 +356,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       _animationKeys = [[NSMutableArray alloc] init];
       _sublayers = [[NSMutableArray alloc] init];
       _observedKeyPaths = [[NSMutableArray alloc] init];
+      _archivingKeyPaths = [[NSMutableArray alloc] init];
+      _valuesThatWereSet = [[NSMutableSet alloc] init];
       _dynamicPropertyValueDict = [[NSMutableDictionary alloc] init];
 
       /* TODO: list all properties below */
@@ -424,6 +428,42 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
           [_observedKeyPaths addObject: keys[i]];
         }
 
+      /* Every property whose value a layer archives once it has been given
+         one.  frame is not among them because it is derived from bounds,
+         position and anchorPoint, and neither are the read-only ones. */
+      static NSString * archivable[] = {
+        @"delegate", @"contents", @"layoutManager", @"sublayers",
+        @"bounds", @"anchorPoint", @"anchorPointZ", @"position",
+        @"transform", @"sublayerTransform", @"opacity", @"opaque",
+        @"shouldRasterize", @"geometryFlipped", @"masksToBounds",
+        @"contentsRect", @"contentsScale", @"hidden", @"contentsGravity",
+        @"needsDisplayOnBoundsChange", @"zPosition", @"actions", @"style",
+
+        @"backgroundColor", @"borderColor",
+        @"shadowColor", @"shadowOffset", @"shadowOpacity", @"shadowPath",
+        @"shadowRadius",
+
+        @"mask", @"filters", @"backgroundFilters", @"compositingFilter",
+        @"contentsCenter", @"edgeAntialiasingMask", @"minificationFilterBias",
+        @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
+        @"drawsAsynchronously",
+
+        @"beginTime", @"timeOffset", @"repeatCount", @"repeatDuration",
+        @"autoreverses", @"fillMode", @"duration", @"speed" };
+
+      for (int i = 0; i < sizeof(archivable)/sizeof(archivable[0]); i++)
+        {
+          [self addObserver: [CAArchivingObserver sharedObserver]
+                 forKeyPath: archivable[i]
+                    options: 0
+                    context: nil];
+          [_archivingKeyPaths addObject: archivable[i]];
+        }
+
+      /* Apple takes these two from the application bundle rather than from
+         the class, so a layer has been given them before anyone sets one. */
+      [_valuesThatWereSet addObject: @"allowsEdgeAntialiasing"];
+      [_valuesThatWereSet addObject: @"allowsGroupOpacity"];
     }
   return self;
 }
@@ -505,6 +545,12 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       /* private or publicly read-only properties */
       [self setAnimations: [layer animations]];
       [self setAnimationKeys: [layer animationKeys]];
+
+      /* A shadow copy archives what the layer it shadows archives, not
+         everything the copying above has just gone through. */
+      [_valuesThatWereSet release];
+      _valuesThatWereSet
+        = [[NSMutableSet alloc] initWithSet: [layer valuesThatWereSet]];
     }
   return self;
 }
@@ -516,9 +562,16 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       [self removeObserver: [CAImplicitAnimationObserver sharedObserver]
                 forKeyPath: keyPath];
     }
+  for(NSString *keyPath in _archivingKeyPaths)
+    {
+      [self removeObserver: [CAArchivingObserver sharedObserver]
+                forKeyPath: keyPath];
+    }
   CGColorRelease(_shadowColor);
   CGPathRelease(_shadowPath);
   [_observedKeyPaths release];
+  [_archivingKeyPaths release];
+  [_valuesThatWereSet release];
   [_layoutManager release];
   [_contents release];
   [_sublayers release];
@@ -730,6 +783,46 @@ GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToR
   _mask = mask;
   [_mask setSuperlayer: self];
   [self didChangeValueForKey: @"mask"];
+}
+
+/* ******************************* */
+/* MARK: - Flipping and archiving  */
+
+/* Each layer between this one and the root turns the contents over, so an
+   even number of them leaves the contents the way up they started. */
+- (BOOL) contentsAreFlipped
+{
+  BOOL flipped = NO;
+  CALayer * layer = self;
+
+  while (layer)
+    {
+      if ([layer isGeometryFlipped])
+        flipped = !flipped;
+      layer = [layer superlayer];
+    }
+  return flipped;
+}
+
+- (NSSet *) valuesThatWereSet
+{
+  return _valuesThatWereSet;
+}
+
+- (void) noteValueWasSetForKey: (NSString *)key
+{
+  [_valuesThatWereSet addObject: key];
+}
+
+/* A layer archives a property once that property has been given a value.
+   One that still holds what the class handed it is not worth writing out,
+   and neither is one derived from properties that are. */
+- (BOOL) shouldArchiveValueForKey: (NSString *)key
+{
+  if (key == nil)
+    return NO;
+
+  return [_valuesThatWereSet containsObject: key];
 }
 
 /* ***************** */
@@ -1018,6 +1111,7 @@ GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToR
   [layer removeFromSuperlayer];
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
+  [self noteValueWasSetForKey: @"sublayers"];
 }
 
 - (void)removeFromSuperlayer
