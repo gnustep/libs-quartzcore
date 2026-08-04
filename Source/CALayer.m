@@ -863,6 +863,35 @@ CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
   CGContextTranslateCTM(context, -pivotX, -pivotY);
 }
 
+/* Put the outline of `rect` into the context, with its corners rounded by
+   `radius`.  A radius of nothing leaves an ordinary rectangle, and one too
+   large for the rectangle is brought down to the largest that fits. */
+static void
+CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
+{
+  CGFloat limit = (rect.size.width < rect.size.height
+                   ? rect.size.width : rect.size.height) / 2.0;
+  CGFloat minX = CGRectGetMinX(rect), maxX = CGRectGetMaxX(rect);
+  CGFloat minY = CGRectGetMinY(rect), maxY = CGRectGetMaxY(rect);
+
+  if (radius > limit)
+    radius = limit;
+
+  CGContextBeginPath(context);
+  if (radius <= 0)
+    {
+      CGContextAddRect(context, rect);
+      return;
+    }
+
+  CGContextMoveToPoint(context, minX + radius, minY);
+  CGContextAddArcToPoint(context, maxX, minY, maxX, maxY, radius);
+  CGContextAddArcToPoint(context, maxX, maxY, minX, maxY, radius);
+  CGContextAddArcToPoint(context, minX, maxY, minX, minY, radius);
+  CGContextAddArcToPoint(context, minX, minY, maxX, minY, radius);
+  CGContextClosePath(context);
+}
+
 /* The layer is drawn in the coordinates of the context as they stand, so
    where the layer itself is positioned in its own superlayer, and any
    transform on it, do not come into it.  Its sublayers are placed around it
@@ -871,6 +900,8 @@ CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
 - (void) renderInContext: (CGContextRef)context
 {
   CGRect area = [self bounds];
+  CGFloat radius = [self cornerRadius];
+  CGFloat border = [self borderWidth];
   id layerContents = [self contents];
   CALayer * sublayer;
 
@@ -882,13 +913,16 @@ CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
 
   if ([self masksToBounds])
     {
-      CGContextClipToRect(context, area);
+      /* A rounded layer clips what is under it to the same rounded shape. */
+      CALayerAddRoundedRect(context, area, radius);
+      CGContextClip(context);
     }
 
   if ([self backgroundColor])
     {
       CGContextSetFillColorWithColor(context, [self backgroundColor]);
-      CGContextFillRect(context, area);
+      CALayerAddRoundedRect(context, area, radius);
+      CGContextFillPath(context);
     }
 
   /* The contents are whatever -display left there, which is a backing store
@@ -927,6 +961,21 @@ CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
                              image);
           CGImageRelease(image);
         }
+    }
+
+  /* The border is drawn inside the bounds, over the background and the
+     contents: a stroke down the middle of a line that thick covers the
+     outermost points of the layer and nothing beyond them. */
+  if (border > 0 && [self borderColor])
+    {
+      CGRect inner = CGRectInset(area, border / 2.0, border / 2.0);
+      CGFloat innerRadius = radius - border / 2.0;
+
+      CGContextSetStrokeColorWithColor(context, [self borderColor]);
+      CGContextSetLineWidth(context, border);
+      CALayerAddRoundedRect(context, inner,
+                            innerRadius > 0 ? innerRadius : 0);
+      CGContextStrokePath(context);
     }
 
   CALayerApplySublayerTransform(self, context);

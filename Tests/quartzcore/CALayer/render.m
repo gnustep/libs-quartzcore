@@ -94,6 +94,15 @@ static BOOL fullyPainted(CGContextRef context)
   return YES;
 }
 
+/* Whether the two contexts hold the same pixel at that point. */
+static BOOL samePixel(CGContextRef a, CGContextRef b, int x, int y)
+{
+  long o = ((SIDE - 1 - y) * SIDE + x) * 4;
+
+  return memcmp((unsigned char *)CGBitmapContextGetData(a) + o,
+                (unsigned char *)CGBitmapContextGetData(b) + o, 4) == 0;
+}
+
 static CGColorRef opaque(CGFloat r, CGFloat g, CGFloat b)
 {
   return CGColorCreateGenericRGB(r, g, b, 1.0);
@@ -478,6 +487,96 @@ static void gravityNames(void)
        "one it does not know becomes center, not the default");
 }
 
+/* The counts for a rounded shape depend on how the rasteriser antialiases its
+   edge, which Opal and CoreGraphics do differently, so what is asserted is
+   which pixels are covered rather than how many.  The border has no curve in
+   it, and its count is exact. */
+static void cornersAndBorders(void)
+{
+  CGColorRef red = opaque(1, 0, 0);
+  CGColorRef blue = opaque(0, 0, 1);
+  CGContextRef context = newContext();
+  CALayer *l = [CALayer layer];
+
+  [l setBounds: CGRectMake(0, 0, 80, 60)];
+  [l setBackgroundColor: red];
+  [l renderInContext: context];
+  PASS(painted(context, 0, 0) && paintedCount(context) == 80 * 60,
+       "a layer with no corner radius fills its bounds to the corner");
+  CGContextRelease(context);
+
+  context = newContext();
+  [l setCornerRadius: 20];
+  [l renderInContext: context];
+  PASS(!painted(context, 0, 0) && !painted(context, 1, 1),
+       "a corner radius takes the corner off the background");
+  PASS(painted(context, 40, 30) && painted(context, 0, 30),
+       "and leaves the middle and the straight edges alone");
+  PASS(paintedCount(context) < 80 * 60,
+       "so less of the bounds is covered than before");
+  CGContextRelease(context);
+
+  /* A border with nothing behind it is a ring inside the bounds: 80x60 less
+     the 70x50 it leaves empty. */
+  context = newContext();
+  CALayer *edged = [CALayer layer];
+  [edged setBounds: CGRectMake(0, 0, 80, 60)];
+  [edged setBorderWidth: 5];
+  [edged setBorderColor: blue];
+  [edged renderInContext: context];
+  PASS(paintedCount(context) == 1300,
+       "a border is drawn inside the bounds and nowhere else");
+  PASS(painted(context, 2, 30), "so the edge of the layer carries it");
+  PASS(!painted(context, 40, 30), "and the middle stays empty");
+  CGContextRelease(context);
+
+  context = newContext();
+  CGContextRef plain = newContext();
+  CALayer *both = [CALayer layer];
+  [both setBounds: CGRectMake(0, 0, 80, 60)];
+  [both setBackgroundColor: red];
+  [both setBorderWidth: 5];
+  [both setBorderColor: blue];
+  [both renderInContext: context];
+
+  CALayer *fill = [CALayer layer];
+  [fill setBounds: CGRectMake(0, 0, 80, 60)];
+  [fill setBackgroundColor: red];
+  [fill renderInContext: plain];
+
+  PASS(paintedCount(context) == 80 * 60,
+       "a border adds nothing to what a filled layer covers");
+  PASS(!samePixel(context, plain, 2, 30),
+       "the edge is the border colour, not the background");
+  PASS(samePixel(context, plain, 40, 30),
+       "while the middle is still the background");
+  CGContextRelease(context);
+  CGContextRelease(plain);
+
+  context = newContext();
+  CALayer *rounded = [CALayer layer];
+  CALayer *corner = [CALayer layer];
+  [rounded setBounds: CGRectMake(0, 0, 80, 60)];
+  [rounded setCornerRadius: 20];
+  [corner setFrame: CGRectMake(0, 0, 10, 10)];
+  [corner setBackgroundColor: red];
+  [rounded addSublayer: corner];
+  [rounded renderInContext: context];
+  PASS(paintedCount(context) == 100,
+       "a sublayer in the corner is drawn whole while nothing masks it");
+  CGContextRelease(context);
+
+  context = newContext();
+  [rounded setMasksToBounds: YES];
+  [rounded renderInContext: context];
+  PASS(!painted(context, 0, 0) && paintedCount(context) < 100,
+       "and is cut to the rounded shape once the layer masks to its bounds");
+
+  CGColorRelease(red);
+  CGColorRelease(blue);
+  CGContextRelease(context);
+}
+
 static void nothingBadHappens(void)
 {
   CALayer *l = [CALayer layer];
@@ -501,6 +600,7 @@ int main(void)
   whatTheDelegateDrew();
   gravityNames();
   gravityPlacement();
+  cornersAndBorders();
   nothingBadHappens();
 
   END_SET("rendering a layer tree into a context")
