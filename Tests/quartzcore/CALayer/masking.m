@@ -75,6 +75,13 @@ static void roundTrips(void)
   [l setContentsCenter: CGRectMake(-1, -1, 4, 4)];
   PASS(req([l contentsCenter], -1, -1, 4, 4),
        "a contents centre outside the unit rectangle is kept unchecked");
+
+  /* contentsRect is the same shape of property and had the same defect. */
+  PASS(req([l contentsRect], 0, 0, 1, 1),
+       "the contents rectangle starts as the whole unit rectangle");
+  [l setContentsRect: CGRectMake(0.25, 0.25, 0.5, 0.5)];
+  PASS(req([l contentsRect], 0.25, 0.25, 0.5, 0.5),
+       "the contents rectangle reads back what was set");
 }
 
 static void filters(void)

@@ -228,6 +228,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       || [key isEqualToString: @"transform"]
       || [key isEqualToString: @"sublayerTransform"]
       || [key isEqualToString: @"shadowOffset"]
+      || [key isEqualToString: @"contentsRect"]
       || [key isEqualToString: @"contentsCenter"])
     {
       return NO;
@@ -569,6 +570,7 @@ GSCA_OBSERVABLE_SETTER(setAnchorPoint, CGPoint, anchorPoint, CGPointEqualToPoint
 GSCA_OBSERVABLE_SETTER(setTransform, CATransform3D, transform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
+GSCA_OBSERVABLE_SETTER(setContentsRect, CGRect, contentsRect, CGRectEqualToRect)
 GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToRect)
 
 #else
