@@ -1204,6 +1204,10 @@ CALayerResizeAxis(struct CALayerAxis axis, CGFloat delta,
 
       [self.backingStore refresh];
     }
+
+  /* Displaying is what the request was for, so it is answered here and not
+     only in -displayIfNeeded. */
+  _needsDisplay = NO;
 }
 
 - (void) displayIfNeeded
