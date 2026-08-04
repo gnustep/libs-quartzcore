@@ -137,6 +137,48 @@ static void fills(void)
   CGPathRelease(path);
 }
 
+static void strokes(void)
+{
+  CGPathRef path = rectPath(CGRectMake(10, 10, 40, 30));
+  CGContextRef context = newContext();
+  CGColorRef blue = CGColorCreateGenericRGB(0, 0, 1, 1);
+  CAShapeLayer *s = shape(path);
+
+  /* An even width on a path at whole points keeps the edges on whole points
+     too, so the count is exact rather than left to antialiasing. */
+  [s setFillColor: NULL];
+  [s setStrokeColor: blue];
+  [s setLineWidth: 4];
+  [s renderInContext: context];
+  PASS(paintedCount(context) == 560,
+       "a stroke is centred on the path, four wide");
+  PASS(painted(context, 8, 8) && !painted(context, 30, 25),
+       "so it covers the corner and leaves the middle empty");
+  CGContextRelease(context);
+
+  context = newContext();
+  CAShapeLayer *both = shape(path);
+  [both setStrokeColor: blue];
+  [both setLineWidth: 4];
+  [both renderInContext: context];
+  PASS(paintedCount(context) == 1496,
+       "a filled and stroked path covers the fill and the stroke together");
+  CGContextRelease(context);
+
+  context = newContext();
+  CAShapeLayer *half = shape(path);
+  [half setFillColor: NULL];
+  [half setStrokeColor: blue];
+  [half setLineWidth: 4];
+  [half setStrokeEnd: 0.5];
+  [half renderInContext: context];
+  PASS(paintedCount(context) == 280, "half a stroke covers half as much");
+  CGContextRelease(context);
+
+  CGColorRelease(blue);
+  CGPathRelease(path);
+}
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -144,6 +186,7 @@ int main(void)
   START_SET("what a shape layer draws")
 
   fills();
+  strokes();
 
   END_SET("what a shape layer draws")
 
