@@ -381,6 +381,75 @@ int main(void)
 
   END_SET("where the renderer puts the contents")
 
+  START_SET("a layer that masks its sublayers to its bounds")
+
+  const char *whyMask = "";
+  NSOpenGLContext *maskContext = usableContext(&whyMask);
+  CARenderer *masker;
+  CGImageRef maskImage;
+  int mx0, my0, mx1, my1, loose, cut;
+  static unsigned char blank[MAX_PIXELS];
+  static unsigned char shown[MAX_PIXELS];
+
+  if (maskContext == nil)
+    {
+      SKIP("%s", whyMask)
+    }
+
+  masker = [CARenderer rendererWithNSOpenGLContext: maskContext options: nil];
+  if (masker == nil)
+    {
+      SKIP("there is no renderer to draw with")
+    }
+
+  maskImage = solidImage(16, 16);
+
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
+  CALayer *emptyRoot = [CALayer layer];
+  [emptyRoot setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [emptyRoot setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+
+  /* A root the size of the drawable, holding a sublayer that hangs off its
+     right hand side, so that masking has something to cut off. */
+  CALayer *root = [CALayer layer];
+  [root setBounds: CGRectMake(0, 0, 32, 32)];
+  [root setPosition: CGPointMake(16, 16)];
+  CALayer *hangingOff = [CALayer layer];
+  [hangingOff setBounds: CGRectMake(0, 0, 16, 16)];
+  [hangingOff setPosition: CGPointMake(32, 16)];
+  [hangingOff setContents: (id)maskImage];
+  [hangingOff setContentsGravity: kCAGravityResize];
+  [root addSublayer: hangingOff];
+
+  [CATransaction commit];
+
+  renderFrame(masker, emptyRoot);
+  readDrawable(blank);
+
+  renderFrame(masker, root);
+  readDrawable(shown);
+  changedBox(blank, shown, &mx0, &my0, &mx1, &my1, &loose);
+  PASS(mx0 == 24 && mx1 == 39 && my0 == 8 && my1 == 23 && loose == 256,
+       "a sublayer hanging off its superlayer is drawn whole");
+
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+  [root setMasksToBounds: YES];
+  [CATransaction commit];
+
+  renderFrame(masker, root);
+  readDrawable(shown);
+  changedBox(blank, shown, &mx0, &my0, &mx1, &my1, &cut);
+  PASS(mx0 == 24 && mx1 == 31 && my0 == 8 && my1 == 23,
+       "and is cut off at the edge once the superlayer masks to its bounds");
+  PASS(cut == 128, "which leaves half of it, the half that was inside");
+
+  CGImageRelease(maskImage);
+
+  END_SET("a layer that masks its sublayers to its bounds")
+
   [pool release];
   return 0;
 }
