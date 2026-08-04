@@ -123,6 +123,13 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize style=_style;
 @synthesize borderColor=_borderColor;
 @synthesize contentsScale=_contentsScale;
+@synthesize name=_name;
+@synthesize borderWidth=_borderWidth;
+@synthesize cornerRadius=_cornerRadius;
+@synthesize rasterizationScale=_rasterizationScale;
+@synthesize doubleSided=_doubleSided;
+@synthesize minificationFilter=_minificationFilter;
+@synthesize magnificationFilter=_magnificationFilter;
 
 @synthesize filters=_filters;
 @synthesize backgroundFilters=_backgroundFilters;
@@ -289,6 +296,19 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
          just like Opal's Objective-C class instances */
       return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
     }
+  if ([key isEqualToString: @"doubleSided"])
+    {
+      return [NSNumber numberWithBool: YES];
+    }
+  if ([key isEqualToString: @"rasterizationScale"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
+    }
+  if ([key isEqualToString: @"minificationFilter"]
+      || [key isEqualToString: @"magnificationFilter"])
+    {
+      return kCAFilterLinear;
+    }
   if ([key isEqualToString: @"shadowOffset"])
     {
       CGSize offset = CGSizeMake(0.0, -3.0);
@@ -370,6 +390,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
         @"backgroundColor", @"borderColor", @"contentsScale",
+        @"doubleSided", @"rasterizationScale",
+        @"minificationFilter", @"magnificationFilter",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount",
@@ -585,6 +607,9 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   CGColorRelease(_backgroundColor);
   CGColorRelease(_borderColor);
   [_contentsGravity release];
+  [_name release];
+  [_minificationFilter release];
+  [_magnificationFilter release];
   [_fillMode release];
   [_mask setSuperlayer: nil];
   [_mask release];
@@ -1417,6 +1442,24 @@ CALayerResizeAxis(struct CALayerAxis axis, CGFloat delta,
   siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
+}
+
+- (void) replaceSublayer: (CALayer *)layer with: (CALayer *)layer2
+{
+  NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSUInteger index = [mutableSublayers indexOfObject: layer];
+
+  if (index == NSNotFound)
+    {
+      return;
+    }
+
+  [layer2 retain];
+  [layer2 removeFromSuperlayer];
+  [mutableSublayers replaceObjectAtIndex: index withObject: layer2];
+  [layer setSuperlayer: nil];
+  [layer2 setSuperlayer: self];
+  [layer2 release];
 }
 
 - (CALayer *) rootLayer

@@ -167,6 +167,14 @@ typedef unsigned int CAAutoresizingMask;
      - ...more?
      Creating framebuffers is more expensive than reusing them.
      */
+
+  NSString * _name;
+  CGFloat _borderWidth;
+  CGFloat _cornerRadius;
+  CGFloat _rasterizationScale;
+  BOOL _doubleSided;
+  NSString * _minificationFilter;
+  NSString * _magnificationFilter;
 }
 
 + (id) layer;
@@ -202,6 +210,13 @@ typedef unsigned int CAAutoresizingMask;
 @property (copy)                     NSString *contentsGravity;
 @property (assign)                   BOOL needsDisplayOnBoundsChange;
 @property (assign)                   CGFloat zPosition;
+@property (copy)                     NSString *name;
+@property (assign)                   CGFloat borderWidth;
+@property (assign)                   CGFloat cornerRadius;
+@property (assign)                   CGFloat rasterizationScale;
+@property (assign,getter=isDoubleSided) BOOL doubleSided;
+@property (copy)                     NSString *minificationFilter;
+@property (copy)                     NSString *magnificationFilter;
 @property (copy)                     NSDictionary *actions;
 /* TODO: Style property is unimplemented */
 @property (copy)                     NSDictionary *style;
@@ -226,6 +241,7 @@ typedef unsigned int CAAutoresizingMask;
 - (void) insertSublayer: (CALayer *)layer atIndex: (unsigned)index;
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
+- (void) replaceSublayer: (CALayer *)layer with: (CALayer *)layer2;
 
 - (CGPoint) convertPoint: (CGPoint)pt fromLayer: (CALayer *)layer;
 - (CGPoint) convertPoint: (CGPoint)pt toLayer: (CALayer *)layer;
