@@ -33,6 +33,7 @@
 #import "CATransaction+FrameworkPrivate.h"
 #import "CABackingStore.h"
 #import "CARenderer+FrameworkPrivate.h"
+#import "CAGravity.h"
 #if !(__APPLE__)
 #define GL_GLEXT_PROTOTYPES 1
 #import <GL/gl.h>
@@ -777,11 +778,41 @@
             }
         }
 
+      /* The contents sit where the gravity puts them, which is not
+         necessarily over the whole of the layer, so they get vertices of
+         their own rather than the ones the background was drawn with. */
+      CGRect dest = CAGravityDestinationRect(
+                      [layer contentsGravity],
+                      CGRectMake(0, 0, [layer bounds].size.width,
+                                 [layer bounds].size.height),
+                      CGSizeMake([texture width], [texture height]));
+      GLfloat contentsVertices[] = {
+        CGRectGetMinX(dest), CGRectGetMinY(dest),
+        CGRectGetMaxX(dest), CGRectGetMinY(dest),
+        CGRectGetMaxX(dest), CGRectGetMaxY(dest),
+
+        CGRectGetMaxX(dest), CGRectGetMaxY(dest),
+        CGRectGetMinX(dest), CGRectGetMaxY(dest),
+        CGRectGetMinX(dest), CGRectGetMinY(dest),
+      };
+
+      /* The vertices above were shifted by the anchor point after they were
+         built; these are built afterwards and need the same shift. */
+      for (int i = 0; i < 6; i++)
+        {
+          contentsVertices[i*2 + 0] -= [layer anchorPoint].x
+                                       * [layer bounds].size.width;
+          contentsVertices[i*2 + 1] -= [layer anchorPoint].y
+                                       * [layer bounds].size.height;
+        }
+      glVertexPointer(2, GL_FLOAT, 0, contentsVertices);
+
       [texture bind];
       glColorPointer(4, GL_FLOAT, 0, whiteColor);
       glDrawArrays(GL_TRIANGLES, 0, 6);
       [texture unbind];
 
+      glVertexPointer(2, GL_FLOAT, 0, vertices);
     }
 
   transform = CATransform3DConcat ([layer sublayerTransform], transform);
