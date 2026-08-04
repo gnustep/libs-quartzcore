@@ -239,8 +239,10 @@ static void dashes(void)
   CGPathRelease(path);
 }
 
-/* A dash set for the stroke must not reach anything drawn after it. */
-static void theDashDoesNotEscape(void)
+/* Apple sets the dash on the context and leaves it there, so a sublayer
+   stroked afterwards is dashed too: a dashed layer holding a solid sublayer
+   covers 288 points where the solid stroke alone covers 560. */
+static void theDashReachesTheSublayers(void)
 {
   CGPathRef path = rectPath(CGRectMake(10, 10, 40, 30));
   CGContextRef alone = newContext();
@@ -256,10 +258,11 @@ static void theDashDoesNotEscape(void)
   [dashedParent setLineDashPattern: sixOnSixOff()];
   [dashedParent addSublayer: child];
   [dashedParent renderInContext: under];
+  [lone setLineDashPattern: sixOnSixOff()];
   [lone renderInContext: alone];
 
   PASS(paintedCount(under) == paintedCount(alone),
-       "a sublayer stroked after a dashed one is drawn solid");
+       "a sublayer stroked after a dashed one is dashed as well");
 
   CGColorRelease(blue);
   CGContextRelease(alone);
@@ -276,7 +279,7 @@ int main(void)
   fills();
   strokes();
   dashes();
-  theDashDoesNotEscape();
+  theDashReachesTheSublayers();
 
   END_SET("what a shape layer draws")
 

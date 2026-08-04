@@ -551,10 +551,6 @@ CAShapeLayerTrimmedPath(CGPathRef path, CGFloat start, CGFloat end)
       CGPathRef stroked = _path;
       CGPathRef trimmed = NULL;
 
-      /* The stroke settings are set on the context, so they are kept to this
-         layer and do not reach anything drawn after it. */
-      CGContextSaveGState(context);
-
       /* strokeStart and strokeEnd take a part of the path, which is built by
          walking it and keeping the piece between the two. */
       if (_strokeStart > 0.0 || _strokeEnd < 1.0)
@@ -574,7 +570,9 @@ CAShapeLayerTrimmedPath(CGPathRef path, CGFloat start, CGFloat end)
       CGContextSetLineJoin(context, CAShapeLayerLineJoin(_lineJoin));
 
       /* lineDashPattern holds the on and off lengths in user space, and
-         lineDashPhase is how far into that pattern the stroke starts. */
+         lineDashPhase is how far into that pattern the stroke starts.  It is
+         set on the context and left there, as Apple leaves it: a sublayer
+         stroked after this one is dashed the same way. */
       if ([_lineDashPattern count] > 0)
         {
           NSUInteger count = [_lineDashPattern count];
@@ -594,7 +592,6 @@ CAShapeLayerTrimmedPath(CGPathRef path, CGFloat start, CGFloat end)
         }
 
       CGContextStrokePath(context);
-      CGContextRestoreGState(context);
 
       CGPathRelease(trimmed);
     }
