@@ -29,6 +29,7 @@
 #import "QuartzCore/CARenderer.h"
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CALayer.h"
+#import "QuartzCore/CATransformLayer.h"
 #import "CALayer+FrameworkPrivate.h"
 #import "CATransaction+FrameworkPrivate.h"
 #import "CABackingStore.h"
@@ -720,6 +721,13 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
 
   [layer displayIfNeeded];
 
+  /* CATransformLayer draws no background and no contents of its own; only its
+     sublayers appear.  A presentation layer is a plain CALayer whatever its
+     model layer is, so the class comes from the model. */
+  CALayer * modelLayer = [layer modelLayer] ? [layer modelLayer] : layer;
+  BOOL drawsContentOfItsOwn =
+    ![modelLayer isKindOfClass: [CATransformLayer class]];
+
   // fill vertex arrays
   GLfloat vertices[] = {
     0.0, 0.0,
@@ -775,7 +783,8 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
     }
 
   // apply background color
-  if ([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
+  if (drawsContentOfItsOwn && [layer backgroundColor]
+      && CGColorGetAlpha([layer backgroundColor]) > 0)
     {
       const CGFloat * componentsCG = CGColorGetComponents([layer backgroundColor]);
       GLfloat components[4] = { 0, 0, 0, 1 };
@@ -806,7 +815,7 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
     }
 
   // if there are some contents, draw them
-  if ([layer contents])
+  if (drawsContentOfItsOwn && [layer contents])
     {
       CAGLTexture * texture = nil;
       id layerContents = [layer contents];

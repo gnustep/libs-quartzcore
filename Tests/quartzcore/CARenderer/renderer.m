@@ -20,6 +20,7 @@
 #import <QuartzCore/CAShapeLayer.h>
 #import <QuartzCore/CAReplicatorLayer.h>
 #import <QuartzCore/CATextLayer.h>
+#import <QuartzCore/CATransformLayer.h>
 #import <QuartzCore/CATransaction.h>
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
@@ -702,6 +703,86 @@ int main(void)
   CGColorRelease(mark);
 
   END_SET("a layer that repeats its sublayers")
+
+  START_SET("a transform layer that draws no content")
+
+  const char *whyHolder = "";
+  NSOpenGLContext *holderContext = usableContext(&whyHolder);
+  CARenderer *holder;
+  int hx0, hy0, hx1, hy1, holderPixels;
+  int fx0, fy0, fx1, fy1, plainPixels;
+  static unsigned char untouched[MAX_PIXELS];
+  static unsigned char held[MAX_PIXELS];
+  static unsigned char filledIn[MAX_PIXELS];
+
+  if (holderContext == nil)
+    {
+      SKIP("%s", whyHolder)
+    }
+
+  holder = [CARenderer rendererWithNSOpenGLContext: holderContext
+                                           options: nil];
+  if (holder == nil)
+    {
+      SKIP("there is no renderer to draw with")
+    }
+
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
+  CGColorRef fill = CGColorCreateGenericRGB(0, 0, 1, 1);
+
+  CALayer *nothingAtAll = [CALayer layer];
+  [nothingAtAll setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [nothingAtAll setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+
+  CATransformLayer *container = [CATransformLayer layer];
+  [container setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [container setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [container setBackgroundColor: fill];
+
+  CALayer *ordinary = [CALayer layer];
+  [ordinary setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [ordinary setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [ordinary setBackgroundColor: fill];
+
+  CALayer *inside = [CALayer layer];
+  [inside setBounds: CGRectMake(0, 0, 10, 10)];
+  [inside setPosition: CGPointMake(8, 8)];
+  [inside setBackgroundColor: fill];
+
+  [CATransaction commit];
+
+  renderFrame(holder, nothingAtAll);
+  readDrawable(untouched);
+
+  renderFrame(holder, container);
+  readDrawable(held);
+
+  renderFrame(holder, ordinary);
+  readDrawable(filledIn);
+
+  changedBox(untouched, held, &hx0, &hy0, &hx1, &hy1, &holderPixels);
+  changedBox(untouched, filledIn, &fx0, &fy0, &fx1, &fy1, &plainPixels);
+
+  PASS(plainPixels > 0, "a plain layer paints its background");
+  PASS(holderPixels == 0,
+       "where a transform layer paints none");
+
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+  [container addSublayer: inside];
+  [CATransaction commit];
+
+  renderFrame(holder, container);
+  readDrawable(held);
+  changedBox(untouched, held, &hx0, &hy0, &hx1, &hy1, &holderPixels);
+  PASS(holderPixels > 0, "and draws its sublayers");
+  PASS(holderPixels < plainPixels, "with no background behind them");
+
+  CGColorRelease(fill);
+
+  END_SET("a transform layer that draws no content")
 
   [pool release];
   return 0;
