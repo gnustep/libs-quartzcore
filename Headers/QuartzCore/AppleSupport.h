@@ -137,6 +137,7 @@
 #define CARenderer GSCARenderer
 
 /* CAReplicatorLayer.h */
+#define CAReplicatorLayer GSCAReplicatorLayer
 
 /* CAScrollLayer.h */
 
@@ -155,6 +156,7 @@
 #define kCATruncationMiddle GSkCATruncationMiddle
 
 /* CATiledLayer.h */
+#define CATiledLayer GSCATiledLayer
 
 /* CATransaction.h */
 #define CATransaction GSCATransaction

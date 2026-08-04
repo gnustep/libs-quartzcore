@@ -114,6 +114,7 @@
 #undef CARenderer
 
 /* CAReplicatorLayer.h */
+#undef CAReplicatorLayer
 
 /* CAScrollLayer.h */
 
@@ -132,6 +133,7 @@
 #undef kCATruncationMiddle
 
 /* CATiledLayer.h */
+#undef CATiledLayer
 
 /* CATransaction.h */
 #undef CATransaction
