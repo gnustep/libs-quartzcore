@@ -18,6 +18,7 @@
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CAGradientLayer.h>
 #import <QuartzCore/CAShapeLayer.h>
+#import <QuartzCore/CATextLayer.h>
 #import <QuartzCore/CATransaction.h>
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
@@ -570,6 +571,60 @@ int main(void)
   CGColorRelease(second);
 
   END_SET("a layer that draws a gradient")
+
+  START_SET("a layer that draws text")
+
+  const char *whyText = "";
+  NSOpenGLContext *textContext = usableContext(&whyText);
+  CARenderer *writer;
+  int tx0, ty0, tx1, ty1, textPixels;
+  static unsigned char blank[MAX_PIXELS];
+  static unsigned char written[MAX_PIXELS];
+
+  if (textContext == nil)
+    {
+      SKIP("%s", whyText)
+    }
+
+  writer = [CARenderer rendererWithNSOpenGLContext: textContext options: nil];
+  if (writer == nil)
+    {
+      SKIP("there is no renderer to draw with")
+    }
+
+  /* The foreground colour is white by default, which the drawable is not. */
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
+  CATextLayer *wordless = [CATextLayer layer];
+  [wordless setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [wordless setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [wordless setNeedsDisplay];
+
+  CATextLayer *worded = [CATextLayer layer];
+  [worded setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [worded setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [worded setString: @"Hg"];
+  [worded setFontSize: 24];
+  [worded setNeedsDisplay];
+
+  [CATransaction commit];
+
+  renderFrame(writer, wordless);
+  readDrawable(blank);
+
+  renderFrame(writer, worded);
+  readDrawable(written);
+  if (!changedBox(blank, written, &tx0, &ty0, &tx1, &ty1, &textPixels))
+    {
+      SKIP("this build's CoreText typesets no runs")
+    }
+  PASS(textPixels > 0, "the renderer draws the string of a text layer");
+  PASS(tx1 < drawableW && ty1 < drawableH, "inside the layer it belongs to");
+  PASS(ty1 > drawableH / 2,
+       "against the top of it, where the first line goes");
+
+  END_SET("a layer that draws text")
 
   [pool release];
   return 0;
