@@ -103,3 +103,47 @@ NSString *const kCAScrollBoth = @"both";
 }
 
 @end
+
+@implementation CALayer (CALayerScrolling)
+
+/* The layer itself counts, so a CAScrollLayer scrolls itself. */
+- (CAScrollLayer *) _enclosingScrollLayer
+{
+  CALayer * layer = self;
+
+  while (layer)
+    {
+      if ([layer isKindOfClass: [CAScrollLayer class]])
+        return (CAScrollLayer *)layer;
+      layer = [layer superlayer];
+    }
+  return nil;
+}
+
+- (CGRect) visibleRect
+{
+  CAScrollLayer * scroll = [self _enclosingScrollLayer];
+
+  if (scroll == nil)
+    return [self bounds];
+
+  return CGRectIntersection([self bounds],
+                            [self convertRect: [scroll bounds]
+                                    fromLayer: scroll]);
+}
+
+- (void) scrollPoint: (CGPoint)p
+{
+  CAScrollLayer * scroll = [self _enclosingScrollLayer];
+
+  [scroll scrollToPoint: [self convertPoint: p toLayer: scroll]];
+}
+
+- (void) scrollRectToVisible: (CGRect)r
+{
+  CAScrollLayer * scroll = [self _enclosingScrollLayer];
+
+  [scroll scrollToRect: [self convertRect: r toLayer: scroll]];
+}
+
+@end

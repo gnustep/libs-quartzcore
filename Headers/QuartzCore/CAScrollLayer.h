@@ -46,3 +46,19 @@ extern NSString *const kCAScrollNone;
 extern NSString *const kCAScrollVertically;
 extern NSString *const kCAScrollHorizontally;
 extern NSString *const kCAScrollBoth;
+
+@interface CALayer (CALayerScrolling)
+
+/* The part of the layer inside the visible area of the nearest CAScrollLayer
+   above it, in the layer's own coordinates.  A layer with no such ancestor
+   is visible throughout, so this is its bounds. */
+@property (readonly) CGRect visibleRect;
+
+/* Scrolls the nearest CAScrollLayer above the layer so that the point sits
+   at the origin of the visible area. */
+- (void) scrollPoint: (CGPoint)p;
+
+/* Scrolls it the least amount that brings the rectangle into view. */
+- (void) scrollRectToVisible: (CGRect)r;
+
+@end
