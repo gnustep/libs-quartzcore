@@ -61,6 +61,22 @@ NSString *const kCAGravityTopRight = @"topRight";
 NSString *const kCAGravityBottomLeft = @"bottomLeft";
 NSString *const kCAGravityBottomRight = @"bottomRight";
 
+NSString *const kCACornerCurveCircular = @"circular";
+NSString *const kCACornerCurveContinuous = @"continuous";
+
+NSString *const kCAContentsFormatAutomatic = @"Automatic";
+NSString *const kCAContentsFormatRGBA8Uint = @"RGBA8";
+NSString *const kCAContentsFormatRGBA16Float = @"RGBAh";
+NSString *const kCAContentsFormatGray8Uint = @"Gray8";
+
+NSString *const CADynamicRangeStandard = @"standard";
+NSString *const CADynamicRangeConstrainedHigh = @"constrainedHigh";
+NSString *const CADynamicRangeHigh = @"high";
+
+NSString *const CAToneMapModeAutomatic = @"automatic";
+NSString *const CAToneMapModeNever = @"never";
+NSString *const CAToneMapModeIfSupported = @"ifSupported";
+
 NSString *const kCAOnOrderIn = @"onOrderIn";
 NSString *const kCAOnOrderOut = @"onOrderOut";
 NSString *const kCATransition = @"transition";
@@ -134,6 +150,9 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize allowsGroupOpacity=_allowsGroupOpacity;
 @synthesize drawsAsynchronously=_drawsAsynchronously;
 @synthesize autoresizingMask=_autoresizingMask;
+@synthesize contentsHeadroom=_contentsHeadroom;
+@synthesize wantsExtendedDynamicRangeContent=_wantsExtendedDynamicRangeContent;
+@synthesize wantsDynamicContentScaling=_wantsDynamicContentScaling;
 
 @synthesize shadowColor=_shadowColor;
 @synthesize shadowOffset=_shadowOffset;
@@ -322,6 +341,37 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
     {
       return [NSNumber numberWithBool: NO];
     }
+  if ([key isEqualToString: @"cornerCurve"])
+    {
+      return kCACornerCurveCircular;
+    }
+  if ([key isEqualToString: @"maskedCorners"])
+    {
+      return [NSNumber numberWithUnsignedInt: kCALayerMinXMinYCorner
+                                              | kCALayerMaxXMinYCorner
+                                              | kCALayerMinXMaxYCorner
+                                              | kCALayerMaxXMaxYCorner];
+    }
+  if ([key isEqualToString: @"contentsFormat"])
+    {
+      return kCAContentsFormatRGBA8Uint;
+    }
+  if ([key isEqualToString: @"preferredDynamicRange"])
+    {
+      return CADynamicRangeStandard;
+    }
+  if ([key isEqualToString: @"toneMapMode"])
+    {
+      return CAToneMapModeAutomatic;
+    }
+  if ([key isEqualToString: @"contentsHeadroom"])
+    {
+      return [NSNumber numberWithFloat: 0.0];
+    }
+  if ([key isEqualToString: @"wantsExtendedDynamicRangeContent"])
+    {
+      return [NSNumber numberWithBool: NO];
+    }
 
   /* CAMediaTiming */
   if ([key isEqualToString:@"duration"])
@@ -375,6 +425,10 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 
         @"contentsCenter", @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
         @"edgeAntialiasingMask", @"drawsAsynchronously",
+
+        @"cornerCurve", @"maskedCorners", @"contentsFormat",
+        @"preferredDynamicRange", @"toneMapMode", @"contentsHeadroom",
+        @"wantsExtendedDynamicRangeContent",
 
         @"bounds", @"position" };
 
@@ -449,6 +503,12 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
         @"drawsAsynchronously", @"autoresizingMask",
 
+        /* wantsDynamicContentScaling is deliberately absent: Apple does not
+           archive it even once it has been set. */
+        @"cornerCurve", @"maskedCorners", @"contentsFormat",
+        @"preferredDynamicRange", @"toneMapMode", @"contentsHeadroom",
+        @"wantsExtendedDynamicRangeContent",
+
         @"beginTime", @"timeOffset", @"repeatCount", @"repeatDuration",
         @"autoreverses", @"fillMode", @"duration", @"speed" };
 
@@ -465,6 +525,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
          the class, so a layer has been given them before anyone sets one. */
       [_valuesThatWereSet addObject: @"allowsEdgeAntialiasing"];
       [_valuesThatWereSet addObject: @"allowsGroupOpacity"];
+      [_valuesThatWereSet addObject: @"cornerCurve"];
+      [_valuesThatWereSet addObject: @"contentsFormat"];
     }
   return self;
 }
@@ -522,6 +584,16 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       [self setAllowsGroupOpacity: [layer allowsGroupOpacity]];
       [self setDrawsAsynchronously: [layer drawsAsynchronously]];
       [self setAutoresizingMask: [layer autoresizingMask]];
+      [self setMaskedCorners: [layer maskedCorners]];
+      [self setCornerCurve: [layer cornerCurve]];
+      [self setContentsFormat: [layer contentsFormat]];
+      [self setPreferredDynamicRange: [layer preferredDynamicRange]];
+      [self setToneMapMode: [layer toneMapMode]];
+      [self setContentsHeadroom: [layer contentsHeadroom]];
+      [self setWantsExtendedDynamicRangeContent:
+              [layer wantsExtendedDynamicRangeContent]];
+      [self setWantsDynamicContentScaling:
+              [layer wantsDynamicContentScaling]];
 
       [self setShadowColor: [layer shadowColor]];
       [self setShadowOffset: [layer shadowOffset]];
@@ -586,6 +658,10 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   [_filters release];
   [_backgroundFilters release];
   [_compositingFilter release];
+  [_cornerCurve release];
+  [_contentsFormat release];
+  [_preferredDynamicRange release];
+  [_toneMapMode release];
 
   [_backingStore release];
   [_animations release];
@@ -794,6 +870,131 @@ GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToR
   _mask = mask;
   [_mask setSuperlayer: self];
   [self didChangeValueForKey: @"mask"];
+}
+
+/* ************************************* */
+/* MARK: - Corners, format, dynamic range */
+
+/* A layer keeps one of the names it knows and falls back to the first of
+   them, which is also the default, for anything else.  The names are all
+   constants, so the copy a `copy` property calls for costs nothing. */
+static void
+CALayerKeepOneOf(NSString ** slot, NSString * given, NSArray * choices)
+{
+  NSString * chosen = [choices containsObject: given]
+                        ? given : [choices objectAtIndex: 0];
+
+  if (chosen == *slot)
+    return;
+
+  chosen = [chosen copy];
+  [*slot release];
+  *slot = chosen;
+}
+
++ (CGFloat) cornerCurveExpansionFactor: (NSString *)curve
+{
+  if ([curve isEqualToString: kCACornerCurveContinuous])
+    return 1.528665;
+  return 1.0;
+}
+
+- (CACornerMask) maskedCorners
+{
+  return _maskedCorners;
+}
+
+/* The bits that are not one of the four corners are dropped. */
+- (void) setMaskedCorners: (CACornerMask)corners
+{
+  [self willChangeValueForKey: @"maskedCorners"];
+  _maskedCorners = corners & (kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner
+                              | kCALayerMinXMaxYCorner
+                              | kCALayerMaxXMaxYCorner);
+  [self didChangeValueForKey: @"maskedCorners"];
+}
+
+- (NSString *) cornerCurve
+{
+  return _cornerCurve;
+}
+
+- (void) setCornerCurve: (NSString *)curve
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: kCACornerCurveCircular,
+                                                  kCACornerCurveContinuous,
+                                                  nil];
+    }
+  [self willChangeValueForKey: @"cornerCurve"];
+  CALayerKeepOneOf(&_cornerCurve, curve, choices);
+  [self didChangeValueForKey: @"cornerCurve"];
+}
+
+- (NSString *) contentsFormat
+{
+  return _contentsFormat;
+}
+
+- (void) setContentsFormat: (NSString *)format
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: kCAContentsFormatRGBA8Uint,
+                                                  kCAContentsFormatAutomatic,
+                                                  kCAContentsFormatRGBA16Float,
+                                                  kCAContentsFormatGray8Uint,
+                                                  nil];
+    }
+  [self willChangeValueForKey: @"contentsFormat"];
+  CALayerKeepOneOf(&_contentsFormat, format, choices);
+  [self didChangeValueForKey: @"contentsFormat"];
+}
+
+- (NSString *) preferredDynamicRange
+{
+  return _preferredDynamicRange;
+}
+
+- (void) setPreferredDynamicRange: (NSString *)range
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: CADynamicRangeStandard,
+                                                  CADynamicRangeConstrainedHigh,
+                                                  CADynamicRangeHigh, nil];
+    }
+  [self willChangeValueForKey: @"preferredDynamicRange"];
+  CALayerKeepOneOf(&_preferredDynamicRange, range, choices);
+  [self didChangeValueForKey: @"preferredDynamicRange"];
+}
+
+- (NSString *) toneMapMode
+{
+  return _toneMapMode;
+}
+
+- (void) setToneMapMode: (NSString *)mode
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: CAToneMapModeAutomatic,
+                                                  CAToneMapModeNever,
+                                                  CAToneMapModeIfSupported,
+                                                  nil];
+    }
+  [self willChangeValueForKey: @"toneMapMode"];
+  CALayerKeepOneOf(&_toneMapMode, mode, choices);
+  [self didChangeValueForKey: @"toneMapMode"];
 }
 
 /* *************************** */

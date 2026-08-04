@@ -75,6 +75,36 @@ enum
 };
 typedef unsigned int CAAutoresizingMask;
 
+/* which corners -cornerRadius rounds */
+enum
+{
+  kCALayerMinXMinYCorner = 1U << 0,
+  kCALayerMaxXMinYCorner = 1U << 1,
+  kCALayerMinXMaxYCorner = 1U << 2,
+  kCALayerMaxXMaxYCorner = 1U << 3
+};
+typedef unsigned int CACornerMask;
+
+/* the shape a rounded corner is drawn with */
+extern NSString *const kCACornerCurveCircular;
+extern NSString *const kCACornerCurveContinuous;
+
+/* the pixel format a layer asks for its contents */
+extern NSString *const kCAContentsFormatAutomatic;
+extern NSString *const kCAContentsFormatRGBA8Uint;
+extern NSString *const kCAContentsFormatRGBA16Float;
+extern NSString *const kCAContentsFormatGray8Uint;
+
+/* the range of brightness a layer asks for */
+extern NSString *const CADynamicRangeStandard;
+extern NSString *const CADynamicRangeConstrainedHigh;
+extern NSString *const CADynamicRangeHigh;
+
+/* when a layer's contents are tone mapped */
+extern NSString *const CAToneMapModeAutomatic;
+extern NSString *const CAToneMapModeNever;
+extern NSString *const CAToneMapModeIfSupported;
+
 @class CAAnimation;
 @class CARenderer;
 
@@ -130,6 +160,14 @@ typedef unsigned int CAAutoresizingMask;
   CGRect _contentsCenter;
   CAEdgeAntialiasingMask _edgeAntialiasingMask;
   CAAutoresizingMask _autoresizingMask;
+  CACornerMask _maskedCorners;
+  NSString * _cornerCurve;
+  NSString * _contentsFormat;
+  NSString * _preferredDynamicRange;
+  NSString * _toneMapMode;
+  CGFloat _contentsHeadroom;
+  BOOL _wantsExtendedDynamicRangeContent;
+  BOOL _wantsDynamicContentScaling;
   float _minificationFilterBias;
   BOOL _allowsEdgeAntialiasing;
   BOOL _allowsGroupOpacity;
@@ -273,6 +311,20 @@ typedef unsigned int CAAutoresizingMask;
 @property (assign)                   BOOL allowsGroupOpacity;
 @property (assign)                   BOOL drawsAsynchronously;
 @property (assign)                   CAAutoresizingMask autoresizingMask;
+
+/* Nothing reads any of the following yet: this framework rounds no corners,
+   chooses no pixel format for its backing store, and has no notion of a
+   display brighter than white. */
+@property (assign)                   CACornerMask maskedCorners;
+@property (copy)                     NSString *cornerCurve;
+@property (copy)                     NSString *contentsFormat;
+@property (copy)                     NSString *preferredDynamicRange;
+@property (copy)                     NSString *toneMapMode;
+@property (assign)                   CGFloat contentsHeadroom;
+@property (assign)                   BOOL wantsExtendedDynamicRangeContent;
+@property (assign)                   BOOL wantsDynamicContentScaling;
+
++ (CGFloat) cornerCurveExpansionFactor: (NSString *)curve;
 @end
 
 @interface NSObject (CALayerActions)
