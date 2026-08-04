@@ -322,6 +322,7 @@ extern NSString *const CAToneMapModeIfSupported;
 @property (copy)                     NSString *toneMapMode;
 @property (assign)                   CGFloat contentsHeadroom;
 @property (assign)                   BOOL wantsExtendedDynamicRangeContent;
+/* Apple declares this one unavailable on macOS. */
 @property (assign)                   BOOL wantsDynamicContentScaling;
 
 + (CGFloat) cornerCurveExpansionFactor: (NSString *)curve;

@@ -7,7 +7,10 @@
    white.  What is testable is what Apple does with the values it is given,
    and that turns out to be more than storing them: each of the four names
    validates against the set it knows and falls back to its default, and the
-   corner mask drops the bits that are not corners. */
+   corner mask drops the bits that are not corners.
+
+   wantsDynamicContentScaling is declared unavailable on macOS, so the two
+   assertions that send it are left out of the Apple build. */
 #import <Foundation/Foundation.h>
 #include "Testing.h"
 
@@ -73,8 +76,10 @@ static void defaults(void)
   PASS(eq([l contentsHeadroom], 0), "a new layer has no headroom");
   PASS([l wantsExtendedDynamicRangeContent] == NO,
        "a new layer does not want an extended range");
+#if !defined(__APPLE__)
   PASS([l wantsDynamicContentScaling] == NO,
        "and does not want its contents scaled dynamically");
+#endif
 }
 
 static void classDefaults(void)
@@ -129,9 +134,11 @@ static void roundTrips(void)
   [l setWantsExtendedDynamicRangeContent: YES];
   PASS([l wantsExtendedDynamicRangeContent] == YES,
        "and an extended range");
+#if !defined(__APPLE__)
   [l setWantsDynamicContentScaling: YES];
   PASS([l wantsDynamicContentScaling] == YES,
        "and dynamic content scaling");
+#endif
 
   [l setContentsHeadroom: -3];
   PASS(eq([l contentsHeadroom], -3),
@@ -211,9 +218,8 @@ static void archiving(void)
   PASS([l shouldArchiveValueForKey: @"wantsExtendedDynamicRangeContent"]
        == YES, "and an extended range");
 
-  [l setWantsDynamicContentScaling: YES];
   PASS([l shouldArchiveValueForKey: @"wantsDynamicContentScaling"] == NO,
-       "while dynamic content scaling is never archived, set or not");
+       "while dynamic content scaling is never archived");
 }
 
 int main(void)
