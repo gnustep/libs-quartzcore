@@ -27,6 +27,7 @@
 #import "QuartzCore/CAGradientLayer.h"
 #import "CALayer+FrameworkPrivate.h"
 
+#include <math.h>
 #include <stdlib.h>
 
 NSString *const kCAGradientLayerAxial = @"axial";
@@ -84,7 +85,8 @@ NSString *const kCAGradientLayerConic = @"conic";
     return;
   if (_locations != nil && [_locations count] != count)
     return;
-  if (![_type isEqualToString: kCAGradientLayerAxial])
+  if (![_type isEqualToString: kCAGradientLayerAxial]
+      && ![_type isEqualToString: kCAGradientLayerRadial])
     return;
 
   stops = malloc(count * sizeof(CGFloat));
@@ -114,9 +116,31 @@ NSString *const kCAGradientLayerConic = @"conic";
   CGContextSaveGState(context);
   CALayerAddRoundedRect(context, bounds, [self cornerRadius]);
   CGContextClip(context);
-  CGContextDrawLinearGradient(context, gradient, from, to,
-                              kCGGradientDrawsBeforeStartLocation
-                              | kCGGradientDrawsAfterEndLocation);
+  if ([_type isEqualToString: kCAGradientLayerRadial])
+    {
+      /* Radial is an ellipse centred on startPoint, its radii the distance to
+         endPoint in each axis.  Apple draws nothing where either radius is 0,
+         so neither does this.  The ellipse is a unit circle under a scaled
+         coordinate system, which is what CGContextDrawRadialGradient takes. */
+      CGFloat rx = fabs(to.x - from.x);
+      CGFloat ry = fabs(to.y - from.y);
+
+      if (rx > 0.0 && ry > 0.0)
+        {
+          CGContextTranslateCTM(context, from.x, from.y);
+          CGContextScaleCTM(context, rx, ry);
+          CGContextDrawRadialGradient(context, gradient, CGPointZero, 0.0,
+                                      CGPointZero, 1.0,
+                                      kCGGradientDrawsBeforeStartLocation
+                                      | kCGGradientDrawsAfterEndLocation);
+        }
+    }
+  else
+    {
+      CGContextDrawLinearGradient(context, gradient, from, to,
+                                  kCGGradientDrawsBeforeStartLocation
+                                  | kCGGradientDrawsAfterEndLocation);
+    }
   CGContextRestoreGState(context);
   CGGradientRelease(gradient);
 }

@@ -377,6 +377,45 @@ static void roundedAtTheCorners(void)
   CGColorRelease(blue);
 }
 
+/* A radial gradient is an ellipse centred on startPoint, with radii
+   |endPoint.x - startPoint.x| by the width and |endPoint.y - startPoint.y| by
+   the height.  Apple draws nothing when the two points share either axis. */
+static void radially(void)
+{
+  CGColorRef red = opaque(1, 0, 0);
+  CGColorRef blue = opaque(0, 0, 1);
+  NSArray *two = [NSArray arrayWithObjects: (id)red, (id)blue, nil];
+  CGContextRef context = newContext();
+  CGContextRef flat = newContext();
+  CAGradientLayer *g = gradient(two);
+  CAGradientLayer *sameAxis = gradient(two);
+  int cr, cg, cb, er, eg, eb;
+
+  [g setType: kCAGradientLayerRadial];
+  [g setStartPoint: CGPointMake(0.5, 0.5)];
+  [g setEndPoint: CGPointMake(1.0, 1.0)];
+  [g renderInContext: context];
+
+  PASS(paintedExactly(context, 0, 0, 80, 60),
+       "a radial gradient covers the whole of the layer's bounds");
+  channels(context, 40, 30, &cr, &cg, &cb);
+  channels(context, 2, 2, &er, &eg, &eb);
+  PASS(cr > cb && er < eb,
+       "with the first colour at its centre and the last at a corner");
+
+  [sameAxis setType: kCAGradientLayerRadial];
+  [sameAxis setStartPoint: CGPointMake(0.5, 0.0)];
+  [sameAxis setEndPoint: CGPointMake(0.5, 1.0)];
+  [sameAxis renderInContext: flat];
+  PASS(paintedCount(flat) == 0,
+       "and two points on the same axis draw nothing");
+
+  CGColorRelease(red);
+  CGColorRelease(blue);
+  CGContextRelease(context);
+  CGContextRelease(flat);
+}
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -390,6 +429,7 @@ int main(void)
   whereTheColoursSit();
   underTheContents();
   roundedAtTheCorners();
+  radially();
 
   END_SET("what a gradient layer draws")
 
