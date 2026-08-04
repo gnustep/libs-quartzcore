@@ -1033,12 +1033,19 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @implementation CATransition
 @synthesize type=_type;
 @synthesize subtype=_subtype;
+@synthesize startProgress=_startProgress;
+@synthesize endProgress=_endProgress;
+@synthesize filter=_filter;
 
 + (id) defaultValueForKey: (NSString *)key
 {
   if ([key isEqualToString: @"type"])
     {
       return kCATransitionFade;
+    }
+  if ([key isEqualToString: @"endProgress"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
     }
 
   return [super defaultValueForKey: key];
@@ -1049,6 +1056,8 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
   if ((self = [super init]) != nil)
     {
       [self setType: [[self class] defaultValueForKey: @"type"]];
+      [self setEndProgress:
+        [[[self class] defaultValueForKey: @"endProgress"] floatValue]];
     }
 
   return self;
@@ -1058,6 +1067,7 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 {
   [_type release];
   [_subtype release];
+  [_filter release];
 
   [super dealloc];
 }

@@ -40,6 +40,53 @@ int main(void)
 
   END_SET("what a transition's setters keep")
 
+  START_SET("how much of the transition is run")
+
+  CATransition *t = [CATransition animation];
+
+  PASS([t startProgress] == 0.0, "it starts at the beginning");
+  PASS([t endProgress] == 1.0, "and runs to the end");
+  PASS([t filter] == nil, "with no filter of its own");
+
+  [t setStartProgress: 0.25];
+  [t setEndProgress: 0.75];
+  PASS([t startProgress] == 0.25 && [t endProgress] == 0.75,
+       "the stretch it is given is the stretch it keeps");
+
+  END_SET("how much of the transition is run")
+
+  START_SET("a stretch that makes no sense")
+
+  CATransition *outside = [CATransition animation];
+  CATransition *crossed = [CATransition animation];
+
+  [outside setStartProgress: -1.0];
+  [outside setEndProgress: 2.0];
+  PASS([outside startProgress] == -1.0 && [outside endProgress] == 2.0,
+       "a value outside nought to one is kept as it was given");
+
+  /* Halves and quarters, so that what is read back is what was written
+     rather than the nearest float to it. */
+  [crossed setStartProgress: 0.75];
+  [crossed setEndProgress: 0.25];
+  PASS([crossed startProgress] == 0.75 && [crossed endProgress] == 0.25,
+       "and so is a start that comes after its end");
+
+  END_SET("a stretch that makes no sense")
+
+  START_SET("the filter a transition is given")
+
+  CATransition *t = [CATransition animation];
+  id thing = [NSNumber numberWithInt: 7];
+
+  [t setFilter: thing];
+  PASS([t filter] == thing, "the filter reads back as the object it was given");
+
+  [t setFilter: nil];
+  PASS([t filter] == nil, "and can be taken away again");
+
+  END_SET("the filter a transition is given")
+
   [pool release];
   return 0;
 }
