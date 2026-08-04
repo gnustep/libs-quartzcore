@@ -35,6 +35,7 @@
 #import "CAAnimation+FrameworkPrivate.h"
 #import "CAImplicitAnimationObserver.h"
 #import "CAArchivingObserver.h"
+#import "CAGravity.h"
 #import <objc/runtime.h>
 #import "CALayer+DynamicProperties.h"
 #import "QuartzCore/CATransaction.h"
@@ -876,7 +877,14 @@ CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
       && CFGetTypeID(layerContents) == CGImageGetTypeID())
 #endif
     {
-      CGContextDrawImage(context, area, (CGImageRef)layerContents);
+      CGImageRef given = (CGImageRef)layerContents;
+
+      CGContextDrawImage(context,
+                         CAGravityDestinationRect(
+                           [self contentsGravity], area,
+                           CGSizeMake(CGImageGetWidth(given),
+                                      CGImageGetHeight(given))),
+                         given);
     }
   else if ([layerContents isKindOfClass: [CABackingStore class]])
     {
@@ -886,7 +894,12 @@ CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
                                            context]);
       if (image)
         {
-          CGContextDrawImage(context, area, image);
+          CGContextDrawImage(context,
+                             CAGravityDestinationRect(
+                               [self contentsGravity], area,
+                               CGSizeMake(CGImageGetWidth(image),
+                                          CGImageGetHeight(image))),
+                             image);
           CGImageRelease(image);
         }
     }

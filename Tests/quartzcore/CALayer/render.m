@@ -405,6 +405,63 @@ static void whatTheDelegateDrew(void)
   CGContextRelease(context);
 }
 
+/* An opaque image of the given size, to be put in a layer's contents. */
+static CGImageRef blueImage(int w, int h)
+{
+  CGColorSpaceRef space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+  CGContextRef c = CGBitmapContextCreate(NULL, w, h, 8, w * 4, space,
+#if GNUSTEP
+                                         kCGImageAlphaPremultipliedFirst);
+#else
+                                         kCGImageAlphaPremultipliedLast);
+#endif
+  CGColorRef blue = CGColorCreateGenericRGB(0, 0, 1, 1);
+  CGImageRef image;
+
+  CGColorSpaceRelease(space);
+  memset(CGBitmapContextGetData(c), 0, w * h * 4);
+  CGContextSetFillColorWithColor(c, blue);
+  CGContextFillRect(c, CGRectMake(0, 0, w, h));
+  image = CGBitmapContextCreateImage(c);
+  CGColorRelease(blue);
+  CGContextRelease(c);
+  return image;
+}
+
+/* Render a layer 80x60 holding a 20x10 image under one gravity, and say
+   whether exactly the given rectangle was painted. */
+static BOOL gravityPaints(NSString *gravity, int x0, int y0, int x1, int y1)
+{
+  CGContextRef context = newContext();
+  CGImageRef image = blueImage(20, 10);
+  CALayer *l = [CALayer layer];
+  BOOL ok;
+
+  [l setBounds: CGRectMake(0, 0, 80, 60)];
+  [l setContents: (id)image];
+  [l setContentsGravity: gravity];
+  [l renderInContext: context];
+  ok = paintedExactly(context, x0, y0, x1, y1);
+
+  CGImageRelease(image);
+  CGContextRelease(context);
+  return ok;
+}
+
+static void gravityPlacement(void)
+{
+  PASS(gravityPaints(kCAGravityResize, 0, 0, 80, 60),
+       "resize stretches the contents over the whole bounds");
+  PASS(gravityPaints(kCAGravityResizeAspect, 0, 10, 80, 50),
+       "resizeAspect fits them inside and centres what is left over");
+  PASS(gravityPaints(kCAGravityCenter, 30, 25, 50, 35),
+       "center leaves them their own size in the middle");
+  PASS(gravityPaints(kCAGravityTop, 30, 50, 50, 60),
+       "top puts them against the top edge");
+  PASS(gravityPaints(kCAGravityBottomLeft, 0, 0, 20, 10),
+       "and bottomLeft into that corner");
+}
+
 static void gravityNames(void)
 {
   CALayer *l = [CALayer layer];
@@ -443,6 +500,7 @@ int main(void)
   sublayerPlacement();
   whatTheDelegateDrew();
   gravityNames();
+  gravityPlacement();
   nothingBadHappens();
 
   END_SET("rendering a layer tree into a context")
