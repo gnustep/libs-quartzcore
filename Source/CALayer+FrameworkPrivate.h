@@ -61,6 +61,12 @@
    layer's contents and a shape over them. */
 - (void) drawBackgroundInContext: (CGContextRef)context;
 
+/* One transform per copy of the sublayers, as an NSValue holding a
+   CATransform3D.  CALayer draws its sublayers once and answers a single
+   identity transform; CAReplicatorLayer answers one per instance.  Both
+   renderers walk this list, so neither tests the class. */
+- (NSArray *) instanceTransformsForSublayers;
+
 @property (retain) CABackingStore * backingStore;
 @property (assign) CARenderer * renderer;
 @end

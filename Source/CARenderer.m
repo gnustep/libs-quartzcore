@@ -911,9 +911,21 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
         clipping = YES;
       }
 
-    for (CALayer * sublayer in [layer sublayers])
+    /* A presentation layer is a plain CALayer whatever its model layer is, so
+       the instance list comes from the model. */
+    CALayer * instancing = [layer modelLayer] ? [layer modelLayer] : layer;
+
+    for (NSValue * instance in [instancing instanceTransformsForSublayers])
       {
-        [self _renderLayer: sublayer withTransform: transform];
+        CATransform3D instanceTransform;
+
+        [instance getValue: &instanceTransform];
+        for (CALayer * sublayer in [layer sublayers])
+          {
+            [self _renderLayer: sublayer
+                 withTransform: CATransform3DConcat(instanceTransform,
+                                                    transform)];
+          }
       }
 
     if (clipping)

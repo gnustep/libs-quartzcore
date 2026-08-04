@@ -25,6 +25,7 @@
 
 #import <Foundation/Foundation.h>
 #import "QuartzCore/CAReplicatorLayer.h"
+#import "CALayer+FrameworkPrivate.h"
 
 @implementation CAReplicatorLayer
 
@@ -74,6 +75,24 @@
   CGColorRetain(instanceColor);
   CGColorRelease(_instanceColor);
   _instanceColor = instanceColor;
+}
+
+/* Instance i is transformed by instanceTransform applied i times, so instance
+   0 is not transformed at all.  Only the sublayers are repeated: the layer's
+   own background and contents are drawn once. */
+- (NSArray *) instanceTransformsForSublayers
+{
+  NSMutableArray *transforms = [NSMutableArray array];
+  CATransform3D step = CATransform3DIdentity;
+  NSInteger i;
+
+  for (i = 0; i < _instanceCount; i++)
+    {
+      [transforms addObject: [NSValue valueWithBytes: &step
+                                            objCType: @encode(CATransform3D)]];
+      step = CATransform3DConcat(step, _instanceTransform);
+    }
+  return transforms;
 }
 
 @end

@@ -18,6 +18,7 @@
 #import <QuartzCore/CALayer.h>
 #import <QuartzCore/CAGradientLayer.h>
 #import <QuartzCore/CAShapeLayer.h>
+#import <QuartzCore/CAReplicatorLayer.h>
 #import <QuartzCore/CATextLayer.h>
 #import <QuartzCore/CATransaction.h>
 #ifdef __APPLE__
@@ -625,6 +626,82 @@ int main(void)
        "against the top of it, where the first line goes");
 
   END_SET("a layer that draws text")
+
+  START_SET("a layer that repeats its sublayers")
+
+  const char *whyCopies = "";
+  NSOpenGLContext *copyContext = usableContext(&whyCopies);
+  CARenderer *copier;
+  int ox0, oy0, ox1, oy1, onePixels;
+  int cx0, cy0, cx1, cy1, threePixels;
+  static unsigned char nothing[MAX_PIXELS];
+  static unsigned char once[MAX_PIXELS];
+  static unsigned char thrice[MAX_PIXELS];
+
+  if (copyContext == nil)
+    {
+      SKIP("%s", whyCopies)
+    }
+
+  copier = [CARenderer rendererWithNSOpenGLContext: copyContext options: nil];
+  if (copier == nil)
+    {
+      SKIP("there is no renderer to draw with")
+    }
+
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
+  CGColorRef mark = CGColorCreateGenericRGB(0, 0, 1, 1);
+
+  CALayer *bare = [CALayer layer];
+  [bare setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [bare setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+
+  CAReplicatorLayer *single = [CAReplicatorLayer layer];
+  CALayer *singleChild = [CALayer layer];
+  [singleChild setBounds: CGRectMake(0, 0, 10, 10)];
+  [singleChild setPosition: CGPointMake(8, 8)];
+  [singleChild setBackgroundColor: mark];
+  [single setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [single setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [single addSublayer: singleChild];
+  [single setInstanceTransform: CATransform3DMakeTranslation(14, 0, 0)];
+
+  CAReplicatorLayer *several = [CAReplicatorLayer layer];
+  CALayer *severalChild = [CALayer layer];
+  [severalChild setBounds: CGRectMake(0, 0, 10, 10)];
+  [severalChild setPosition: CGPointMake(8, 8)];
+  [severalChild setBackgroundColor: mark];
+  [several setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [several setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [several addSublayer: severalChild];
+  [several setInstanceCount: 3];
+  [several setInstanceTransform: CATransform3DMakeTranslation(14, 0, 0)];
+
+  [CATransaction commit];
+
+  renderFrame(copier, bare);
+  readDrawable(nothing);
+
+  renderFrame(copier, single);
+  readDrawable(once);
+
+  renderFrame(copier, several);
+  readDrawable(thrice);
+
+  changedBox(nothing, once, &ox0, &oy0, &ox1, &oy1, &onePixels);
+  changedBox(nothing, thrice, &cx0, &cy0, &cx1, &cy1, &threePixels);
+
+  PASS(onePixels > 0, "the renderer draws the sublayer of a replicator layer");
+  PASS(threePixels > onePixels, "three instances cover more of it than one");
+  PASS(cx1 > ox1 + 20,
+       "and the third instance is two offsets further across");
+  PASS(cx0 == ox0, "while the first is where one instance was");
+
+  CGColorRelease(mark);
+
+  END_SET("a layer that repeats its sublayers")
 
   [pool release];
   return 0;

@@ -904,6 +904,7 @@ CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
   CGFloat border = [self borderWidth];
   id layerContents = [self contents];
   CALayer * sublayer;
+  NSValue * instance;
 
   if (context == NULL || [self isHidden] || [self opacity] <= 0.0)
     return;
@@ -985,15 +986,32 @@ CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
     }
 
   CALayerApplySublayerTransform(self, context);
-  for (sublayer in [self sublayers])
+  for (instance in [self instanceTransformsForSublayers])
     {
-      CGContextSaveGState(context);
-      CALayerPlaceInContext(sublayer, context);
-      [sublayer renderInContext: context];
-      CGContextRestoreGState(context);
+      CATransform3D instanceTransform;
+
+      [instance getValue: &instanceTransform];
+      for (sublayer in [self sublayers])
+        {
+          CGContextSaveGState(context);
+          CGContextConcatCTM(context,
+                             CATransform3DGetAffineTransform(instanceTransform));
+          CALayerPlaceInContext(sublayer, context);
+          [sublayer renderInContext: context];
+          CGContextRestoreGState(context);
+        }
     }
 
   CGContextRestoreGState(context);
+}
+
+- (NSArray *) instanceTransformsForSublayers
+{
+  CATransform3D identity = CATransform3DIdentity;
+
+  return [NSArray arrayWithObject:
+                    [NSValue valueWithBytes: &identity
+                                   objCType: @encode(CATransform3D)]];
 }
 
 /* ******************** */
