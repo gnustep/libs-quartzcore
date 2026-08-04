@@ -16,6 +16,7 @@
 #import <AppKit/AppKit.h>
 #import <QuartzCore/CARenderer.h>
 #import <QuartzCore/CALayer.h>
+#import <QuartzCore/CAShapeLayer.h>
 #import <QuartzCore/CATransaction.h>
 #ifdef __APPLE__
 #include <OpenGL/gl.h>
@@ -449,6 +450,66 @@ int main(void)
   CGImageRelease(maskImage);
 
   END_SET("a layer that masks its sublayers to its bounds")
+
+  START_SET("a layer that draws content of its own")
+
+  const char *whyShape = "";
+  NSOpenGLContext *shapeContext = usableContext(&whyShape);
+  CARenderer *shaper;
+  CGMutablePathRef path;
+  int sx0, sy0, sx1, sy1, shapePixels;
+  static unsigned char nothing[MAX_PIXELS];
+  static unsigned char figure[MAX_PIXELS];
+
+  if (shapeContext == nil)
+    {
+      SKIP("%s", whyShape)
+    }
+
+  shaper = [CARenderer rendererWithNSOpenGLContext: shapeContext options: nil];
+  if (shaper == nil)
+    {
+      SKIP("there is no renderer to draw with")
+    }
+
+  path = CGPathCreateMutable();
+  CGPathAddRect(path, NULL, CGRectMake(10, 10, 40, 30));
+
+  [CATransaction begin];
+  [CATransaction setDisableActions: YES];
+
+  CAShapeLayer *pathless = [CAShapeLayer layer];
+  [pathless setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [pathless setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [pathless setNeedsDisplay];
+
+  /* The drawable is cleared to black, so the shape is filled with something
+     else: an opaque black fill over it would read back unchanged. */
+  CGColorRef blue = CGColorCreateGenericRGB(0, 0, 1, 1);
+  CAShapeLayer *figured = [CAShapeLayer layer];
+  [figured setBounds: CGRectMake(0, 0, VIEW_W, VIEW_H)];
+  [figured setPosition: CGPointMake(VIEW_W / 2.0, VIEW_H / 2.0)];
+  [figured setPath: path];
+  [figured setFillColor: blue];
+  [figured setNeedsDisplay];
+
+  [CATransaction commit];
+
+  renderFrame(shaper, pathless);
+  readDrawable(nothing);
+
+  renderFrame(shaper, figured);
+  readDrawable(figure);
+  changedBox(nothing, figure, &sx0, &sy0, &sx1, &sy1, &shapePixels);
+  PASS(sx0 == 10 && sx1 == 49 && sy0 == 10 && sy1 == 39,
+       "the renderer draws a shape layer over the path it was given, not "
+       "over the whole of its bounds");
+  PASS(shapePixels == 1200, "and covers what the path encloses");
+
+  CGColorRelease(blue);
+  CGPathRelease(path);
+
+  END_SET("a layer that draws content of its own")
 
   [pool release];
   return 0;
