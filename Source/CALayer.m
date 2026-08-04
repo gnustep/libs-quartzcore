@@ -963,6 +963,10 @@ CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
         }
     }
 
+  /* What the layer draws for itself needs no backing store and no display
+     first, so it goes in here rather than coming from the contents. */
+  [self drawContentInContext: context];
+
   /* The border is drawn inside the bounds, over the background and the
      contents: a stroke down the middle of a line that thick covers the
      outermost points of the layer and nothing beyond them. */
@@ -1226,8 +1230,13 @@ CALayerResizeAxis(struct CALayerAxis axis, CGFloat delta,
   [self setNeedsDisplay];
 }
 
+- (void) drawContentInContext: (CGContextRef)context
+{
+}
+
 - (void) drawInContext: (CGContextRef)context
 {
+  [self drawContentInContext: context];
   if ([_delegate respondsToSelector: @selector(drawLayer:inContext:)])
     {
       [_delegate drawLayer: self inContext: context];
