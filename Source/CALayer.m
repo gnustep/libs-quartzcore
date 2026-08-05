@@ -905,6 +905,7 @@ CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
   id layerContents = [self contents];
   CALayer * sublayer;
   NSValue * instance;
+  BOOL castsShadow = [self shadowOpacity] > 0.0 && [self shadowColor] != NULL;
 
   if (context == NULL || [self isHidden] || [self opacity] <= 0.0)
     return;
@@ -912,9 +913,30 @@ CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
   CGContextSaveGState(context);
   CGContextSetAlpha(context, [self opacity]);
 
+  /* The shadow is of the layer and everything under it taken together rather
+     than of each thing drawn, so the drawing goes into a transparency layer
+     and the shadow is applied when that is composited.  shadowPath is not
+     read here, Apple's -renderInContext: not reading it either.
+
+     A layer's radius of r spreads its shadow 2r on each side, where the
+     radius CGContextSetShadowWithColor takes spreads r. */
+  if (castsShadow)
+    {
+      CGColorRef shade = CGColorCreateCopyWithAlpha(
+        [self shadowColor],
+        CGColorGetAlpha([self shadowColor]) * [self shadowOpacity]);
+
+      CGContextSetShadowWithColor(context, [self shadowOffset],
+                                  2.0 * [self shadowRadius], shade);
+      CGColorRelease(shade);
+      CGContextBeginTransparencyLayer(context, NULL);
+    }
+
   if ([self masksToBounds])
     {
-      /* A rounded layer clips what is under it to the same rounded shape. */
+      /* A rounded layer clips what is under it to the same rounded shape.
+         The clip goes inside the transparency layer, so that it shapes what
+         casts the shadow rather than cutting the shadow off. */
       CALayerAddRoundedRect(context, area, radius);
       CGContextClip(context);
     }
@@ -1001,6 +1023,9 @@ CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius)
           CGContextRestoreGState(context);
         }
     }
+
+  if (castsShadow)
+    CGContextEndTransparencyLayer(context);
 
   CGContextRestoreGState(context);
 }
