@@ -1,8 +1,11 @@
 /* CAScrollLayer.m
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012, 2026 Free Software Foundation, Inc.
 
    Author: Amr Aboelela <amraboelela@gmail.com>
+
+   Author: Todd White <todd.white@thalion.global>
+   Date: August 2026
 
    This file is part of QuartzCore.
 
