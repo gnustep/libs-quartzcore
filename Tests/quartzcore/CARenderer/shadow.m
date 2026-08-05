@@ -152,8 +152,10 @@ usableContext(const char **why)
 }
 
 /* A layer of the given size in the middle of the drawable, with a colour of
-   its own, shadowed or not. */
-static CALayer *shadowed(BOOL withShadow, CGColorRef fill, CGColorRef shade)
+   its own, shadowed or not, and with a shadow of the given shape or of its
+   own. */
+static CALayer *shaped(BOOL withShadow, CGColorRef fill, CGColorRef shade,
+                       CGPathRef path)
 {
   CALayer *root = [CALayer layer];
   CALayer *layer = [CALayer layer];
@@ -170,9 +172,43 @@ static CALayer *shadowed(BOOL withShadow, CGColorRef fill, CGColorRef shade)
       [layer setShadowOpacity: 1.0];
       [layer setShadowOffset: CGSizeMake(6, -6)];
       [layer setShadowRadius: 2];
+      [layer setShadowPath: path];
     }
   [root addSublayer: layer];
   return root;
+}
+
+static CALayer *shadowed(BOOL withShadow, CGColorRef fill, CGColorRef shade)
+{
+  return shaped(withShadow, fill, shade, NULL);
+}
+
+/* A rectangle in the layer's own coordinate space, the layer's bounds being
+   0, 0, 20, 14. */
+static CGPathRef rectPath(CGRect r)
+{
+  CGMutablePathRef path = CGPathCreateMutable();
+
+  CGPathAddRect(path, NULL, r);
+  return path;
+}
+
+/* The mean row of the pixels that differ, which says where the shadow ended
+   up without depending on which way round the rows run. */
+static double meanChangedRow(const unsigned char *before,
+                             const unsigned char *after)
+{
+  int x, y, count = 0;
+  double total = 0;
+
+  for (y = 0; y < drawableH; y++)
+    for (x = 0; x < drawableW; x++)
+      if (changedAt(before, after, x, y))
+        {
+          total += y;
+          count++;
+        }
+  return count ? total / count : -1;
 }
 
 int main(void)
@@ -222,6 +258,49 @@ int main(void)
   PASS(!changedAt(plain, shaded, 1, drawableH - 2)
        && !changedAt(plain, shaded, drawableW - 2, drawableH - 2),
        "and leaves the far corners of the drawable alone");
+
+  /* A shadowPath is the shape of the shadow, in place of the layer's own
+     outline, so a path smaller than the layer casts less and one larger than
+     the layer casts more. */
+  {
+    static unsigned char small[MAX_PIXELS];
+    static unsigned char large[MAX_PIXELS];
+    static unsigned char high[MAX_PIXELS];
+    static unsigned char low[MAX_PIXELS];
+    CGPathRef middle = rectPath(CGRectMake(7, 5, 6, 4));
+    CGPathRef around = rectPath(CGRectMake(-6, -6, 32, 26));
+    CGPathRef top = rectPath(CGRectMake(2, 8, 16, 4));
+    CGPathRef bottom = rectPath(CGRectMake(2, 2, 16, 4));
+
+    [CATransaction begin];
+    [CATransaction setDisableActions: YES];
+    CALayer *smallShadow = shaped(YES, white, red, middle);
+    CALayer *largeShadow = shaped(YES, white, red, around);
+    CALayer *highShadow = shaped(YES, white, red, top);
+    CALayer *lowShadow = shaped(YES, white, red, bottom);
+    [CATransaction commit];
+
+    renderFrame(renderer, smallShadow);
+    readDrawable(small);
+    renderFrame(renderer, largeShadow);
+    readDrawable(large);
+    renderFrame(renderer, highShadow);
+    readDrawable(high);
+    renderFrame(renderer, lowShadow);
+    readDrawable(low);
+
+    PASS(changedCount(plain, small) < changed,
+         "a shadowPath smaller than the layer casts a smaller shadow");
+    PASS(changedCount(plain, large) > changed,
+         "and one larger than the layer casts a larger shadow");
+    PASS(meanChangedRow(plain, high) > meanChangedRow(plain, low),
+         "a shadowPath high in the layer casts its shadow high");
+
+    CGPathRelease(middle);
+    CGPathRelease(around);
+    CGPathRelease(top);
+    CGPathRelease(bottom);
+  }
 
   CGColorRelease(white);
   CGColorRelease(red);

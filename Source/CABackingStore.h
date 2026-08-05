@@ -55,6 +55,7 @@
   CGContextRef _context;
   CAGLTexture * _contentsTexture;
   CAGLTexture * _offscreenRenderTexture;
+  CAGLTexture * _shadowTexture;
   NSUInteger _contentsVersion;
 }
 
@@ -68,6 +69,10 @@
 @property (assign) /* (retain) */ CGContextRef context;
 @property (retain) CAGLTexture * contentsTexture;
 @property (retain) CAGLTexture * offscreenRenderTexture;
+
+/* The shape of the layer's shadow, where its shadowPath gives one.  The
+   renderer blurs this in place of the layer's own outline. */
+@property (retain) CAGLTexture * shadowTexture;
 @property (readonly) CGFloat width;
 @property (readonly) CGFloat height;
 

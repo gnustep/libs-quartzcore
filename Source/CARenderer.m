@@ -187,6 +187,68 @@ CARendererRasterizedSize(CALayer * layer)
   return CGSizeMake(ceil(width), ceil(height));
 }
 
+/* The shape a layer's shadowPath gives, drawn into a texture, or nil where
+   there is no path or nothing in it.  The renderer has no path rasteriser of
+   its own; a CAShapeLayer's path reaches the screen the same way, through a
+   bitmap context in a CABackingStore.
+
+   Only the coverage is wanted: the vertical blur pass keeps the alpha of what
+   it is given and takes the colour from shadowColor, so the shape is filled
+   in opaque white.  White premultiplied leaves all four bytes of a pixel
+   equal, which is also what keeps this right where the bitmap's channel order
+   and the texture's differ.  The bitmap's first row is the top of the image
+   where the texture's first row is the bottom, so it is drawn flipped. */
+static CABackingStore *
+CARendererShadowShape(CALayer * layer)
+{
+  CGPathRef path = [layer shadowPath];
+  CABackingStore * store;
+  CGContextRef context;
+  CGRect box;
+  CGFloat width, height;
+
+  if (!path)
+    return nil;
+
+  box = CGPathGetPathBoundingBox(path);
+  if (CGRectIsNull(box) || CGRectIsEmpty(box) || CGRectIsInfinite(box))
+    return nil;
+
+  width = ceil(box.size.width);
+  height = ceil(box.size.height);
+  store = [CABackingStore backingStoreWithWidth: width height: height];
+  context = [store context];
+  if (!context)
+    return nil;
+
+  CGContextTranslateCTM(context, 0, height);
+  CGContextScaleCTM(context, 1, -1);
+  CGContextTranslateCTM(context, -box.origin.x, -box.origin.y);
+  CGContextSetRGBFillColor(context, 1, 1, 1, 1);
+  CGContextBeginPath(context);
+  CGContextAddPath(context, path);
+  CGContextFillPath(context);
+  [store refresh];
+
+  return store;
+}
+
+/* How far the middle of the shadow's shape is from the layer's anchor point,
+   in the layer's own points.  The shadow is drawn about the anchor point, and
+   a shadowPath need not be centred there. */
+static CGPoint
+CARendererShadowShapeOffset(CALayer * layer)
+{
+  CGRect box = CGPathGetPathBoundingBox([layer shadowPath]);
+  CGRect bounds = [layer bounds];
+
+  return CGPointMake(
+    CGRectGetMidX(box)
+      - (bounds.origin.x + [layer anchorPoint].x * bounds.size.width),
+    CGRectGetMidY(box)
+      - (bounds.origin.y + [layer anchorPoint].y * bounds.size.height));
+}
+
 /* Appends the component count and then the components.  A NULL colour
    appends a count of 0. */
 static void
@@ -220,6 +282,9 @@ CARendererDigestLayer(CALayer * layer, NSMutableData * digest)
   CATransform3D transform = [layer transform];
   CATransform3D sublayerTransform = [layer sublayerTransform];
   CGSize shadowOffset = [layer shadowOffset];
+  CGPathRef shadowPath = [layer shadowPath];
+  CGRect shadowBox = shadowPath ? CGPathGetPathBoundingBox(shadowPath)
+                                : CGRectZero;
   CGFloat numbers[3];
   NSString * gravity = [layer contentsGravity];
   BOOL masksToBounds = [layer masksToBounds];
@@ -237,6 +302,8 @@ CARendererDigestLayer(CALayer * layer, NSMutableData * digest)
   [digest appendBytes: &transform length: sizeof(transform)];
   [digest appendBytes: &sublayerTransform length: sizeof(sublayerTransform)];
   [digest appendBytes: &shadowOffset length: sizeof(shadowOffset)];
+  [digest appendBytes: &shadowPath length: sizeof(shadowPath)];
+  [digest appendBytes: &shadowBox length: sizeof(shadowBox)];
   [digest appendBytes: &masksToBounds length: sizeof(masksToBounds)];
 
   numbers[0] = [layer opacity];
@@ -672,12 +739,22 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
           /* IDEA: perform blurring during offscreen-rendering, so we group all
                    FBO operations in once place? */
 
-          /* The blurred copy is the layer's texture with room around it for
-             the blur to spread into, and both passes work at that size. */
+          /* A shadowPath is the outline of the shadow in place of the layer's
+             own, so where there is one it is that shape which is blurred, and
+             it is placed where the path is rather than over the layer. */
+          CAGLTexture * shadowSource =
+            [[layer backingStore] shadowTexture] ?
+              [[layer backingStore] shadowTexture] : texture;
+          CGPoint shadowShape =
+            shadowSource == texture ? CGPointZero
+                                    : CARendererShadowShapeOffset(layer);
+
+          /* The blurred copy is that texture with room around it for the blur
+             to spread into, and both passes work at that size. */
           const GLuint shadow_rasterize_w =
-            [texture width] + 2 * (GLuint)ceil([layer shadowRadius]);
+            [shadowSource width] + 2 * (GLuint)ceil([layer shadowRadius]);
           const GLuint shadow_rasterize_h =
-            [texture height] + 2 * (GLuint)ceil([layer shadowRadius]);
+            [shadowSource height] + 2 * (GLuint)ceil([layer shadowRadius]);
           GLint shadowViewport[4];
 
           CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
@@ -713,33 +790,33 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
           [_blurHorizProgram bindUniformAtLocation: loc
                                      toUnsignedInt: 0];
 
-          [texture bind];
+          [shadowSource bind];
 
           GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
-          if ([texture textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
+          if ([shadowSource textureTarget] == GL_TEXTURE_RECTANGLE_ARB)
             {
-              textureMaxX = [texture width];
-              textureMaxY = [texture height];
+              textureMaxX = [shadowSource width];
+              textureMaxY = [shadowSource height];
             }
           else
             {
-              glTexParameteri([texture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-              glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+              glTexParameteri([shadowSource textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+              glTexParameteri([shadowSource textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
 
           {
             static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
 
-            CARendererDrawTexturedQuad([texture width] / 2.0,
-                                       [texture height] / 2.0,
+            CARendererDrawTexturedQuad([shadowSource width] / 2.0,
+                                       [shadowSource height] / 2.0,
                                        textureMaxX, textureMaxY, plain);
           }
-          glDisable([texture textureTarget]);
+          glDisable([shadowSource textureTarget]);
 
 
           glUseProgram(0);
 
-          [texture unbind];
+          [shadowSource unbind];
           [framebuffer unbind];
 
           /* Preserve the FBO texture and discard framebuffer */
@@ -851,7 +928,8 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
             glLoadMatrixd((GLdouble*)&transform);
           else
             glLoadMatrixf((GLfloat*)&transform);
-          glTranslatef([layer shadowOffset].width, [layer shadowOffset].height, 0);
+          glTranslatef([layer shadowOffset].width + shadowShape.x,
+                       [layer shadowOffset].height + shadowShape.y, 0);
 
           [secondPassTexture bind];
 
@@ -1256,6 +1334,8 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
   if (![layer backingStore])
     [layer setBackingStore: [CABackingStore backingStoreWithWidth: rasterize_w height: rasterize_h]];
   [[layer backingStore] setOffscreenRenderTexture: [framebuffer texture]];
+  [[layer backingStore] setShadowTexture:
+    [CARendererShadowShape(layer) contentsTexture]];
 
   [_rasterizationCache setObject:
     [NSDictionary dictionaryWithObjectsAndKeys:
