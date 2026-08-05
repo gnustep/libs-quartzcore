@@ -525,12 +525,27 @@ CARendererRasterizedSize(CALayer * layer)
           /* IDEA: perform blurring during offscreen-rendering, so we group all
                    FBO operations in once place? */
 
-          /* TODO: these not correct sizes for shadow rasterization */
-          const GLuint shadow_rasterize_w = 512, shadow_rasterize_h = 512;
+          /* The blurred copy is the layer's texture with room around it for
+             the blur to spread into, and both passes work at that size. */
+          const GLuint shadow_rasterize_w =
+            [texture width] + 2 * (GLuint)ceil([layer shadowRadius]);
+          const GLuint shadow_rasterize_h =
+            [texture height] + 2 * (GLuint)ceil([layer shadowRadius]);
+          GLint shadowViewport[4];
 
           CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
-          CATransform3D rasterizedTextureTransform = CATransform3DMakeTranslation([texture width]/2.0, [texture height]/2.0, 0);
+          CATransform3D rasterizedTextureTransform = shadowRasterizeTransform;
 
+          /* Both passes draw into a buffer of their own, so they take a
+             viewport and a projection to match it and give back the ones the
+             frame is using. */
+          glGetIntegerv(GL_VIEWPORT, shadowViewport);
+          glViewport(0, 0, shadow_rasterize_w, shadow_rasterize_h);
+          glMatrixMode(GL_PROJECTION);
+          glPushMatrix();
+          glLoadIdentity();
+          glOrtho(0.0, shadow_rasterize_w, 0.0, shadow_rasterize_h, -1.0, 1.0);
+          glMatrixMode(GL_MODELVIEW);
 
           /* Setup transform for first pass */
           if (sizeof(rasterizedTextureTransform.m11) == sizeof(GLdouble))
@@ -680,6 +695,14 @@ CARendererRasterizedSize(CALayer * layer)
           /* Preserve the FBO texture and discard framebuffer */
           CAGLTexture * secondPassTexture = [[framebuffer texture] retain];
           [framebuffer release];
+
+          /* Both passes are done, so the frame's own viewport and projection
+             come back before the shadow is drawn into the drawable. */
+          glMatrixMode(GL_PROJECTION);
+          glPopMatrix();
+          glMatrixMode(GL_MODELVIEW);
+          glViewport(shadowViewport[0], shadowViewport[1],
+                     shadowViewport[2], shadowViewport[3]);
 
           /************************************/
 
