@@ -194,6 +194,42 @@ static BOOL textIsTypeset(void)
   return ok;
 }
 
+/* A build whose CoreText answers nothing for a truncated line cannot truncate
+   at all, so there is nothing to check the drawing against. */
+static BOOL lineCanBeTruncated(void)
+{
+  CTFontRef font = CTFontCreateWithName((CFStringRef)@"Helvetica", 24, NULL);
+  NSDictionary *attributes;
+  NSAttributedString *string, *ellipsis;
+  CTLineRef line, token, cut;
+  BOOL ok;
+
+  if (font == NULL)
+    return NO;
+
+  attributes = [NSDictionary dictionaryWithObject: (id)font
+                                           forKey: (id)kCTFontAttributeName];
+  string = [[NSAttributedString alloc] initWithString: @"HHHHHHHH"
+                                           attributes: attributes];
+  ellipsis = [[NSAttributedString alloc] initWithString: @"…"
+                                             attributes: attributes];
+  line = CTLineCreateWithAttributedString((CFAttributedStringRef)string);
+  token = CTLineCreateWithAttributedString((CFAttributedStringRef)ellipsis);
+  cut = CTLineCreateTruncatedLine(line,
+                                  CTLineGetTypographicBounds(line, NULL, NULL,
+                                                             NULL) / 2.0,
+                                  kCTLineTruncationEnd, token);
+  ok = (cut != NULL && CTLineGetGlyphCount(cut) < CTLineGetGlyphCount(line));
+
+  releaseCoreTextObject(cut);
+  releaseCoreTextObject(token);
+  releaseCoreTextObject(line);
+  [string release];
+  [ellipsis release];
+  releaseCoreTextObject(font);
+  return ok;
+}
+
 static CATextLayer *text(id string)
 {
   CATextLayer *t = [CATextLayer layer];
@@ -238,6 +274,42 @@ static void aLineOfText(void)
   CGContextRelease(taller);
   CGContextRelease(none);
   CGContextRelease(empty);
+}
+
+/* A string too wide for the layer is cut to it.  Apple leaves the line short
+   of the right edge: the same string that runs to x 159 of 160 untruncated
+   ends at 147 truncated at the end and at 135 truncated in the middle.  How
+   much shorter the middle is comes out of where the glyphs fall, so only that
+   each mode leaves the line short of the edge is asserted. */
+static void truncation(void)
+{
+  CGContextRef plain = newContext();
+  CGContextRef cut = newContext();
+  CGContextRef middle = newContext();
+  CATextLayer *a = text(@"HHHHHHHHHHHHHHHHHHHHHHHH");
+  CATextLayer *b = text(@"HHHHHHHHHHHHHHHHHHHHHHHH");
+  CATextLayer *c = text(@"HHHHHHHHHHHHHHHHHHHHHHHH");
+  int ax0, ay0, ax1, ay1, bx0, by0, bx1, by1, cx0, cy0, cx1, cy1;
+
+  [b setTruncationMode: kCATruncationEnd];
+  [c setTruncationMode: kCATruncationMiddle];
+  [a renderInContext: plain];
+  [b renderInContext: cut];
+  [c renderInContext: middle];
+
+  paintedBox(plain, &ax0, &ay0, &ax1, &ay1);
+  paintedBox(cut, &bx0, &by0, &bx1, &by1);
+  paintedBox(middle, &cx0, &cy0, &cx1, &cy1);
+
+  PASS(bx1 < ax1, "truncating at the end stops the line short of the edge");
+  PASS(paintedCount(cut) < paintedCount(plain), "and draws fewer glyphs");
+  PASS(bx0 == ax0, "while it starts where the whole string started");
+  PASS(cx1 < ax1 && paintedCount(middle) < paintedCount(plain),
+       "and truncating in the middle stops short of it too");
+
+  CGContextRelease(plain);
+  CGContextRelease(cut);
+  CGContextRelease(middle);
 }
 
 static void theSizeOfIt(void)
@@ -396,6 +468,21 @@ int main(void)
   alignment();
 
   END_SET("what a text layer draws")
+
+  START_SET("truncating a string that does not fit")
+
+  if (!textIsTypeset())
+    {
+      SKIP("this build's CoreText typesets no runs")
+    }
+  if (!lineCanBeTruncated())
+    {
+      SKIP("this build's CoreText answers no truncated line")
+    }
+
+  truncation();
+
+  END_SET("truncating a string that does not fit")
 
   START_SET("asking for a display")
 

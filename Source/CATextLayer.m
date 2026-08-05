@@ -198,6 +198,36 @@ NSString *const kCATruncationMiddle = @"middle";
   return CTFontCreateWithName((CFStringRef)@"Helvetica", _fontSize, NULL);
 }
 
+static CTLineTruncationType
+CATextLayerTruncationType(NSString *mode)
+{
+  if ([mode isEqualToString: kCATruncationStart])
+    return kCTLineTruncationStart;
+  if ([mode isEqualToString: kCATruncationMiddle])
+    return kCTLineTruncationMiddle;
+  return kCTLineTruncationEnd;
+}
+
+/* The ellipsis that stands in for what truncation drops, in the attributes
+   the string carries at its start. */
+static CTLineRef
+CATextLayerTruncationToken(NSAttributedString *string)
+{
+  NSDictionary *attributes = nil;
+  NSAttributedString *token;
+  CTLineRef line;
+
+  if ([string length] > 0)
+    {
+      attributes = [string attributesAtIndex: 0 effectiveRange: NULL];
+    }
+  token = [[NSAttributedString alloc] initWithString: @"…"
+                                          attributes: attributes];
+  line = CTLineCreateWithAttributedString((CFAttributedStringRef)token);
+  [token release];
+  return line;
+}
+
 /* The string is drawn under the layer's contents, its first line against the
    top of the bounds.  A plain string is set in the layer's own font, size and
    colour; an attributed string carries its own and the layer's are not used,
@@ -248,11 +278,35 @@ NSString *const kCATruncationMiddle = @"middle";
     }
 
   line = CTLineCreateWithAttributedString((CFAttributedStringRef)attributed);
-  [attributed release];
   if (line == NULL)
-    return;
+    {
+      [attributed release];
+      return;
+    }
 
   width = CTLineGetTypographicBounds(line, &ascent, &descent, &leading);
+
+  /* A line too wide for the bounds is cut down to them, with the ellipsis in
+     place of what was dropped. */
+  if (![_truncationMode isEqualToString: kCATruncationNone]
+      && width > bounds.size.width)
+    {
+      CTLineRef token = CATextLayerTruncationToken(attributed);
+      CTLineRef shortened =
+        CTLineCreateTruncatedLine(line, bounds.size.width,
+                                  CATextLayerTruncationType(_truncationMode),
+                                  token);
+
+      if (shortened != NULL)
+        {
+          releaseCoreTextObject(line);
+          line = shortened;
+          width = CTLineGetTypographicBounds(line, &ascent, &descent,
+                                             &leading);
+        }
+      releaseCoreTextObject(token);
+    }
+  [attributed release];
 
   /* natural and justified are left here, as they are on Apple for a single
      line of Latin text. */
