@@ -187,6 +187,110 @@ CARendererRasterizedSize(CALayer * layer)
   return CGSizeMake(ceil(width), ceil(height));
 }
 
+/* Appends the component count and then the components.  A NULL colour
+   appends a count of 0. */
+static void
+CARendererDigestColor(CGColorRef color, NSMutableData * digest)
+{
+  size_t count = color ? CGColorGetNumberOfComponents(color) : 0;
+  const CGFloat * components = count ? CGColorGetComponents(color) : NULL;
+
+  [digest appendBytes: &count length: sizeof(count)];
+  if (components)
+    [digest appendBytes: components length: count * sizeof(CGFloat)];
+}
+
+/* Every layer property -_renderLayer:withTransform: reads, over a layer and
+   its sublayers.  Equal bytes mean the subtree draws the same picture, which
+   is what -_rasterize: reuses a texture on.  Properties the renderer does
+   not read are omitted; add one here when the renderer starts reading it.
+
+   Contents are identified by the object address and, for a CABackingStore,
+   by contentsVersion.  A delegate that modifies contents in place without
+   calling -setNeedsDisplay is not detected. */
+static void
+CARendererDigestLayer(CALayer * layer, NSMutableData * digest)
+{
+  CALayer * modelLayer = [layer modelLayer] ? [layer modelLayer] : layer;
+  Class layerClass = [modelLayer class];
+  CGRect bounds = [layer bounds];
+  CGRect contentsRect = [layer contentsRect];
+  CGPoint position = [layer position];
+  CGPoint anchorPoint = [layer anchorPoint];
+  CATransform3D transform = [layer transform];
+  CATransform3D sublayerTransform = [layer sublayerTransform];
+  CGSize shadowOffset = [layer shadowOffset];
+  CGFloat numbers[3];
+  NSString * gravity = [layer contentsGravity];
+  BOOL masksToBounds = [layer masksToBounds];
+  id contents = [layer contents];
+  const void * contentsAddress = contents;
+  NSUInteger count;
+  NSValue * instance;
+  CALayer * sublayer;
+
+  [digest appendBytes: &layerClass length: sizeof(layerClass)];
+  [digest appendBytes: &bounds length: sizeof(bounds)];
+  [digest appendBytes: &contentsRect length: sizeof(contentsRect)];
+  [digest appendBytes: &position length: sizeof(position)];
+  [digest appendBytes: &anchorPoint length: sizeof(anchorPoint)];
+  [digest appendBytes: &transform length: sizeof(transform)];
+  [digest appendBytes: &sublayerTransform length: sizeof(sublayerTransform)];
+  [digest appendBytes: &shadowOffset length: sizeof(shadowOffset)];
+  [digest appendBytes: &masksToBounds length: sizeof(masksToBounds)];
+
+  numbers[0] = [layer opacity];
+  numbers[1] = [layer shadowOpacity];
+  numbers[2] = [layer shadowRadius];
+  [digest appendBytes: numbers length: sizeof(numbers)];
+
+  CARendererDigestColor([layer backgroundColor], digest);
+  CARendererDigestColor([layer shadowColor], digest);
+
+  if (gravity)
+    [digest appendData: [gravity dataUsingEncoding: NSUTF8StringEncoding]];
+
+  [digest appendBytes: &contentsAddress length: sizeof(contentsAddress)];
+  if ([contents isKindOfClass: [CABackingStore class]])
+    {
+      NSUInteger version = [(CABackingStore *)contents contentsVersion];
+
+      [digest appendBytes: &version length: sizeof(version)];
+    }
+
+  /* A presentation layer is a plain CALayer whatever its model layer is, so
+     the instance list comes from the model, as it does when drawing. */
+  count = [[modelLayer instanceTransformsForSublayers] count];
+  [digest appendBytes: &count length: sizeof(count)];
+  for (instance in [modelLayer instanceTransformsForSublayers])
+    {
+      CATransform3D instanceTransform;
+
+      [instance getValue: &instanceTransform];
+      [digest appendBytes: &instanceTransform
+                    length: sizeof(instanceTransform)];
+    }
+
+  count = [[layer sublayers] count];
+  [digest appendBytes: &count length: sizeof(count)];
+  for (sublayer in [layer sublayers])
+    {
+      CARendererDigestLayer(sublayer, digest);
+    }
+}
+
+/* The subtree above, preceded by the size it is rasterised at. */
+static NSData *
+CARendererSubtreeDigest(CALayer * layer)
+{
+  NSMutableData * digest = [NSMutableData data];
+  CGSize size = CARendererRasterizedSize(layer);
+
+  [digest appendBytes: &size length: sizeof(size)];
+  CARendererDigestLayer(layer, digest);
+  return digest;
+}
+
 /* A textured quad of the given half size about the origin, in one colour.
    The renderer keeps the vertex, texture coordinate and colour arrays enabled
    for the whole frame, so a quad is drawn from those arrays: between glBegin
@@ -241,6 +345,9 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
 
       [_layer release];
       _layer = [layer retain];
+
+      /* The cached textures are of the previous tree. */
+      [_rasterizationCache removeAllObjects];
     }
 }
 
@@ -282,6 +389,7 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
          keep on doing so. */
       _bounds = CGRectNull;
       _nextFrameTime = __builtin_inf();
+      _rasterizationCache = [[NSMutableDictionary alloc] init];
 
       /* SHADER SETUP */
       [ctx makeCurrentContext];
@@ -336,6 +444,7 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
 {
   [_layer release];
   [_rasterizationSchedule release];
+  [_rasterizationCache release];
 
   /* Release all GL programs */
   [_simpleProgram release];
@@ -1086,10 +1195,24 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
 - (void) _rasterize: (NSDictionary*) rasterizationSpec
 {
   CALayer * layer = [rasterizationSpec valueForKey: @"layer"];
+  CALayer * modelLayer = [layer modelLayer] ? [layer modelLayer] : layer;
+  NSValue * cacheKey = [NSValue valueWithNonretainedObject: modelLayer];
+  NSDictionary * cached = [_rasterizationCache objectForKey: cacheKey];
+  NSData * digest;
 
   /* we need to render the presentationLayer */
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
+
+  /* -_updateLayer:atTime: discards the presentation layer every frame, so
+     the backing store is kept here, keyed by the model layer, and set on the
+     new presentation layer. */
+  digest = CARendererSubtreeDigest(layer);
+  if (cached && [[cached objectForKey: @"digest"] isEqualToData: digest])
+    {
+      [layer setBackingStore: [cached objectForKey: @"backingStore"]];
+      return;
+    }
 
   /* Empty the cache so redraw gets performed in -[CARenderer _renderLayer:withTransform:] */
   [[layer backingStore] setOffscreenRenderTexture: nil];
@@ -1134,17 +1257,39 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
     [layer setBackingStore: [CABackingStore backingStoreWithWidth: rasterize_w height: rasterize_h]];
   [[layer backingStore] setOffscreenRenderTexture: [framebuffer texture]];
 
+  [_rasterizationCache setObject:
+    [NSDictionary dictionaryWithObjectsAndKeys:
+      [layer backingStore], @"backingStore",
+      digest, @"digest",
+      nil]
+                          forKey: cacheKey];
+
   [framebuffer release];
 }
 
 
 - (void) _rasterizeAll
 {
+  NSMutableSet * drawn = [[NSMutableSet alloc] init];
+
   /* Rasterize */
   for (NSDictionary * rasterizationSpec in _rasterizationSchedule)
   {
+    CALayer * layer = [rasterizationSpec valueForKey: @"layer"];
+
     [self _rasterize: rasterizationSpec];
+    [drawn addObject: [NSValue valueWithNonretainedObject:
+                        [layer modelLayer] ? [layer modelLayer] : layer]];
   }
+
+  /* Drop the entries for layers not rasterised in this frame; their
+     textures would be held until the renderer is deallocated. */
+  for (NSValue * key in [_rasterizationCache allKeys])
+    {
+      if (![drawn containsObject: key])
+        [_rasterizationCache removeObjectForKey: key];
+    }
+  [drawn release];
 
   /* Release rasterization schedule */
   [_rasterizationSchedule release];
