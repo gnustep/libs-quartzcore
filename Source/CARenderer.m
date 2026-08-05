@@ -187,6 +187,44 @@ CARendererRasterizedSize(CALayer * layer)
   return CGSizeMake(ceil(width), ceil(height));
 }
 
+/* A textured quad of the given half size about the origin, in one colour.
+   The renderer keeps the vertex, texture coordinate and colour arrays enabled
+   for the whole frame, so a quad is drawn from those arrays: between glBegin
+   and glEnd the colour arrays are ignored and glColor is not. */
+static void
+CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
+                           GLfloat maxX, GLfloat maxY,
+                           const GLfloat colour[4])
+{
+  GLfloat vertices[8] = {
+    -halfWidth, -halfHeight,
+    -halfWidth,  halfHeight,
+     halfWidth,  halfHeight,
+     halfWidth, -halfHeight
+  };
+  GLfloat texCoords[8] = {
+    0,    0,
+    0,    maxY,
+    maxX, maxY,
+    maxX, 0
+  };
+  GLfloat colours[16];
+  int i;
+
+  for (i = 0; i < 4; i++)
+    {
+      colours[i * 4 + 0] = colour[0];
+      colours[i * 4 + 1] = colour[1];
+      colours[i * 4 + 2] = colour[2];
+      colours[i * 4 + 3] = colour[3];
+    }
+
+  glVertexPointer(2, GL_FLOAT, 0, vertices);
+  glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+  glColorPointer(4, GL_FLOAT, 0, colours);
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
 @implementation CARenderer
 @synthesize layer=_layer;
 @synthesize bounds=_bounds;
@@ -566,7 +604,6 @@ CARendererRasterizedSize(CALayer * layer)
           [_blurHorizProgram bindUniformAtLocation: loc
                                      toUnsignedInt: 0];
 
-          // TODO: replace use of glBegin()/glEnd()
           [texture bind];
 
           GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
@@ -581,16 +618,13 @@ CARendererRasterizedSize(CALayer * layer)
               glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
 
-          glBegin(GL_QUADS);
-          glTexCoord2f(0, 0);
-          glVertex2f(-[texture width]/2.0, -[texture height]/2.0);
-          glTexCoord2f(0, textureMaxY);
-          glVertex2f(-[texture width]/2.0, [texture height]/2.0);
-          glTexCoord2f(textureMaxX, textureMaxY);
-          glVertex2f([texture width]/2.0, [texture height]/2.0);
-          glTexCoord2f(textureMaxX, 0);
-          glVertex2f([texture width]/2.0, -[texture height]/2.0);
-          glEnd();
+          {
+            static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+
+            CARendererDrawTexturedQuad([texture width] / 2.0,
+                                       [texture height] / 2.0,
+                                       textureMaxX, textureMaxY, plain);
+          }
           glDisable([texture textureTarget]);
 
 
@@ -660,7 +694,6 @@ CARendererRasterizedSize(CALayer * layer)
           [_blurVertProgram bindUniformAtLocation: loc
                                         toFloat4v: components];
 
-          // TODO: replace use of glBegin()/glEnd()
           [firstPassTexture bind];
 
           GLfloat firstPassTextureMaxX = 1.0, firstPassTextureMaxY = 1.0;
@@ -675,16 +708,14 @@ CARendererRasterizedSize(CALayer * layer)
               glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             }
-          glBegin(GL_QUADS);
-          glTexCoord2f(0, 0);
-          glVertex2f(-[firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
-          glTexCoord2f(0, firstPassTextureMaxY);
-          glVertex2f(-[firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-          glTexCoord2f(firstPassTextureMaxX, firstPassTextureMaxY);
-          glVertex2f([firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-          glTexCoord2f(firstPassTextureMaxX, 0);
-          glVertex2f([firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
-          glEnd();
+          {
+            static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+
+            CARendererDrawTexturedQuad([firstPassTexture width] / 2.0,
+                                       [firstPassTexture height] / 2.0,
+                                       firstPassTextureMaxX,
+                                       firstPassTextureMaxY, plain);
+          }
           glDisable([firstPassTexture textureTarget]);
 
           glUseProgram(0);
@@ -726,16 +757,14 @@ CARendererRasterizedSize(CALayer * layer)
               glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
               glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
-          glBegin(GL_QUADS);
-          glTexCoord2f(0, 0);
-          glVertex2f(-[secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
-          glTexCoord2f(0, secondPassTextureMaxY);
-          glVertex2f(-[secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-          glTexCoord2f(secondPassTextureMaxX, secondPassTextureMaxY);
-          glVertex2f([secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-          glTexCoord2f(secondPassTextureMaxX, 0);
-          glVertex2f([secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
-          glEnd();
+          {
+            static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+
+            CARendererDrawTexturedQuad([secondPassTexture width] / 2.0,
+                                       [secondPassTexture height] / 2.0,
+                                       secondPassTextureMaxX,
+                                       secondPassTextureMaxY, plain);
+          }
           glDisable([secondPassTexture textureTarget]);
 
           [firstPassTexture release];
@@ -750,7 +779,7 @@ CARendererRasterizedSize(CALayer * layer)
         }
 
       #warning Intentionally coloring offscreen-rendered layer
-      glColor3f(0.4, 1.0, 1.0);
+      static const GLfloat offscreenColour[4] = { 0.4, 1.0, 1.0, 1.0 };
 
       #warning Intentionally applying shader to offscreen-rendered layer
       [_simpleProgram use];
@@ -764,7 +793,6 @@ CARendererRasterizedSize(CALayer * layer)
                               toUnsignedInt: 0];
 
 
-      // TODO: replace use of glBegin()/glEnd()
       [texture bind];
 
       GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
@@ -784,20 +812,10 @@ CARendererRasterizedSize(CALayer * layer)
       GLfloat halfWidth = [texture width] / 2.0;
       GLfloat halfHeight = [texture height] / 2.0;
 
-      glBegin(GL_QUADS);
-      glTexCoord2f(0, 0);
-      glVertex2f(-halfWidth, -halfHeight);
-      glTexCoord2f(0, textureMaxY);
-      glVertex2f(-halfWidth, halfHeight);
-      glTexCoord2f(textureMaxX, textureMaxY);
-      glVertex2f(halfWidth, halfHeight);
-      glTexCoord2f(textureMaxX, 0);
-      glVertex2f(halfWidth, -halfHeight);
-      glEnd();
+      CARendererDrawTexturedQuad(halfWidth, halfHeight,
+                                 textureMaxX, textureMaxY, offscreenColour);
       glDisable([texture textureTarget]);
 
-      #warning Intentionally coloring offscreen-rendered layer
-      glColor3f(1.0, 1.0, 1.0);
       #warning Intentionally applying shader to offscreen-rendered layer
       glUseProgram(0);
 
