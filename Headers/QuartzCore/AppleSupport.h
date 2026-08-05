@@ -135,6 +135,11 @@
 /* CAReplicatorLayer.h */
 
 /* CAScrollLayer.h */
+#define CAScrollLayer GSCAScrollLayer
+#define kCAScrollNone GSkCAScrollNone
+#define kCAScrollVertically GSkCAScrollVertically
+#define kCAScrollHorizontally GSkCAScrollHorizontally
+#define kCAScrollBoth GSkCAScrollBoth
 
 /* CAShapeLayer.h */
 
