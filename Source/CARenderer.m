@@ -26,6 +26,7 @@
 */
 
 #import <Foundation/Foundation.h>
+#include <math.h>
 #import "QuartzCore/CARenderer.h"
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CALayer.h"
@@ -128,6 +129,62 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
   if (out[2] < 0) out[2] = 0;
   if (out[3] < 0) out[3] = 0;
   return YES;
+}
+
+/* The area a layer and everything under it covers, in the layer's own
+   coordinate space.  A layer that masks its sublayers reaches no further than
+   its own bounds. */
+static CGRect
+CARendererSubtreeBounds(CALayer * layer)
+{
+  CGRect area = [layer bounds];
+  CALayer * sublayer;
+
+  if ([layer masksToBounds])
+    return area;
+
+  for (sublayer in [layer sublayers])
+    {
+      area = CGRectUnion(area,
+                         [layer convertRect: CARendererSubtreeBounds(sublayer)
+                                  fromLayer: sublayer]);
+    }
+  return area;
+}
+
+/* The offscreen buffer a rasterised layer needs.  The layer is drawn with its
+   anchor point in the middle of that buffer, so the buffer reaches as far on
+   each side of the anchor as the subtree does. */
+static CGSize
+CARendererRasterizedSize(CALayer * layer)
+{
+  CGRect area = CARendererSubtreeBounds(layer);
+  CGRect bounds = [layer bounds];
+  CGPoint anchor = CGPointMake(
+    bounds.origin.x + [layer anchorPoint].x * bounds.size.width,
+    bounds.origin.y + [layer anchorPoint].y * bounds.size.height);
+  CGFloat width = 2.0 * MAX(anchor.x - CGRectGetMinX(area),
+                            CGRectGetMaxX(area) - anchor.x);
+  CGFloat height = 2.0 * MAX(anchor.y - CGRectGetMinY(area),
+                             CGRectGetMaxY(area) - anchor.y);
+  GLint most = 0;
+
+  /* A subtree wider than the largest texture the driver takes is the one case
+     where something is still cut off. */
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &most);
+  if (most <= 0)
+    most = 512;
+
+  if (!(width >= 1.0))
+    width = 1.0;
+  if (!(height >= 1.0))
+    height = 1.0;
+  if (width > most)
+    width = most;
+  if (height > most)
+    height = most;
+
+  return CGSizeMake(ceil(width), ceil(height));
 }
 
 @implementation CARenderer
@@ -699,15 +756,20 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
           glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         }
 
+      /* The texture is as big as the layer needed when it was rasterised, and
+         the layer's anchor point is in the middle of it. */
+      GLfloat halfWidth = [texture width] / 2.0;
+      GLfloat halfHeight = [texture height] / 2.0;
+
       glBegin(GL_QUADS);
       glTexCoord2f(0, 0);
-      glVertex2f(-256, -256);
+      glVertex2f(-halfWidth, -halfHeight);
       glTexCoord2f(0, textureMaxY);
-      glVertex2f(-256, 256);
+      glVertex2f(-halfWidth, halfHeight);
       glTexCoord2f(textureMaxX, textureMaxY);
-      glVertex2f(256, 256);
+      glVertex2f(halfWidth, halfHeight);
       glTexCoord2f(textureMaxX, 0);
-      glVertex2f(256, -256);
+      glVertex2f(halfWidth, -halfHeight);
       glEnd();
       glDisable([texture textureTarget]);
 
@@ -991,11 +1053,26 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
   /* Empty the cache so redraw gets performed in -[CARenderer _renderLayer:withTransform:] */
   [[layer backingStore] setOffscreenRenderTexture: nil];
 
-  // TODO: 512x512 is NOT correct, we need to determine the actual layer size together with sublayers
-  const GLuint rasterize_w = 512, rasterize_h = 512;
+  CGSize rasterizeSize = CARendererRasterizedSize(layer);
+  const GLuint rasterize_w = (GLuint)rasterizeSize.width;
+  const GLuint rasterize_h = (GLuint)rasterizeSize.height;
   CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: rasterize_w height: rasterize_h];
+  GLint windowViewport[4];
+
   [framebuffer setDepthBufferEnabled: YES];
   [framebuffer bind];
+
+  /* Rasterization runs inside the frame, where the viewport and the
+     projection are the renderer's own bounds.  The buffer is a different size
+     and holds a different area, so it gets both of its own and gives them
+     back afterwards. */
+  glGetIntegerv(GL_VIEWPORT, windowViewport);
+  glViewport(0, 0, rasterize_w, rasterize_h);
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0.0, rasterize_w, 0.0, rasterize_h, -1.0, 1.0);
+  glMatrixMode(GL_MODELVIEW);
 
   glDisable([[framebuffer texture] textureTarget]);
 
@@ -1003,6 +1080,12 @@ CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   [self _renderLayer: layer withTransform: CATransform3DMakeTranslation(rasterize_w/2.0 - [layer position].x, rasterize_h/2.0 - [layer position].y, 0)];
+
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glViewport(windowViewport[0], windowViewport[1],
+             windowViewport[2], windowViewport[3]);
 
   [framebuffer unbind];
 
