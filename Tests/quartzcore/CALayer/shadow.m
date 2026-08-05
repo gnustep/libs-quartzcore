@@ -74,12 +74,19 @@ static int paintedCount(CGContextRef context)
    the context at all. */
 static BOOL castsTransparencyLayerShadows(void)
 {
+  /* Held for good rather than released: a build that does not keep the
+     shadow colour across a saved graphics state releases this one when the
+     transparency layer turns the shadow off, and releasing it here as well
+     ends the process before it can be found out that the build is that
+     one. */
+  static CGColorRef blue = NULL;
   CGContextRef context = newContext();
-  CGColorRef blue = CGColorCreateGenericRGB(0, 0, 1, 1);
   BOOL casts;
 
   if (context == NULL)
     return NO;
+  if (blue == NULL)
+    blue = CGColorCreateGenericRGB(0, 0, 1, 1);
 
   CGContextSetShadowWithColor(context, CGSizeMake(40, 40), 0, blue);
   CGContextBeginTransparencyLayer(context, NULL);
@@ -90,7 +97,6 @@ static BOOL castsTransparencyLayerShadows(void)
   /* Where the shadow lands, well clear of the rect itself. */
   casts = painted(context, 70, 70);
 
-  CGColorRelease(blue);
   CGContextRelease(context);
   return casts;
 }
