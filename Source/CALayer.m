@@ -744,7 +744,12 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     {
       [self displayIfNeeded];
 
-      _presentationLayer = [[CALayer alloc] initWithLayer: self];
+      /* A presentation layer stands for the layer it is made from while that
+         layer animates, so it is a layer of the same class: a subclass that
+         draws content of its own draws none of it when a plain CALayer stands
+         for it.  A subclass with state of its own copies it by overriding
+         -initWithLayer:. */
+      _presentationLayer = [[[self class] alloc] initWithLayer: self];
       [_presentationLayer setModelLayer: self];
       assert([_presentationLayer isPresentationLayer]);
 
