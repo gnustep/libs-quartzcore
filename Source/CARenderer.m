@@ -358,14 +358,18 @@ CARendererSubtreeDigest(CALayer * layer)
   return digest;
 }
 
-/* A textured quad of the given half size about the origin, in one colour.
+/* A textured quad of the given half size about the origin, taking the part of
+   the texture between the two coordinates given, in one colour.  Coordinates
+   outside the texture let a quad reach past what it samples, which is what
+   gives a blur somewhere to spread into.
    The renderer keeps the vertex, texture coordinate and colour arrays enabled
    for the whole frame, so a quad is drawn from those arrays: between glBegin
    and glEnd the colour arrays are ignored and glColor is not. */
 static void
-CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
-                           GLfloat maxX, GLfloat maxY,
-                           const GLfloat colour[4])
+CARendererDrawTexturedQuadFrom(GLfloat halfWidth, GLfloat halfHeight,
+                               GLfloat minX, GLfloat minY,
+                               GLfloat maxX, GLfloat maxY,
+                               const GLfloat colour[4])
 {
   GLfloat vertices[8] = {
     -halfWidth, -halfHeight,
@@ -374,10 +378,10 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
      halfWidth, -halfHeight
   };
   GLfloat texCoords[8] = {
-    0,    0,
-    0,    maxY,
+    minX, minY,
+    minX, maxY,
     maxX, maxY,
-    maxX, 0
+    maxX, minY
   };
   GLfloat colours[16];
   int i;
@@ -394,6 +398,16 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
   glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
   glColorPointer(4, GL_FLOAT, 0, colours);
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+/* The whole of the texture over the whole of the quad. */
+static void
+CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
+                           GLfloat maxX, GLfloat maxY,
+                           const GLfloat colour[4])
+{
+  CARendererDrawTexturedQuadFrom(halfWidth, halfHeight, 0, 0, maxX, maxY,
+                                 colour);
 }
 
 @implementation CARenderer
@@ -749,12 +763,19 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
             shadowSource == texture ? CGPointZero
                                     : CARendererShadowShapeOffset(layer);
 
-          /* The blurred copy is that texture with room around it for the blur
-             to spread into, and both passes work at that size. */
+          /* Nine samples a step apart reach four steps, so a step of half the
+             radius puts the far edge of the blur at twice the radius, which
+             is where -[CALayer renderInContext:] puts it.  The outermost
+             samples weigh 0.05 and 0.09, so what can be seen of the shadow
+             fades out around the radius itself and the rest is the tail.
+             The blurred copy is the texture with that much room around it,
+             and both passes work at that size. */
+          const GLfloat shadowStep = [layer shadowRadius] / 2.0;
+          const GLuint shadowPad = 2 * (GLuint)ceil([layer shadowRadius]);
           const GLuint shadow_rasterize_w =
-            [shadowSource width] + 2 * (GLuint)ceil([layer shadowRadius]);
+            [shadowSource width] + 2 * shadowPad;
           const GLuint shadow_rasterize_h =
-            [shadowSource height] + 2 * (GLuint)ceil([layer shadowRadius]);
+            [shadowSource height] + 2 * shadowPad;
           GLint shadowViewport[4];
 
           CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
@@ -806,10 +827,34 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
 
           {
             static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+            static const GLfloat nothing[4] = { 0.0, 0.0, 0.0, 0.0 };
+            /* One pixel of what is being sampled, in texture coordinates,
+               and the room around it the blur spreads into. */
+            GLfloat unitX = textureMaxX / [shadowSource width];
+            GLfloat unitY = textureMaxY / [shadowSource height];
+            GLfloat padX = (GLfloat)shadowPad * unitX;
+            GLfloat padY = (GLfloat)shadowPad * unitY;
 
-            CARendererDrawTexturedQuad([shadowSource width] / 2.0,
-                                       [shadowSource height] / 2.0,
-                                       textureMaxX, textureMaxY, plain);
+            loc = [_blurHorizProgram locationForUniform: @"blurSize"];
+            [_blurHorizProgram bindUniformAtLocation: loc
+                                             toFloat: shadowStep * unitX];
+
+            /* The quad covers the room the blur spreads into as well as the
+               texture, and past the texture there is nothing to sample rather
+               than an edge to repeat. */
+            glTexParameteri([shadowSource textureTarget], GL_TEXTURE_WRAP_S,
+                            GL_CLAMP_TO_BORDER);
+            glTexParameteri([shadowSource textureTarget], GL_TEXTURE_WRAP_T,
+                            GL_CLAMP_TO_BORDER);
+            glTexParameterfv([shadowSource textureTarget],
+                             GL_TEXTURE_BORDER_COLOR, nothing);
+
+            CARendererDrawTexturedQuadFrom(shadow_rasterize_w / 2.0,
+                                           shadow_rasterize_h / 2.0,
+                                           -padX, -padY,
+                                           textureMaxX + padX,
+                                           textureMaxY + padY,
+                                           plain);
           }
           glDisable([shadowSource textureTarget]);
 
@@ -896,6 +941,14 @@ CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
             }
           {
             static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+            /* This pass samples the buffer the first one filled, which is
+               already as large as the blur reaches, so the quad is the
+               texture and the step is one of its pixels. */
+            GLfloat unitY = firstPassTextureMaxY / [firstPassTexture height];
+
+            loc = [_blurVertProgram locationForUniform: @"blurSize"];
+            [_blurVertProgram bindUniformAtLocation: loc
+                                            toFloat: shadowStep * unitY];
 
             CARendererDrawTexturedQuad([firstPassTexture width] / 2.0,
                                        [firstPassTexture height] / 2.0,

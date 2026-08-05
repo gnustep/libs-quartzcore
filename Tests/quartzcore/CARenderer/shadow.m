@@ -183,6 +183,33 @@ static CALayer *shadowed(BOOL withShadow, CGColorRef fill, CGColorRef shade)
   return shaped(withShadow, fill, shade, NULL);
 }
 
+/* The same layer with a shadow of the given radius, drawn straight under
+   itself so that what the radius does is all that moves. */
+static CALayer *blurred(CGColorRef fill, CGColorRef shade, CGFloat radius)
+{
+  CALayer *root = shaped(YES, fill, shade, NULL);
+  CALayer *layer = [[root sublayers] objectAtIndex: 0];
+
+  [layer setShadowOffset: CGSizeMake(0, 0)];
+  [layer setShadowRadius: radius];
+  return root;
+}
+
+/* How wide the pixels that differ reach. */
+static int changedSpan(const unsigned char *before, const unsigned char *after)
+{
+  int x, y, x0 = drawableW, x1 = -1;
+
+  for (y = 0; y < drawableH; y++)
+    for (x = 0; x < drawableW; x++)
+      if (changedAt(before, after, x, y))
+        {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+        }
+  return x1 < x0 ? 0 : x1 - x0 + 1;
+}
+
 /* A rectangle in the layer's own coordinate space, the layer's bounds being
    0, 0, 20, 14. */
 static CGPathRef rectPath(CGRect r)
@@ -300,6 +327,31 @@ int main(void)
     CGPathRelease(around);
     CGPathRelease(top);
     CGPathRelease(bottom);
+  }
+
+  /* The radius is how far the shadow is blurred, so a larger one reaches
+     further out from the layer that casts it.  Both frames put the shadow
+     straight under the layer, leaving the radius as the only difference. */
+  {
+    static unsigned char narrow[MAX_PIXELS];
+    static unsigned char wide[MAX_PIXELS];
+    int narrowSpan, wideSpan;
+
+    [CATransaction begin];
+    [CATransaction setDisableActions: YES];
+    CALayer *small = blurred(white, red, 2);
+    CALayer *large = blurred(white, red, 5);
+    [CATransaction commit];
+
+    renderFrame(renderer, small);
+    readDrawable(narrow);
+    renderFrame(renderer, large);
+    readDrawable(wide);
+
+    narrowSpan = changedSpan(plain, narrow);
+    wideSpan = changedSpan(plain, wide);
+    PASS(narrowSpan > 0 && wideSpan > narrowSpan,
+         "a larger shadow radius spreads the shadow further");
   }
 
   CGColorRelease(white);
