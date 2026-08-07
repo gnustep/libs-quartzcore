@@ -14,16 +14,16 @@ uniform sampler2DRect RTBlurH; // this should hold the texture rendered by the h
 varying vec2 vTexCoord;
 uniform vec4 shadowColor;
 
-#if RECT_TEXTURE == 0
-const float blurSize = 1.0/512.0;
+// How far apart the nine samples are, in texture coordinates.  The renderer
+// sets it from the shadow radius and the size of what is being sampled.
+uniform float blurSize;
 
+#if RECT_TEXTURE == 0
 vec4 textureSample(sampler2D texture, vec2 coord)
 {
   return texture2D(texture, coord);
 }
 #else
-const float blurSize = 1.0;
-
 vec4 textureSample(sampler2DRect texture, vec2 coord)
 {
   return texture2DRect(texture, coord);

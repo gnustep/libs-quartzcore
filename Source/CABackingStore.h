@@ -55,6 +55,8 @@
   CGContextRef _context;
   CAGLTexture * _contentsTexture;
   CAGLTexture * _offscreenRenderTexture;
+  CAGLTexture * _shadowTexture;
+  NSUInteger _contentsVersion;
 }
 
 + (CABackingStore *) backingStoreWithWidth: (CGFloat) width
@@ -67,8 +69,17 @@
 @property (assign) /* (retain) */ CGContextRef context;
 @property (retain) CAGLTexture * contentsTexture;
 @property (retain) CAGLTexture * offscreenRenderTexture;
+
+/* The shape of the layer's shadow, where its shadowPath gives one.  The
+   renderer blurs this in place of the layer's own outline. */
+@property (retain) CAGLTexture * shadowTexture;
 @property (readonly) CGFloat width;
 @property (readonly) CGFloat height;
+
+/* Incremented by -refresh.  Redrawing into the context leaves nothing else
+   visible from outside, so this is the only way to detect that the contents
+   changed. */
+@property (readonly) NSUInteger contentsVersion;
 
 @end
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
