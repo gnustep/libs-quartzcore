@@ -26,13 +26,16 @@
 */
 
 #import <Foundation/Foundation.h>
+#include <math.h>
 #import "QuartzCore/CARenderer.h"
 #import "QuartzCore/CATransform3D.h"
 #import "QuartzCore/CALayer.h"
+#import "QuartzCore/CATransformLayer.h"
 #import "CALayer+FrameworkPrivate.h"
 #import "CATransaction+FrameworkPrivate.h"
 #import "CABackingStore.h"
 #import "CARenderer+FrameworkPrivate.h"
+#import "CAGravity.h"
 #if !(__APPLE__)
 #define GL_GLEXT_PROTOTYPES 1
 #import <GL/gl.h>
@@ -69,6 +72,263 @@
                        options: options;
 @end
 
+/* The window-coordinate box a layer's own quad occupies under the given
+   transform, or NO when that transform turns or skews it, where an
+   axis-aligned scissor cannot say what to clip.
+
+   The quad is the bounds size shifted by the anchor point, which is what
+   -_renderLayer:withTransform: draws, not the bounds rectangle itself. */
+static BOOL
+CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
+                     GLint out[4])
+{
+  GLint viewport[4];
+  GLdouble projection[16];
+  CGFloat corners[4][2];
+  CGFloat minX, minY, maxX, maxY;
+  CGFloat left = -anchor.x * bounds.size.width;
+  CGFloat bottom = -anchor.y * bounds.size.height;
+  CGFloat right = left + bounds.size.width;
+  CGFloat top = bottom + bounds.size.height;
+  int i;
+
+  if (fabs(transform.m12) > 1e-6 || fabs(transform.m21) > 1e-6)
+    return NO;
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+  corners[0][0] = left;  corners[0][1] = bottom;
+  corners[1][0] = right; corners[1][1] = bottom;
+  corners[2][0] = right; corners[2][1] = top;
+  corners[3][0] = left;  corners[3][1] = top;
+
+  minX = minY = 1e30;
+  maxX = maxY = -1e30;
+  for (i = 0; i < 4; i++)
+    {
+      CGFloat ex = corners[i][0] * transform.m11
+                   + corners[i][1] * transform.m21 + transform.m41;
+      CGFloat ey = corners[i][0] * transform.m12
+                   + corners[i][1] * transform.m22 + transform.m42;
+      CGFloat cx = ex * projection[0] + ey * projection[4] + projection[12];
+      CGFloat cy = ex * projection[1] + ey * projection[5] + projection[13];
+      CGFloat wx = viewport[0] + (cx + 1.0) / 2.0 * viewport[2];
+      CGFloat wy = viewport[1] + (cy + 1.0) / 2.0 * viewport[3];
+
+      if (wx < minX) minX = wx;
+      if (wx > maxX) maxX = wx;
+      if (wy < minY) minY = wy;
+      if (wy > maxY) maxY = wy;
+    }
+
+  out[0] = (GLint)floor(minX);
+  out[1] = (GLint)floor(minY);
+  out[2] = (GLint)ceil(maxX) - out[0];
+  out[3] = (GLint)ceil(maxY) - out[1];
+  if (out[2] < 0) out[2] = 0;
+  if (out[3] < 0) out[3] = 0;
+  return YES;
+}
+
+/* The area a layer and everything under it covers, in the layer's own
+   coordinate space.  A layer that masks its sublayers reaches no further than
+   its own bounds. */
+static CGRect
+CARendererSubtreeBounds(CALayer * layer)
+{
+  CGRect area = [layer bounds];
+  CALayer * sublayer;
+
+  if ([layer masksToBounds])
+    return area;
+
+  for (sublayer in [layer sublayers])
+    {
+      area = CGRectUnion(area,
+                         [layer convertRect: CARendererSubtreeBounds(sublayer)
+                                  fromLayer: sublayer]);
+    }
+  return area;
+}
+
+/* The offscreen buffer a rasterised layer needs.  The layer is drawn with its
+   anchor point in the middle of that buffer, so the buffer reaches as far on
+   each side of the anchor as the subtree does. */
+static CGSize
+CARendererRasterizedSize(CALayer * layer)
+{
+  CGRect area = CARendererSubtreeBounds(layer);
+  CGRect bounds = [layer bounds];
+  CGPoint anchor = CGPointMake(
+    bounds.origin.x + [layer anchorPoint].x * bounds.size.width,
+    bounds.origin.y + [layer anchorPoint].y * bounds.size.height);
+  CGFloat width = 2.0 * MAX(anchor.x - CGRectGetMinX(area),
+                            CGRectGetMaxX(area) - anchor.x);
+  CGFloat height = 2.0 * MAX(anchor.y - CGRectGetMinY(area),
+                             CGRectGetMaxY(area) - anchor.y);
+  GLint most = 0;
+
+  /* A subtree wider than the largest texture the driver takes is the one case
+     where something is still cut off. */
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &most);
+  if (most <= 0)
+    most = 512;
+
+  if (!(width >= 1.0))
+    width = 1.0;
+  if (!(height >= 1.0))
+    height = 1.0;
+  if (width > most)
+    width = most;
+  if (height > most)
+    height = most;
+
+  return CGSizeMake(ceil(width), ceil(height));
+}
+
+/* Appends the component count and then the components.  A NULL colour
+   appends a count of 0. */
+static void
+CARendererDigestColor(CGColorRef color, NSMutableData * digest)
+{
+  size_t count = color ? CGColorGetNumberOfComponents(color) : 0;
+  const CGFloat * components = count ? CGColorGetComponents(color) : NULL;
+
+  [digest appendBytes: &count length: sizeof(count)];
+  if (components)
+    [digest appendBytes: components length: count * sizeof(CGFloat)];
+}
+
+/* Every layer property -_renderLayer:withTransform: reads, over a layer and
+   its sublayers.  Equal bytes mean the subtree draws the same picture, which
+   is what -_rasterize: reuses a texture on.  Properties the renderer does
+   not read are omitted; add one here when the renderer starts reading it.
+
+   Contents are identified by the object address and, for a CABackingStore,
+   by contentsVersion.  A delegate that modifies contents in place without
+   calling -setNeedsDisplay is not detected. */
+static void
+CARendererDigestLayer(CALayer * layer, NSMutableData * digest)
+{
+  CALayer * modelLayer = [layer modelLayer] ? [layer modelLayer] : layer;
+  Class layerClass = [modelLayer class];
+  CGRect bounds = [layer bounds];
+  CGRect contentsRect = [layer contentsRect];
+  CGPoint position = [layer position];
+  CGPoint anchorPoint = [layer anchorPoint];
+  CATransform3D transform = [layer transform];
+  CATransform3D sublayerTransform = [layer sublayerTransform];
+  CGSize shadowOffset = [layer shadowOffset];
+  CGFloat numbers[3];
+  NSString * gravity = [layer contentsGravity];
+  BOOL masksToBounds = [layer masksToBounds];
+  id contents = [layer contents];
+  const void * contentsAddress = contents;
+  NSUInteger count;
+  NSValue * instance;
+  CALayer * sublayer;
+
+  [digest appendBytes: &layerClass length: sizeof(layerClass)];
+  [digest appendBytes: &bounds length: sizeof(bounds)];
+  [digest appendBytes: &contentsRect length: sizeof(contentsRect)];
+  [digest appendBytes: &position length: sizeof(position)];
+  [digest appendBytes: &anchorPoint length: sizeof(anchorPoint)];
+  [digest appendBytes: &transform length: sizeof(transform)];
+  [digest appendBytes: &sublayerTransform length: sizeof(sublayerTransform)];
+  [digest appendBytes: &shadowOffset length: sizeof(shadowOffset)];
+  [digest appendBytes: &masksToBounds length: sizeof(masksToBounds)];
+
+  numbers[0] = [layer opacity];
+  numbers[1] = [layer shadowOpacity];
+  numbers[2] = [layer shadowRadius];
+  [digest appendBytes: numbers length: sizeof(numbers)];
+
+  CARendererDigestColor([layer backgroundColor], digest);
+  CARendererDigestColor([layer shadowColor], digest);
+
+  if (gravity)
+    [digest appendData: [gravity dataUsingEncoding: NSUTF8StringEncoding]];
+
+  [digest appendBytes: &contentsAddress length: sizeof(contentsAddress)];
+  if ([contents isKindOfClass: [CABackingStore class]])
+    {
+      NSUInteger version = [(CABackingStore *)contents contentsVersion];
+
+      [digest appendBytes: &version length: sizeof(version)];
+    }
+
+  /* A presentation layer is a plain CALayer whatever its model layer is, so
+     the instance list comes from the model, as it does when drawing. */
+  count = [[modelLayer instanceTransformsForSublayers] count];
+  [digest appendBytes: &count length: sizeof(count)];
+  for (instance in [modelLayer instanceTransformsForSublayers])
+    {
+      CATransform3D instanceTransform;
+
+      [instance getValue: &instanceTransform];
+      [digest appendBytes: &instanceTransform
+                    length: sizeof(instanceTransform)];
+    }
+
+  count = [[layer sublayers] count];
+  [digest appendBytes: &count length: sizeof(count)];
+  for (sublayer in [layer sublayers])
+    {
+      CARendererDigestLayer(sublayer, digest);
+    }
+}
+
+/* The subtree above, preceded by the size it is rasterised at. */
+static NSData *
+CARendererSubtreeDigest(CALayer * layer)
+{
+  NSMutableData * digest = [NSMutableData data];
+  CGSize size = CARendererRasterizedSize(layer);
+
+  [digest appendBytes: &size length: sizeof(size)];
+  CARendererDigestLayer(layer, digest);
+  return digest;
+}
+
+/* A textured quad of the given half size about the origin, in one colour.
+   The renderer keeps the vertex, texture coordinate and colour arrays enabled
+   for the whole frame, so a quad is drawn from those arrays: between glBegin
+   and glEnd the colour arrays are ignored and glColor is not. */
+static void
+CARendererDrawTexturedQuad(GLfloat halfWidth, GLfloat halfHeight,
+                           GLfloat maxX, GLfloat maxY,
+                           const GLfloat colour[4])
+{
+  GLfloat vertices[8] = {
+    -halfWidth, -halfHeight,
+    -halfWidth,  halfHeight,
+     halfWidth,  halfHeight,
+     halfWidth, -halfHeight
+  };
+  GLfloat texCoords[8] = {
+    0,    0,
+    0,    maxY,
+    maxX, maxY,
+    maxX, 0
+  };
+  GLfloat colours[16];
+  int i;
+
+  for (i = 0; i < 4; i++)
+    {
+      colours[i * 4 + 0] = colour[0];
+      colours[i * 4 + 1] = colour[1];
+      colours[i * 4 + 2] = colour[2];
+      colours[i * 4 + 3] = colour[3];
+    }
+
+  glVertexPointer(2, GL_FLOAT, 0, vertices);
+  glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+  glColorPointer(4, GL_FLOAT, 0, colours);
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
 @implementation CARenderer
 @synthesize layer=_layer;
 @synthesize bounds=_bounds;
@@ -85,6 +345,9 @@
 
       [_layer release];
       _layer = [layer retain];
+
+      /* The cached textures are of the previous tree. */
+      [_rasterizationCache removeAllObjects];
     }
 }
 
@@ -126,6 +389,7 @@
          keep on doing so. */
       _bounds = CGRectNull;
       _nextFrameTime = __builtin_inf();
+      _rasterizationCache = [[NSMutableDictionary alloc] init];
 
       /* SHADER SETUP */
       [ctx makeCurrentContext];
@@ -180,6 +444,7 @@
 {
   [_layer release];
   [_rasterizationSchedule release];
+  [_rasterizationCache release];
 
   /* Release all GL programs */
   [_simpleProgram release];
@@ -260,6 +525,17 @@
 
   [_GLContext makeCurrentContext];
 
+  /* A layer's vertices are its bounds, in points.  Without a projection
+     they are taken as normalised device coordinates, where anything two
+     units or more across covers the whole drawable.  Map the renderer's
+     bounds onto it instead, so that a point is a point. */
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(CGRectGetMinX(_bounds), CGRectGetMaxX(_bounds),
+          CGRectGetMinY(_bounds), CGRectGetMaxY(_bounds),
+          -1.0, 1.0);
+
   glMatrixMode(GL_MODELVIEW);
 
   glEnableClientState(GL_VERTEX_ARRAY);
@@ -276,6 +552,9 @@
        withTransform: CATransform3DIdentity];
 
   /* Restore defaults */
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+
   glMatrixMode(GL_MODELVIEW);
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glDisableClientState(GL_VERTEX_ARRAY);
@@ -372,6 +651,10 @@
   else
     glLoadMatrixf((GLfloat*)&transform);
 
+  /* Kept for the scissor below, which clips where this layer is, not where
+     its sublayers end up. */
+  CATransform3D ownTransform = transform;
+
   // if the layer was offscreen-rendered, render just the texture
   CAGLTexture * texture = [[layer backingStore] offscreenRenderTexture];
   if (texture)
@@ -389,12 +672,27 @@
           /* IDEA: perform blurring during offscreen-rendering, so we group all
                    FBO operations in once place? */
 
-          /* TODO: these not correct sizes for shadow rasterization */
-          const GLuint shadow_rasterize_w = 512, shadow_rasterize_h = 512;
+          /* The blurred copy is the layer's texture with room around it for
+             the blur to spread into, and both passes work at that size. */
+          const GLuint shadow_rasterize_w =
+            [texture width] + 2 * (GLuint)ceil([layer shadowRadius]);
+          const GLuint shadow_rasterize_h =
+            [texture height] + 2 * (GLuint)ceil([layer shadowRadius]);
+          GLint shadowViewport[4];
 
           CATransform3D shadowRasterizeTransform = CATransform3DMakeTranslation(shadow_rasterize_w/2.0, shadow_rasterize_h/2.0, 0);
-          CATransform3D rasterizedTextureTransform = CATransform3DMakeTranslation([texture width]/2.0, [texture height]/2.0, 0);
+          CATransform3D rasterizedTextureTransform = shadowRasterizeTransform;
 
+          /* Both passes draw into a buffer of their own, so they take a
+             viewport and a projection to match it and give back the ones the
+             frame is using. */
+          glGetIntegerv(GL_VIEWPORT, shadowViewport);
+          glViewport(0, 0, shadow_rasterize_w, shadow_rasterize_h);
+          glMatrixMode(GL_PROJECTION);
+          glPushMatrix();
+          glLoadIdentity();
+          glOrtho(0.0, shadow_rasterize_w, 0.0, shadow_rasterize_h, -1.0, 1.0);
+          glMatrixMode(GL_MODELVIEW);
 
           /* Setup transform for first pass */
           if (sizeof(rasterizedTextureTransform.m11) == sizeof(GLdouble))
@@ -415,7 +713,6 @@
           [_blurHorizProgram bindUniformAtLocation: loc
                                      toUnsignedInt: 0];
 
-          // TODO: replace use of glBegin()/glEnd()
           [texture bind];
 
           GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
@@ -430,16 +727,13 @@
               glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
 
-          glBegin(GL_QUADS);
-          glTexCoord2f(0, 0);
-          glVertex2f(-[texture width]/2.0, -[texture height]/2.0);
-          glTexCoord2f(0, textureMaxY);
-          glVertex2f(-[texture width]/2.0, [texture height]/2.0);
-          glTexCoord2f(textureMaxX, textureMaxY);
-          glVertex2f([texture width]/2.0, [texture height]/2.0);
-          glTexCoord2f(textureMaxX, 0);
-          glVertex2f([texture width]/2.0, -[texture height]/2.0);
-          glEnd();
+          {
+            static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+
+            CARendererDrawTexturedQuad([texture width] / 2.0,
+                                       [texture height] / 2.0,
+                                       textureMaxX, textureMaxY, plain);
+          }
           glDisable([texture textureTarget]);
 
 
@@ -509,7 +803,6 @@
           [_blurVertProgram bindUniformAtLocation: loc
                                         toFloat4v: components];
 
-          // TODO: replace use of glBegin()/glEnd()
           [firstPassTexture bind];
 
           GLfloat firstPassTextureMaxX = 1.0, firstPassTextureMaxY = 1.0;
@@ -524,16 +817,14 @@
               glTexParameteri([firstPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
             }
-          glBegin(GL_QUADS);
-          glTexCoord2f(0, 0);
-          glVertex2f(-[firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
-          glTexCoord2f(0, firstPassTextureMaxY);
-          glVertex2f(-[firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-          glTexCoord2f(firstPassTextureMaxX, firstPassTextureMaxY);
-          glVertex2f([firstPassTexture width]/2.0, [firstPassTexture height]/2.0);
-          glTexCoord2f(firstPassTextureMaxX, 0);
-          glVertex2f([firstPassTexture width]/2.0, -[firstPassTexture height]/2.0);
-          glEnd();
+          {
+            static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+
+            CARendererDrawTexturedQuad([firstPassTexture width] / 2.0,
+                                       [firstPassTexture height] / 2.0,
+                                       firstPassTextureMaxX,
+                                       firstPassTextureMaxY, plain);
+          }
           glDisable([firstPassTexture textureTarget]);
 
           glUseProgram(0);
@@ -544,6 +835,14 @@
           /* Preserve the FBO texture and discard framebuffer */
           CAGLTexture * secondPassTexture = [[framebuffer texture] retain];
           [framebuffer release];
+
+          /* Both passes are done, so the frame's own viewport and projection
+             come back before the shadow is drawn into the drawable. */
+          glMatrixMode(GL_PROJECTION);
+          glPopMatrix();
+          glMatrixMode(GL_MODELVIEW);
+          glViewport(shadowViewport[0], shadowViewport[1],
+                     shadowViewport[2], shadowViewport[3]);
 
           /************************************/
 
@@ -567,16 +866,14 @@
               glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
               glTexParameteri([secondPassTexture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
-          glBegin(GL_QUADS);
-          glTexCoord2f(0, 0);
-          glVertex2f(-[secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
-          glTexCoord2f(0, secondPassTextureMaxY);
-          glVertex2f(-[secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-          glTexCoord2f(secondPassTextureMaxX, secondPassTextureMaxY);
-          glVertex2f([secondPassTexture width]/2.0, [secondPassTexture height]/2.0);
-          glTexCoord2f(secondPassTextureMaxX, 0);
-          glVertex2f([secondPassTexture width]/2.0, -[secondPassTexture height]/2.0);
-          glEnd();
+          {
+            static const GLfloat plain[4] = { 1.0, 1.0, 1.0, 1.0 };
+
+            CARendererDrawTexturedQuad([secondPassTexture width] / 2.0,
+                                       [secondPassTexture height] / 2.0,
+                                       secondPassTextureMaxX,
+                                       secondPassTextureMaxY, plain);
+          }
           glDisable([secondPassTexture textureTarget]);
 
           [firstPassTexture release];
@@ -591,7 +888,7 @@
         }
 
       #warning Intentionally coloring offscreen-rendered layer
-      glColor3f(0.4, 1.0, 1.0);
+      static const GLfloat offscreenColour[4] = { 0.4, 1.0, 1.0, 1.0 };
 
       #warning Intentionally applying shader to offscreen-rendered layer
       [_simpleProgram use];
@@ -605,7 +902,6 @@
                               toUnsignedInt: 0];
 
 
-      // TODO: replace use of glBegin()/glEnd()
       [texture bind];
 
       GLfloat textureMaxX = 1.0, textureMaxY = 1.0;
@@ -620,20 +916,15 @@
           glTexParameteri([texture textureTarget], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         }
 
-      glBegin(GL_QUADS);
-      glTexCoord2f(0, 0);
-      glVertex2f(-256, -256);
-      glTexCoord2f(0, textureMaxY);
-      glVertex2f(-256, 256);
-      glTexCoord2f(textureMaxX, textureMaxY);
-      glVertex2f(256, 256);
-      glTexCoord2f(textureMaxX, 0);
-      glVertex2f(256, -256);
-      glEnd();
+      /* The texture is as big as the layer needed when it was rasterised, and
+         the layer's anchor point is in the middle of it. */
+      GLfloat halfWidth = [texture width] / 2.0;
+      GLfloat halfHeight = [texture height] / 2.0;
+
+      CARendererDrawTexturedQuad(halfWidth, halfHeight,
+                                 textureMaxX, textureMaxY, offscreenColour);
       glDisable([texture textureTarget]);
 
-      #warning Intentionally coloring offscreen-rendered layer
-      glColor3f(1.0, 1.0, 1.0);
       #warning Intentionally applying shader to offscreen-rendered layer
       glUseProgram(0);
 
@@ -641,6 +932,13 @@
     }
 
   [layer displayIfNeeded];
+
+  /* CATransformLayer draws no background and no contents of its own; only its
+     sublayers appear.  A presentation layer is a plain CALayer whatever its
+     model layer is, so the class comes from the model. */
+  CALayer * modelLayer = [layer modelLayer] ? [layer modelLayer] : layer;
+  BOOL drawsContentOfItsOwn =
+    ![modelLayer isKindOfClass: [CATransformLayer class]];
 
   // fill vertex arrays
   GLfloat vertices[] = {
@@ -697,7 +995,8 @@
     }
 
   // apply background color
-  if ([layer backgroundColor] && CGColorGetAlpha([layer backgroundColor]) > 0)
+  if (drawsContentOfItsOwn && [layer backgroundColor]
+      && CGColorGetAlpha([layer backgroundColor]) > 0)
     {
       const CGFloat * componentsCG = CGColorGetComponents([layer backgroundColor]);
       GLfloat components[4] = { 0, 0, 0, 1 };
@@ -728,7 +1027,7 @@
     }
 
   // if there are some contents, draw them
-  if ([layer contents])
+  if (drawsContentOfItsOwn && [layer contents])
     {
       CAGLTexture * texture = nil;
       id layerContents = [layer contents];
@@ -763,19 +1062,101 @@
             }
         }
 
+      /* The contents sit where the gravity puts them, which is not
+         necessarily over the whole of the layer, so they get vertices of
+         their own rather than the ones the background was drawn with. */
+      CGRect dest = CAGravityDestinationRect(
+                      [layer contentsGravity],
+                      CGRectMake(0, 0, [layer bounds].size.width,
+                                 [layer bounds].size.height),
+                      CGSizeMake([texture width], [texture height]));
+      GLfloat contentsVertices[] = {
+        CGRectGetMinX(dest), CGRectGetMinY(dest),
+        CGRectGetMaxX(dest), CGRectGetMinY(dest),
+        CGRectGetMaxX(dest), CGRectGetMaxY(dest),
+
+        CGRectGetMaxX(dest), CGRectGetMaxY(dest),
+        CGRectGetMinX(dest), CGRectGetMaxY(dest),
+        CGRectGetMinX(dest), CGRectGetMinY(dest),
+      };
+
+      /* The vertices above were shifted by the anchor point after they were
+         built; these are built afterwards and need the same shift. */
+      for (int i = 0; i < 6; i++)
+        {
+          contentsVertices[i*2 + 0] -= [layer anchorPoint].x
+                                       * [layer bounds].size.width;
+          contentsVertices[i*2 + 1] -= [layer anchorPoint].y
+                                       * [layer bounds].size.height;
+        }
+      glVertexPointer(2, GL_FLOAT, 0, contentsVertices);
+
       [texture bind];
       glColorPointer(4, GL_FLOAT, 0, whiteColor);
       glDrawArrays(GL_TRIANGLES, 0, 6);
       [texture unbind];
 
+      glVertexPointer(2, GL_FLOAT, 0, vertices);
     }
 
   transform = CATransform3DConcat ([layer sublayerTransform], transform);
   transform = CATransform3DTranslate (transform, -[layer bounds].size.width/2, -[layer bounds].size.height/2, 0);
-  for (CALayer * sublayer in [layer sublayers])
-    {
-      [self _renderLayer: sublayer withTransform: transform];
-    }
+
+  {
+    GLboolean hadScissor = glIsEnabled(GL_SCISSOR_TEST);
+    GLint previous[4] = { 0, 0, 0, 0 };
+    GLint box[4];
+    BOOL clipping = NO;
+
+    if ([layer masksToBounds]
+        && CARendererScissorBox(ownTransform, [layer bounds],
+                                [layer anchorPoint], box))
+      {
+        glGetIntegerv(GL_SCISSOR_BOX, previous);
+        if (hadScissor)
+          {
+            /* Masks inside masks clip to what both of them allow. */
+            GLint x = box[0] > previous[0] ? box[0] : previous[0];
+            GLint y = box[1] > previous[1] ? box[1] : previous[1];
+            GLint r = (box[0] + box[2]) < (previous[0] + previous[2])
+                        ? (box[0] + box[2]) : (previous[0] + previous[2]);
+            GLint t = (box[1] + box[3]) < (previous[1] + previous[3])
+                        ? (box[1] + box[3]) : (previous[1] + previous[3]);
+
+            box[0] = x; box[1] = y;
+            box[2] = r > x ? r - x : 0;
+            box[3] = t > y ? t - y : 0;
+          }
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(box[0], box[1], box[2], box[3]);
+        clipping = YES;
+      }
+
+    /* A presentation layer is a plain CALayer whatever its model layer is, so
+       the instance list comes from the model. */
+    CALayer * instancing = [layer modelLayer] ? [layer modelLayer] : layer;
+
+    for (NSValue * instance in [instancing instanceTransformsForSublayers])
+      {
+        CATransform3D instanceTransform;
+
+        [instance getValue: &instanceTransform];
+        for (CALayer * sublayer in [layer sublayers])
+          {
+            [self _renderLayer: sublayer
+                 withTransform: CATransform3DConcat(instanceTransform,
+                                                    transform)];
+          }
+      }
+
+    if (clipping)
+      {
+        if (hadScissor)
+          glScissor(previous[0], previous[1], previous[2], previous[3]);
+        else
+          glDisable(GL_SCISSOR_TEST);
+      }
+  }
 }
 
 - (void) _determineAndScheduleRasterizationForLayer: (CALayer*)layer
@@ -814,19 +1195,48 @@
 - (void) _rasterize: (NSDictionary*) rasterizationSpec
 {
   CALayer * layer = [rasterizationSpec valueForKey: @"layer"];
+  CALayer * modelLayer = [layer modelLayer] ? [layer modelLayer] : layer;
+  NSValue * cacheKey = [NSValue valueWithNonretainedObject: modelLayer];
+  NSDictionary * cached = [_rasterizationCache objectForKey: cacheKey];
+  NSData * digest;
 
   /* we need to render the presentationLayer */
   if (![layer isPresentationLayer])
     layer = [layer presentationLayer];
 
+  /* -_updateLayer:atTime: discards the presentation layer every frame, so
+     the backing store is kept here, keyed by the model layer, and set on the
+     new presentation layer. */
+  digest = CARendererSubtreeDigest(layer);
+  if (cached && [[cached objectForKey: @"digest"] isEqualToData: digest])
+    {
+      [layer setBackingStore: [cached objectForKey: @"backingStore"]];
+      return;
+    }
+
   /* Empty the cache so redraw gets performed in -[CARenderer _renderLayer:withTransform:] */
   [[layer backingStore] setOffscreenRenderTexture: nil];
 
-  // TODO: 512x512 is NOT correct, we need to determine the actual layer size together with sublayers
-  const GLuint rasterize_w = 512, rasterize_h = 512;
+  CGSize rasterizeSize = CARendererRasterizedSize(layer);
+  const GLuint rasterize_w = (GLuint)rasterizeSize.width;
+  const GLuint rasterize_h = (GLuint)rasterizeSize.height;
   CAGLSimpleFramebuffer * framebuffer = [[CAGLSimpleFramebuffer alloc] initWithWidth: rasterize_w height: rasterize_h];
+  GLint windowViewport[4];
+
   [framebuffer setDepthBufferEnabled: YES];
   [framebuffer bind];
+
+  /* Rasterization runs inside the frame, where the viewport and the
+     projection are the renderer's own bounds.  The buffer is a different size
+     and holds a different area, so it gets both of its own and gives them
+     back afterwards. */
+  glGetIntegerv(GL_VIEWPORT, windowViewport);
+  glViewport(0, 0, rasterize_w, rasterize_h);
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(0.0, rasterize_w, 0.0, rasterize_h, -1.0, 1.0);
+  glMatrixMode(GL_MODELVIEW);
 
   glDisable([[framebuffer texture] textureTarget]);
 
@@ -835,11 +1245,24 @@
 
   [self _renderLayer: layer withTransform: CATransform3DMakeTranslation(rasterize_w/2.0 - [layer position].x, rasterize_h/2.0 - [layer position].y, 0)];
 
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+  glMatrixMode(GL_MODELVIEW);
+  glViewport(windowViewport[0], windowViewport[1],
+             windowViewport[2], windowViewport[3]);
+
   [framebuffer unbind];
 
   if (![layer backingStore])
     [layer setBackingStore: [CABackingStore backingStoreWithWidth: rasterize_w height: rasterize_h]];
   [[layer backingStore] setOffscreenRenderTexture: [framebuffer texture]];
+
+  [_rasterizationCache setObject:
+    [NSDictionary dictionaryWithObjectsAndKeys:
+      [layer backingStore], @"backingStore",
+      digest, @"digest",
+      nil]
+                          forKey: cacheKey];
 
   [framebuffer release];
 }
@@ -847,11 +1270,26 @@
 
 - (void) _rasterizeAll
 {
+  NSMutableSet * drawn = [[NSMutableSet alloc] init];
+
   /* Rasterize */
   for (NSDictionary * rasterizationSpec in _rasterizationSchedule)
   {
+    CALayer * layer = [rasterizationSpec valueForKey: @"layer"];
+
     [self _rasterize: rasterizationSpec];
+    [drawn addObject: [NSValue valueWithNonretainedObject:
+                        [layer modelLayer] ? [layer modelLayer] : layer]];
   }
+
+  /* Drop the entries for layers not rasterised in this frame; their
+     textures would be held until the renderer is deallocated. */
+  for (NSValue * key in [_rasterizationCache allKeys])
+    {
+      if (![drawn containsObject: key])
+        [_rasterizationCache removeObjectForKey: key];
+    }
+  [drawn release];
 
   /* Release rasterization schedule */
   [_rasterizationSchedule release];
