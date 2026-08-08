@@ -52,6 +52,29 @@ extern NSString *const kCAOnOrderIn;
 extern NSString *const kCAOnOrderOut;
 extern NSString *const kCATransition;
 
+/* the edges of a layer, for -edgeAntialiasingMask */
+enum
+{
+  kCALayerLeftEdge = 1U << 0,
+  kCALayerRightEdge = 1U << 1,
+  kCALayerBottomEdge = 1U << 2,
+  kCALayerTopEdge = 1U << 3
+};
+typedef unsigned int CAEdgeAntialiasingMask;
+
+/* which parts of a layer give way when its superlayer is resized */
+enum
+{
+  kCALayerNotSizable = 0,
+  kCALayerMinXMargin = 1U << 0,
+  kCALayerWidthSizable = 1U << 1,
+  kCALayerMaxXMargin = 1U << 2,
+  kCALayerMinYMargin = 1U << 3,
+  kCALayerHeightSizable = 1U << 4,
+  kCALayerMaxYMargin = 1U << 5
+};
+typedef unsigned int CAAutoresizingMask;
+
 @class CAAnimation;
 @class CARenderer;
 
@@ -100,6 +123,18 @@ extern NSString *const kCATransition;
   CGColorRef _borderColor;
   CGFloat _contentsScale;
 
+  CALayer * _mask;
+  NSArray * _filters;
+  NSArray * _backgroundFilters;
+  id _compositingFilter;
+  CGRect _contentsCenter;
+  CAEdgeAntialiasingMask _edgeAntialiasingMask;
+  CAAutoresizingMask _autoresizingMask;
+  float _minificationFilterBias;
+  BOOL _allowsEdgeAntialiasing;
+  BOOL _allowsGroupOpacity;
+  BOOL _drawsAsynchronously;
+
   CGColorRef _shadowColor;
   CGSize _shadowOffset;
   float _shadowOpacity;
@@ -122,6 +157,8 @@ extern NSString *const kCATransition;
   NSMutableDictionary *_animations;
   NSMutableArray *_animationKeys;
   NSMutableArray *_observedKeyPaths;
+  NSMutableArray *_archivingKeyPaths;
+  NSMutableSet *_valuesThatWereSet;
   CABackingStore * _backingStore;
 
   /* TODO: add CAGLSimpleFramebuffer ivars for storing:
@@ -160,7 +197,7 @@ extern NSString *const kCATransition;
 @property (assign,getter=isGeometryFlipped) BOOL geometryFlipped; /* not supported yet */
 @property (nonatomic, assign)        CGColorRef backgroundColor; /* retained by CG */
 @property (assign)                   BOOL masksToBounds;
-@property (assign)                   CGRect contentsRect;
+@property (NONATOMIC_GSONLY,assign)  CGRect contentsRect;
 @property (assign,getter=isHidden)   BOOL hidden;
 @property (copy)                     NSString *contentsGravity;
 @property (assign)                   BOOL needsDisplayOnBoundsChange;
@@ -203,6 +240,7 @@ extern NSString *const kCATransition;
 - (void) setNeedsDisplay;
 - (void) setNeedsDisplayInRect: (CGRect)r;
 - (void) drawInContext: (CGContextRef)context;
+- (void) renderInContext: (CGContextRef)context;
 - (BOOL) needsLayout;
 - (void) setNeedsLayout;
 - (void) layoutIfNeeded;
@@ -213,9 +251,28 @@ extern NSString *const kCATransition;
 - (CGAffineTransform) affineTransform;
 - (void) setAffineTransform: (CGAffineTransform)affineTransform;
 
+- (BOOL) contentsAreFlipped;
+- (BOOL) shouldArchiveValueForKey: (NSString *)key;
+
+- (void) resizeWithOldSuperlayerSize: (CGSize)size;
+- (void) resizeSublayersWithOldSize: (CGSize)size;
+
 @property (nonatomic, assign) CGColorRef borderColor; /* retained by CG */
 @property (nonatomic, assign) CGFloat contentsScale;
 @property (nonatomic, assign) CGFloat anchorPointZ;
+
+/* The renderer does not read any of the following yet. */
+@property (retain)                   CALayer *mask;
+@property (copy)                     NSArray *filters;
+@property (retain)                   id compositingFilter;
+@property (copy)                     NSArray *backgroundFilters;
+@property (NONATOMIC_GSONLY,assign)  CGRect contentsCenter;
+@property (assign)                   CAEdgeAntialiasingMask edgeAntialiasingMask;
+@property (assign)                   float minificationFilterBias;
+@property (assign)                   BOOL allowsEdgeAntialiasing;
+@property (assign)                   BOOL allowsGroupOpacity;
+@property (assign)                   BOOL drawsAsynchronously;
+@property (assign)                   CAAutoresizingMask autoresizingMask;
 @end
 
 @interface NSObject (CALayerActions)
