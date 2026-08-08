@@ -122,6 +122,16 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize borderColor=_borderColor;
 @synthesize contentsScale=_contentsScale;
 
+@synthesize filters=_filters;
+@synthesize backgroundFilters=_backgroundFilters;
+@synthesize compositingFilter=_compositingFilter;
+@synthesize contentsCenter=_contentsCenter;
+@synthesize edgeAntialiasingMask=_edgeAntialiasingMask;
+@synthesize minificationFilterBias=_minificationFilterBias;
+@synthesize allowsEdgeAntialiasing=_allowsEdgeAntialiasing;
+@synthesize allowsGroupOpacity=_allowsGroupOpacity;
+@synthesize drawsAsynchronously=_drawsAsynchronously;
+
 @synthesize shadowColor=_shadowColor;
 @synthesize shadowOffset=_shadowOffset;
 @synthesize shadowOpacity=_shadowOpacity;
@@ -217,7 +227,9 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       || [key isEqualToString: @"anchorPoint"]
       || [key isEqualToString: @"transform"]
       || [key isEqualToString: @"sublayerTransform"]
-      || [key isEqualToString: @"shadowOffset"])
+      || [key isEqualToString: @"shadowOffset"]
+      || [key isEqualToString: @"contentsRect"]
+      || [key isEqualToString: @"contentsCenter"])
     {
       return NO;
     }
@@ -283,6 +295,30 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
     {
       return [NSNumber numberWithFloat: 3.0];
     }
+  if ([key isEqualToString: @"contentsCenter"])
+    {
+      CGRect rect = CGRectMake(0.0, 0.0, 1.0, 1.0);
+      return [NSValue valueWithBytes: &rect objCType: @encode(CGRect)];
+    }
+  if ([key isEqualToString: @"allowsEdgeAntialiasing"])
+    {
+      return [NSNumber numberWithBool: YES];
+    }
+  if ([key isEqualToString: @"allowsGroupOpacity"])
+    {
+      return [NSNumber numberWithBool: YES];
+    }
+  if ([key isEqualToString: @"edgeAntialiasingMask"])
+    {
+      return [NSNumber numberWithUnsignedInt: kCALayerLeftEdge
+                                              | kCALayerRightEdge
+                                              | kCALayerBottomEdge
+                                              | kCALayerTopEdge];
+    }
+  if ([key isEqualToString: @"drawsAsynchronously"])
+    {
+      return [NSNumber numberWithBool: NO];
+    }
 
   /* CAMediaTiming */
   if ([key isEqualToString:@"duration"])
@@ -331,6 +367,9 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 
         @"shadowColor", @"shadowOffset", @"shadowOpacity",
         @"shadowPath", @"shadowRadius",
+
+        @"contentsCenter", @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
+        @"edgeAntialiasingMask", @"drawsAsynchronously",
 
         @"bounds", @"position" };
 
@@ -431,6 +470,17 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       [self setNeedsDisplayOnBoundsChange: [layer needsDisplayOnBoundsChange]];
       [self setZPosition: [layer zPosition]];
 
+      [self setMask: [layer mask]];
+      [self setFilters: [layer filters]];
+      [self setBackgroundFilters: [layer backgroundFilters]];
+      [self setCompositingFilter: [layer compositingFilter]];
+      [self setContentsCenter: [layer contentsCenter]];
+      [self setEdgeAntialiasingMask: [layer edgeAntialiasingMask]];
+      [self setMinificationFilterBias: [layer minificationFilterBias]];
+      [self setAllowsEdgeAntialiasing: [layer allowsEdgeAntialiasing]];
+      [self setAllowsGroupOpacity: [layer allowsGroupOpacity]];
+      [self setDrawsAsynchronously: [layer drawsAsynchronously]];
+
       [self setShadowColor: [layer shadowColor]];
       [self setShadowOffset: [layer shadowOffset]];
       [self setShadowOpacity: [layer shadowOpacity]];
@@ -476,6 +526,11 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   CGColorRelease(_borderColor);
   [_contentsGravity release];
   [_fillMode release];
+  [_mask setSuperlayer: nil];
+  [_mask release];
+  [_filters release];
+  [_backgroundFilters release];
+  [_compositingFilter release];
 
   [_backingStore release];
   [_animations release];
@@ -515,6 +570,8 @@ GSCA_OBSERVABLE_SETTER(setAnchorPoint, CGPoint, anchorPoint, CGPointEqualToPoint
 GSCA_OBSERVABLE_SETTER(setTransform, CATransform3D, transform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
+GSCA_OBSERVABLE_SETTER(setContentsRect, CGRect, contentsRect, CGRectEqualToRect)
+GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToRect)
 
 #else
 
@@ -650,6 +707,29 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   // NOTE: -takeNoteThatNextFrameTime is called due to the application not redrawing when
   // implicit animations are not created.
   [self takeNoteThatNextFrameTimeChanged];
+}
+
+- (CALayer *) mask
+{
+  return _mask;
+}
+
+/* A mask is not a sublayer, but it does have this layer as its superlayer,
+   so that a mask written in a coordinate system relative to this one can be
+   converted.  A layer that was somewhere else in the tree leaves it. */
+- (void) setMask: (CALayer *)mask
+{
+  if (mask == _mask)
+    return;
+
+  [self willChangeValueForKey: @"mask"];
+  [mask retain];
+  [mask removeFromSuperlayer];
+  [_mask setSuperlayer: nil];
+  [_mask release];
+  _mask = mask;
+  [_mask setSuperlayer: self];
+  [self didChangeValueForKey: @"mask"];
 }
 
 /* ***************** */
