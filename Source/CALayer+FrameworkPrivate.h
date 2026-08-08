@@ -47,6 +47,8 @@
 - (CFTimeInterval) activeTime;
 - (CFTimeInterval) localTime;
 
+- (void) noteValueWasSetForKey: (NSString *)key;
+
 @property (retain) CABackingStore * backingStore;
 @property (assign) CARenderer * renderer;
 @end
