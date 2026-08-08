@@ -22,3 +22,77 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/Foundation.h>
+#import "QuartzCore/CAReplicatorLayer.h"
+#import "CALayer+FrameworkPrivate.h"
+
+@implementation CAReplicatorLayer
+
+@synthesize instanceCount = _instanceCount;
+@synthesize instanceDelay = _instanceDelay;
+@synthesize instanceTransform = _instanceTransform;
+@synthesize preservesDepth = _preservesDepth;
+@synthesize instanceRedOffset = _instanceRedOffset;
+@synthesize instanceGreenOffset = _instanceGreenOffset;
+@synthesize instanceBlueOffset = _instanceBlueOffset;
+@synthesize instanceAlphaOffset = _instanceAlphaOffset;
+
+- (id) init
+{
+  self = [super init];
+  if (self == nil)
+    {
+      return nil;
+    }
+
+  _instanceCount = 1;
+  _instanceTransform = CATransform3DIdentity;
+  _instanceColor = CGColorCreateGenericRGB(1.0, 1.0, 1.0, 1.0);
+
+  return self;
+}
+
+- (void) dealloc
+{
+  CGColorRelease(_instanceColor);
+
+  [super dealloc];
+}
+
+- (CGColorRef) instanceColor
+{
+  return _instanceColor;
+}
+
+- (void) setInstanceColor: (CGColorRef)instanceColor
+{
+  if (instanceColor == _instanceColor)
+    {
+      return;
+    }
+
+  CGColorRetain(instanceColor);
+  CGColorRelease(_instanceColor);
+  _instanceColor = instanceColor;
+}
+
+/* Instance i is transformed by instanceTransform applied i times, so instance
+   0 is not transformed at all.  Only the sublayers are repeated: the layer's
+   own background and contents are drawn once. */
+- (NSArray *) instanceTransformsForSublayers
+{
+  NSMutableArray *transforms = [NSMutableArray array];
+  CATransform3D step = CATransform3DIdentity;
+  NSInteger i;
+
+  for (i = 0; i < _instanceCount; i++)
+    {
+      [transforms addObject: [NSValue valueWithBytes: &step
+                                            objCType: @encode(CATransform3D)]];
+      step = CATransform3DConcat(step, _instanceTransform);
+    }
+  return transforms;
+}
+
+@end
