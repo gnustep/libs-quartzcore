@@ -33,6 +33,7 @@
 #import "CATransaction+FrameworkPrivate.h"
 #import "CABackingStore.h"
 #import "CARenderer+FrameworkPrivate.h"
+#import "CAGravity.h"
 #if !(__APPLE__)
 #define GL_GLEXT_PROTOTYPES 1
 #import <GL/gl.h>
@@ -68,6 +69,65 @@
 - (id) initWithNSOpenGLContext: (NSOpenGLContext*)ctx
                        options: options;
 @end
+
+/* The window-coordinate box a layer's own quad occupies under the given
+   transform, or NO when that transform turns or skews it, where an
+   axis-aligned scissor cannot say what to clip.
+
+   The quad is the bounds size shifted by the anchor point, which is what
+   -_renderLayer:withTransform: draws, not the bounds rectangle itself. */
+static BOOL
+CARendererScissorBox(CATransform3D transform, CGRect bounds, CGPoint anchor,
+                     GLint out[4])
+{
+  GLint viewport[4];
+  GLdouble projection[16];
+  CGFloat corners[4][2];
+  CGFloat minX, minY, maxX, maxY;
+  CGFloat left = -anchor.x * bounds.size.width;
+  CGFloat bottom = -anchor.y * bounds.size.height;
+  CGFloat right = left + bounds.size.width;
+  CGFloat top = bottom + bounds.size.height;
+  int i;
+
+  if (fabs(transform.m12) > 1e-6 || fabs(transform.m21) > 1e-6)
+    return NO;
+
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  glGetDoublev(GL_PROJECTION_MATRIX, projection);
+
+  corners[0][0] = left;  corners[0][1] = bottom;
+  corners[1][0] = right; corners[1][1] = bottom;
+  corners[2][0] = right; corners[2][1] = top;
+  corners[3][0] = left;  corners[3][1] = top;
+
+  minX = minY = 1e30;
+  maxX = maxY = -1e30;
+  for (i = 0; i < 4; i++)
+    {
+      CGFloat ex = corners[i][0] * transform.m11
+                   + corners[i][1] * transform.m21 + transform.m41;
+      CGFloat ey = corners[i][0] * transform.m12
+                   + corners[i][1] * transform.m22 + transform.m42;
+      CGFloat cx = ex * projection[0] + ey * projection[4] + projection[12];
+      CGFloat cy = ex * projection[1] + ey * projection[5] + projection[13];
+      CGFloat wx = viewport[0] + (cx + 1.0) / 2.0 * viewport[2];
+      CGFloat wy = viewport[1] + (cy + 1.0) / 2.0 * viewport[3];
+
+      if (wx < minX) minX = wx;
+      if (wx > maxX) maxX = wx;
+      if (wy < minY) minY = wy;
+      if (wy > maxY) maxY = wy;
+    }
+
+  out[0] = (GLint)floor(minX);
+  out[1] = (GLint)floor(minY);
+  out[2] = (GLint)ceil(maxX) - out[0];
+  out[3] = (GLint)ceil(maxY) - out[1];
+  if (out[2] < 0) out[2] = 0;
+  if (out[3] < 0) out[3] = 0;
+  return YES;
+}
 
 @implementation CARenderer
 @synthesize layer=_layer;
@@ -260,6 +320,17 @@
 
   [_GLContext makeCurrentContext];
 
+  /* A layer's vertices are its bounds, in points.  Without a projection
+     they are taken as normalised device coordinates, where anything two
+     units or more across covers the whole drawable.  Map the renderer's
+     bounds onto it instead, so that a point is a point. */
+  glMatrixMode(GL_PROJECTION);
+  glPushMatrix();
+  glLoadIdentity();
+  glOrtho(CGRectGetMinX(_bounds), CGRectGetMaxX(_bounds),
+          CGRectGetMinY(_bounds), CGRectGetMaxY(_bounds),
+          -1.0, 1.0);
+
   glMatrixMode(GL_MODELVIEW);
 
   glEnableClientState(GL_VERTEX_ARRAY);
@@ -276,6 +347,9 @@
        withTransform: CATransform3DIdentity];
 
   /* Restore defaults */
+  glMatrixMode(GL_PROJECTION);
+  glPopMatrix();
+
   glMatrixMode(GL_MODELVIEW);
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glDisableClientState(GL_VERTEX_ARRAY);
@@ -371,6 +445,10 @@
     glLoadMatrixd((GLdouble*)&transform);
   else
     glLoadMatrixf((GLfloat*)&transform);
+
+  /* Kept for the scissor below, which clips where this layer is, not where
+     its sublayers end up. */
+  CATransform3D ownTransform = transform;
 
   // if the layer was offscreen-rendered, render just the texture
   CAGLTexture * texture = [[layer backingStore] offscreenRenderTexture];
@@ -763,19 +841,101 @@
             }
         }
 
+      /* The contents sit where the gravity puts them, which is not
+         necessarily over the whole of the layer, so they get vertices of
+         their own rather than the ones the background was drawn with. */
+      CGRect dest = CAGravityDestinationRect(
+                      [layer contentsGravity],
+                      CGRectMake(0, 0, [layer bounds].size.width,
+                                 [layer bounds].size.height),
+                      CGSizeMake([texture width], [texture height]));
+      GLfloat contentsVertices[] = {
+        CGRectGetMinX(dest), CGRectGetMinY(dest),
+        CGRectGetMaxX(dest), CGRectGetMinY(dest),
+        CGRectGetMaxX(dest), CGRectGetMaxY(dest),
+
+        CGRectGetMaxX(dest), CGRectGetMaxY(dest),
+        CGRectGetMinX(dest), CGRectGetMaxY(dest),
+        CGRectGetMinX(dest), CGRectGetMinY(dest),
+      };
+
+      /* The vertices above were shifted by the anchor point after they were
+         built; these are built afterwards and need the same shift. */
+      for (int i = 0; i < 6; i++)
+        {
+          contentsVertices[i*2 + 0] -= [layer anchorPoint].x
+                                       * [layer bounds].size.width;
+          contentsVertices[i*2 + 1] -= [layer anchorPoint].y
+                                       * [layer bounds].size.height;
+        }
+      glVertexPointer(2, GL_FLOAT, 0, contentsVertices);
+
       [texture bind];
       glColorPointer(4, GL_FLOAT, 0, whiteColor);
       glDrawArrays(GL_TRIANGLES, 0, 6);
       [texture unbind];
 
+      glVertexPointer(2, GL_FLOAT, 0, vertices);
     }
 
   transform = CATransform3DConcat ([layer sublayerTransform], transform);
   transform = CATransform3DTranslate (transform, -[layer bounds].size.width/2, -[layer bounds].size.height/2, 0);
-  for (CALayer * sublayer in [layer sublayers])
-    {
-      [self _renderLayer: sublayer withTransform: transform];
-    }
+
+  {
+    GLboolean hadScissor = glIsEnabled(GL_SCISSOR_TEST);
+    GLint previous[4] = { 0, 0, 0, 0 };
+    GLint box[4];
+    BOOL clipping = NO;
+
+    if ([layer masksToBounds]
+        && CARendererScissorBox(ownTransform, [layer bounds],
+                                [layer anchorPoint], box))
+      {
+        glGetIntegerv(GL_SCISSOR_BOX, previous);
+        if (hadScissor)
+          {
+            /* Masks inside masks clip to what both of them allow. */
+            GLint x = box[0] > previous[0] ? box[0] : previous[0];
+            GLint y = box[1] > previous[1] ? box[1] : previous[1];
+            GLint r = (box[0] + box[2]) < (previous[0] + previous[2])
+                        ? (box[0] + box[2]) : (previous[0] + previous[2]);
+            GLint t = (box[1] + box[3]) < (previous[1] + previous[3])
+                        ? (box[1] + box[3]) : (previous[1] + previous[3]);
+
+            box[0] = x; box[1] = y;
+            box[2] = r > x ? r - x : 0;
+            box[3] = t > y ? t - y : 0;
+          }
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(box[0], box[1], box[2], box[3]);
+        clipping = YES;
+      }
+
+    /* A presentation layer is a plain CALayer whatever its model layer is, so
+       the instance list comes from the model. */
+    CALayer * instancing = [layer modelLayer] ? [layer modelLayer] : layer;
+
+    for (NSValue * instance in [instancing instanceTransformsForSublayers])
+      {
+        CATransform3D instanceTransform;
+
+        [instance getValue: &instanceTransform];
+        for (CALayer * sublayer in [layer sublayers])
+          {
+            [self _renderLayer: sublayer
+                 withTransform: CATransform3DConcat(instanceTransform,
+                                                    transform)];
+          }
+      }
+
+    if (clipping)
+      {
+        if (hadScissor)
+          glScissor(previous[0], previous[1], previous[2], previous[3]);
+        else
+          glDisable(GL_SCISSOR_TEST);
+      }
+  }
 }
 
 - (void) _determineAndScheduleRasterizationForLayer: (CALayer*)layer

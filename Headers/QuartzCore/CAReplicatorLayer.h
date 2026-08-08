@@ -22,3 +22,41 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <QuartzCore/CABase.h>
+#import <QuartzCore/CALayer.h>
+#import <QuartzCore/CATransform3D.h>
+
+@interface CAReplicatorLayer : CALayer
+{
+  NSInteger _instanceCount;
+  CFTimeInterval _instanceDelay;
+  CATransform3D _instanceTransform;
+  CGColorRef _instanceColor;
+  float _instanceRedOffset;
+  float _instanceGreenOffset;
+  float _instanceBlueOffset;
+  float _instanceAlphaOffset;
+  BOOL _preservesDepth;
+}
+
+/* How many copies to draw, the source layer included. */
+@property (assign) NSInteger instanceCount;
+
+/* How long to wait before each copy after the first. */
+@property (assign) CFTimeInterval instanceDelay;
+
+/* Applied to one copy to produce the next. */
+@property (assign) CATransform3D instanceTransform;
+
+@property (assign) BOOL preservesDepth;
+
+/* Multiplied into each copy, with the four offsets added per copy. */
+@property (nonatomic, assign) CGColorRef instanceColor;
+
+@property (assign) float instanceRedOffset;
+@property (assign) float instanceGreenOffset;
+@property (assign) float instanceBlueOffset;
+@property (assign) float instanceAlphaOffset;
+
+@end
