@@ -1,8 +1,6 @@
-/* CAGradientLayer.h
+/* CAArchivingObserver.h
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
-
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Copyright (C) 2026 Free Software Foundation, Inc.
 
    This file is part of QuartzCore.
 
@@ -23,30 +21,15 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <QuartzCore/CALayer.h>
-
-@interface CAGradientLayer : CALayer
+/* Notes on a layer which of its properties have been given a value, which is
+   what -[CALayer shouldArchiveValueForKey:] answers. */
+@interface CAArchivingObserver : NSObject
 {
-  NSArray *_colors;
-  NSArray *_locations;
-  CGPoint _startPoint;
-  CGPoint _endPoint;
-  NSString *_type;
 }
 
-/* An array of CGColorRef, drawn in order along the gradient. */
-@property (copy)   NSArray *colors;
-
-/* Where each colour sits along the gradient, as numbers between 0 and 1.
-   Nil spreads the colours evenly. */
-@property (copy)   NSArray *locations;
-
-@property (assign) CGPoint startPoint;
-@property (assign) CGPoint endPoint;
-@property (copy)   NSString *type;
++ (CAArchivingObserver *)sharedObserver;
+- (void)observeValueForKeyPath: (NSString *)keyPath ofObject: (id)object change: (NSDictionary *)change context: (void *)context;
 
 @end
 
-extern NSString *const kCAGradientLayerAxial;
-extern NSString *const kCAGradientLayerRadial;
-extern NSString *const kCAGradientLayerConic;
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */

@@ -86,6 +86,10 @@
 /* CAEAGLLayer.h */
 
 /* CAGradientLayer.h */
+#define CAGradientLayer GSCAGradientLayer
+#define kCAGradientLayerAxial GSkCAGradientLayerAxial
+#define kCAGradientLayerRadial GSkCAGradientLayerRadial
+#define kCAGradientLayerConic GSkCAGradientLayerConic
 
 /* CAImplicitAnimationObserver.h */
 #define CAImplicitAnimationObserver GSCAImplicitAnimationObserver
