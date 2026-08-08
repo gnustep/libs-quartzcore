@@ -86,6 +86,10 @@
 /* CAEAGLLayer.h */
 
 /* CAGradientLayer.h */
+#define CAGradientLayer GSCAGradientLayer
+#define kCAGradientLayerAxial GSkCAGradientLayerAxial
+#define kCAGradientLayerRadial GSkCAGradientLayerRadial
+#define kCAGradientLayerConic GSkCAGradientLayerConic
 
 /* CAImplicitAnimationObserver.h */
 #define CAImplicitAnimationObserver GSCAImplicitAnimationObserver
@@ -139,6 +143,16 @@
 /* CAShapeLayer.h */
 
 /* CATextLayer.h */
+#define CATextLayer GSCATextLayer
+#define kCAAlignmentNatural GSkCAAlignmentNatural
+#define kCAAlignmentLeft GSkCAAlignmentLeft
+#define kCAAlignmentRight GSkCAAlignmentRight
+#define kCAAlignmentCenter GSkCAAlignmentCenter
+#define kCAAlignmentJustified GSkCAAlignmentJustified
+#define kCATruncationNone GSkCATruncationNone
+#define kCATruncationStart GSkCATruncationStart
+#define kCATruncationEnd GSkCATruncationEnd
+#define kCATruncationMiddle GSkCATruncationMiddle
 
 /* CATiledLayer.h */
 
