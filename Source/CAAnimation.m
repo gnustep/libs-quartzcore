@@ -1034,6 +1034,34 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 @synthesize type=_type;
 @synthesize subtype=_subtype;
 
++ (id) defaultValueForKey: (NSString *)key
+{
+  if ([key isEqualToString: @"type"])
+    {
+      return kCATransitionFade;
+    }
+
+  return [super defaultValueForKey: key];
+}
+
+- (id) init
+{
+  if ((self = [super init]) != nil)
+    {
+      [self setType: [[self class] defaultValueForKey: @"type"]];
+    }
+
+  return self;
+}
+
+- (void) dealloc
+{
+  [_type release];
+  [_subtype release];
+
+  [super dealloc];
+}
+
 @end
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
