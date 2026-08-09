@@ -52,6 +52,59 @@ extern NSString *const kCAOnOrderIn;
 extern NSString *const kCAOnOrderOut;
 extern NSString *const kCATransition;
 
+/* the edges of a layer, for -edgeAntialiasingMask */
+enum
+{
+  kCALayerLeftEdge = 1U << 0,
+  kCALayerRightEdge = 1U << 1,
+  kCALayerBottomEdge = 1U << 2,
+  kCALayerTopEdge = 1U << 3
+};
+typedef unsigned int CAEdgeAntialiasingMask;
+
+/* which parts of a layer give way when its superlayer is resized */
+enum
+{
+  kCALayerNotSizable = 0,
+  kCALayerMinXMargin = 1U << 0,
+  kCALayerWidthSizable = 1U << 1,
+  kCALayerMaxXMargin = 1U << 2,
+  kCALayerMinYMargin = 1U << 3,
+  kCALayerHeightSizable = 1U << 4,
+  kCALayerMaxYMargin = 1U << 5
+};
+typedef unsigned int CAAutoresizingMask;
+
+/* which corners -cornerRadius rounds */
+enum
+{
+  kCALayerMinXMinYCorner = 1U << 0,
+  kCALayerMaxXMinYCorner = 1U << 1,
+  kCALayerMinXMaxYCorner = 1U << 2,
+  kCALayerMaxXMaxYCorner = 1U << 3
+};
+typedef unsigned int CACornerMask;
+
+/* the shape a rounded corner is drawn with */
+extern NSString *const kCACornerCurveCircular;
+extern NSString *const kCACornerCurveContinuous;
+
+/* the pixel format a layer asks for its contents */
+extern NSString *const kCAContentsFormatAutomatic;
+extern NSString *const kCAContentsFormatRGBA8Uint;
+extern NSString *const kCAContentsFormatRGBA16Float;
+extern NSString *const kCAContentsFormatGray8Uint;
+
+/* the range of brightness a layer asks for */
+extern NSString *const CADynamicRangeStandard;
+extern NSString *const CADynamicRangeConstrainedHigh;
+extern NSString *const CADynamicRangeHigh;
+
+/* when a layer's contents are tone mapped */
+extern NSString *const CAToneMapModeAutomatic;
+extern NSString *const CAToneMapModeNever;
+extern NSString *const CAToneMapModeIfSupported;
+
 @class CAAnimation;
 @class CARenderer;
 
@@ -100,6 +153,26 @@ extern NSString *const kCATransition;
   CGColorRef _borderColor;
   CGFloat _contentsScale;
 
+  CALayer * _mask;
+  NSArray * _filters;
+  NSArray * _backgroundFilters;
+  id _compositingFilter;
+  CGRect _contentsCenter;
+  CAEdgeAntialiasingMask _edgeAntialiasingMask;
+  CAAutoresizingMask _autoresizingMask;
+  CACornerMask _maskedCorners;
+  NSString * _cornerCurve;
+  NSString * _contentsFormat;
+  NSString * _preferredDynamicRange;
+  NSString * _toneMapMode;
+  CGFloat _contentsHeadroom;
+  BOOL _wantsExtendedDynamicRangeContent;
+  BOOL _wantsDynamicContentScaling;
+  float _minificationFilterBias;
+  BOOL _allowsEdgeAntialiasing;
+  BOOL _allowsGroupOpacity;
+  BOOL _drawsAsynchronously;
+
   CGColorRef _shadowColor;
   CGSize _shadowOffset;
   float _shadowOpacity;
@@ -122,6 +195,8 @@ extern NSString *const kCATransition;
   NSMutableDictionary *_animations;
   NSMutableArray *_animationKeys;
   NSMutableArray *_observedKeyPaths;
+  NSMutableArray *_archivingKeyPaths;
+  NSMutableSet *_valuesThatWereSet;
   CABackingStore * _backingStore;
 
   /* TODO: add CAGLSimpleFramebuffer ivars for storing:
@@ -160,7 +235,7 @@ extern NSString *const kCATransition;
 @property (assign,getter=isGeometryFlipped) BOOL geometryFlipped; /* not supported yet */
 @property (nonatomic, assign)        CGColorRef backgroundColor; /* retained by CG */
 @property (assign)                   BOOL masksToBounds;
-@property (assign)                   CGRect contentsRect;
+@property (NONATOMIC_GSONLY,assign)  CGRect contentsRect;
 @property (assign,getter=isHidden)   BOOL hidden;
 @property (copy)                     NSString *contentsGravity;
 @property (assign)                   BOOL needsDisplayOnBoundsChange;
@@ -203,6 +278,7 @@ extern NSString *const kCATransition;
 - (void) setNeedsDisplay;
 - (void) setNeedsDisplayInRect: (CGRect)r;
 - (void) drawInContext: (CGContextRef)context;
+- (void) renderInContext: (CGContextRef)context;
 - (BOOL) needsLayout;
 - (void) setNeedsLayout;
 - (void) layoutIfNeeded;
@@ -213,9 +289,43 @@ extern NSString *const kCATransition;
 - (CGAffineTransform) affineTransform;
 - (void) setAffineTransform: (CGAffineTransform)affineTransform;
 
+- (BOOL) contentsAreFlipped;
+- (BOOL) shouldArchiveValueForKey: (NSString *)key;
+
+- (void) resizeWithOldSuperlayerSize: (CGSize)size;
+- (void) resizeSublayersWithOldSize: (CGSize)size;
+
 @property (nonatomic, assign) CGColorRef borderColor; /* retained by CG */
 @property (nonatomic, assign) CGFloat contentsScale;
 @property (nonatomic, assign) CGFloat anchorPointZ;
+
+/* The renderer does not read any of the following yet. */
+@property (retain)                   CALayer *mask;
+@property (copy)                     NSArray *filters;
+@property (retain)                   id compositingFilter;
+@property (copy)                     NSArray *backgroundFilters;
+@property (NONATOMIC_GSONLY,assign)  CGRect contentsCenter;
+@property (assign)                   CAEdgeAntialiasingMask edgeAntialiasingMask;
+@property (assign)                   float minificationFilterBias;
+@property (assign)                   BOOL allowsEdgeAntialiasing;
+@property (assign)                   BOOL allowsGroupOpacity;
+@property (assign)                   BOOL drawsAsynchronously;
+@property (assign)                   CAAutoresizingMask autoresizingMask;
+
+/* Nothing reads any of the following yet: this framework rounds no corners,
+   chooses no pixel format for its backing store, and has no notion of a
+   display brighter than white. */
+@property (assign)                   CACornerMask maskedCorners;
+@property (copy)                     NSString *cornerCurve;
+@property (copy)                     NSString *contentsFormat;
+@property (copy)                     NSString *preferredDynamicRange;
+@property (copy)                     NSString *toneMapMode;
+@property (assign)                   CGFloat contentsHeadroom;
+@property (assign)                   BOOL wantsExtendedDynamicRangeContent;
+/* Apple declares this one unavailable on macOS. */
+@property (assign)                   BOOL wantsDynamicContentScaling;
+
++ (CGFloat) cornerCurveExpansionFactor: (NSString *)curve;
 @end
 
 @interface NSObject (CALayerActions)

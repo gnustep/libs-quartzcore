@@ -34,6 +34,7 @@
 #import "CALayer+FrameworkPrivate.h"
 #import "CAAnimation+FrameworkPrivate.h"
 #import "CAImplicitAnimationObserver.h"
+#import "CAArchivingObserver.h"
 #import <objc/runtime.h>
 #import "CALayer+DynamicProperties.h"
 #import "QuartzCore/CATransaction.h"
@@ -60,6 +61,22 @@ NSString *const kCAGravityTopRight = @"topRight";
 NSString *const kCAGravityBottomLeft = @"bottomLeft";
 NSString *const kCAGravityBottomRight = @"bottomRight";
 
+NSString *const kCACornerCurveCircular = @"circular";
+NSString *const kCACornerCurveContinuous = @"continuous";
+
+NSString *const kCAContentsFormatAutomatic = @"Automatic";
+NSString *const kCAContentsFormatRGBA8Uint = @"RGBA8";
+NSString *const kCAContentsFormatRGBA16Float = @"RGBAh";
+NSString *const kCAContentsFormatGray8Uint = @"Gray8";
+
+NSString *const CADynamicRangeStandard = @"standard";
+NSString *const CADynamicRangeConstrainedHigh = @"constrainedHigh";
+NSString *const CADynamicRangeHigh = @"high";
+
+NSString *const CAToneMapModeAutomatic = @"automatic";
+NSString *const CAToneMapModeNever = @"never";
+NSString *const CAToneMapModeIfSupported = @"ifSupported";
+
 NSString *const kCAOnOrderIn = @"onOrderIn";
 NSString *const kCAOnOrderOut = @"onOrderOut";
 NSString *const kCATransition = @"transition";
@@ -71,6 +88,7 @@ NSString *const kCATransition = @"transition";
 @property (retain) CABackingStore * backingStore;
 @property (nonatomic, assign) CARenderer * renderer;
 @property (nonatomic, retain) NSMutableDictionary *dynamicPropertyValueDict;
+@property (readonly) NSSet * valuesThatWereSet;
 
 - (void)setModelLayer: (id)modelLayer;
 @end
@@ -121,6 +139,20 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize style=_style;
 @synthesize borderColor=_borderColor;
 @synthesize contentsScale=_contentsScale;
+
+@synthesize filters=_filters;
+@synthesize backgroundFilters=_backgroundFilters;
+@synthesize compositingFilter=_compositingFilter;
+@synthesize contentsCenter=_contentsCenter;
+@synthesize edgeAntialiasingMask=_edgeAntialiasingMask;
+@synthesize minificationFilterBias=_minificationFilterBias;
+@synthesize allowsEdgeAntialiasing=_allowsEdgeAntialiasing;
+@synthesize allowsGroupOpacity=_allowsGroupOpacity;
+@synthesize drawsAsynchronously=_drawsAsynchronously;
+@synthesize autoresizingMask=_autoresizingMask;
+@synthesize contentsHeadroom=_contentsHeadroom;
+@synthesize wantsExtendedDynamicRangeContent=_wantsExtendedDynamicRangeContent;
+@synthesize wantsDynamicContentScaling=_wantsDynamicContentScaling;
 
 @synthesize shadowColor=_shadowColor;
 @synthesize shadowOffset=_shadowOffset;
@@ -217,7 +249,9 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       || [key isEqualToString: @"anchorPoint"]
       || [key isEqualToString: @"transform"]
       || [key isEqualToString: @"sublayerTransform"]
-      || [key isEqualToString: @"shadowOffset"])
+      || [key isEqualToString: @"shadowOffset"]
+      || [key isEqualToString: @"contentsRect"]
+      || [key isEqualToString: @"contentsCenter"])
     {
       return NO;
     }
@@ -283,6 +317,61 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
     {
       return [NSNumber numberWithFloat: 3.0];
     }
+  if ([key isEqualToString: @"contentsCenter"])
+    {
+      CGRect rect = CGRectMake(0.0, 0.0, 1.0, 1.0);
+      return [NSValue valueWithBytes: &rect objCType: @encode(CGRect)];
+    }
+  if ([key isEqualToString: @"allowsEdgeAntialiasing"])
+    {
+      return [NSNumber numberWithBool: YES];
+    }
+  if ([key isEqualToString: @"allowsGroupOpacity"])
+    {
+      return [NSNumber numberWithBool: YES];
+    }
+  if ([key isEqualToString: @"edgeAntialiasingMask"])
+    {
+      return [NSNumber numberWithUnsignedInt: kCALayerLeftEdge
+                                              | kCALayerRightEdge
+                                              | kCALayerBottomEdge
+                                              | kCALayerTopEdge];
+    }
+  if ([key isEqualToString: @"drawsAsynchronously"])
+    {
+      return [NSNumber numberWithBool: NO];
+    }
+  if ([key isEqualToString: @"cornerCurve"])
+    {
+      return kCACornerCurveCircular;
+    }
+  if ([key isEqualToString: @"maskedCorners"])
+    {
+      return [NSNumber numberWithUnsignedInt: kCALayerMinXMinYCorner
+                                              | kCALayerMaxXMinYCorner
+                                              | kCALayerMinXMaxYCorner
+                                              | kCALayerMaxXMaxYCorner];
+    }
+  if ([key isEqualToString: @"contentsFormat"])
+    {
+      return kCAContentsFormatRGBA8Uint;
+    }
+  if ([key isEqualToString: @"preferredDynamicRange"])
+    {
+      return CADynamicRangeStandard;
+    }
+  if ([key isEqualToString: @"toneMapMode"])
+    {
+      return CAToneMapModeAutomatic;
+    }
+  if ([key isEqualToString: @"contentsHeadroom"])
+    {
+      return [NSNumber numberWithFloat: 0.0];
+    }
+  if ([key isEqualToString: @"wantsExtendedDynamicRangeContent"])
+    {
+      return [NSNumber numberWithBool: NO];
+    }
 
   /* CAMediaTiming */
   if ([key isEqualToString:@"duration"])
@@ -318,6 +407,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       _animationKeys = [[NSMutableArray alloc] init];
       _sublayers = [[NSMutableArray alloc] init];
       _observedKeyPaths = [[NSMutableArray alloc] init];
+      _archivingKeyPaths = [[NSMutableArray alloc] init];
+      _valuesThatWereSet = [[NSMutableSet alloc] init];
       _dynamicPropertyValueDict = [[NSMutableDictionary alloc] init];
 
       /* TODO: list all properties below */
@@ -331,6 +422,13 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 
         @"shadowColor", @"shadowOffset", @"shadowOpacity",
         @"shadowPath", @"shadowRadius",
+
+        @"contentsCenter", @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
+        @"edgeAntialiasingMask", @"drawsAsynchronously",
+
+        @"cornerCurve", @"maskedCorners", @"contentsFormat",
+        @"preferredDynamicRange", @"toneMapMode", @"contentsHeadroom",
+        @"wantsExtendedDynamicRangeContent",
 
         @"bounds", @"position" };
 
@@ -385,6 +483,50 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
           [_observedKeyPaths addObject: keys[i]];
         }
 
+      /* Every property whose value a layer archives once it has been given
+         one.  frame is not among them because it is derived from bounds,
+         position and anchorPoint, and neither are the read-only ones. */
+      static NSString * archivable[] = {
+        @"delegate", @"contents", @"layoutManager", @"sublayers",
+        @"bounds", @"anchorPoint", @"anchorPointZ", @"position",
+        @"transform", @"sublayerTransform", @"opacity", @"opaque",
+        @"shouldRasterize", @"geometryFlipped", @"masksToBounds",
+        @"contentsRect", @"contentsScale", @"hidden", @"contentsGravity",
+        @"needsDisplayOnBoundsChange", @"zPosition", @"actions", @"style",
+
+        @"backgroundColor", @"borderColor",
+        @"shadowColor", @"shadowOffset", @"shadowOpacity", @"shadowPath",
+        @"shadowRadius",
+
+        @"mask", @"filters", @"backgroundFilters", @"compositingFilter",
+        @"contentsCenter", @"edgeAntialiasingMask", @"minificationFilterBias",
+        @"allowsEdgeAntialiasing", @"allowsGroupOpacity",
+        @"drawsAsynchronously", @"autoresizingMask",
+
+        /* wantsDynamicContentScaling is deliberately absent: Apple does not
+           archive it even once it has been set. */
+        @"cornerCurve", @"maskedCorners", @"contentsFormat",
+        @"preferredDynamicRange", @"toneMapMode", @"contentsHeadroom",
+        @"wantsExtendedDynamicRangeContent",
+
+        @"beginTime", @"timeOffset", @"repeatCount", @"repeatDuration",
+        @"autoreverses", @"fillMode", @"duration", @"speed" };
+
+      for (int i = 0; i < sizeof(archivable)/sizeof(archivable[0]); i++)
+        {
+          [self addObserver: [CAArchivingObserver sharedObserver]
+                 forKeyPath: archivable[i]
+                    options: 0
+                    context: nil];
+          [_archivingKeyPaths addObject: archivable[i]];
+        }
+
+      /* Apple takes these two from the application bundle rather than from
+         the class, so a layer has been given them before anyone sets one. */
+      [_valuesThatWereSet addObject: @"allowsEdgeAntialiasing"];
+      [_valuesThatWereSet addObject: @"allowsGroupOpacity"];
+      [_valuesThatWereSet addObject: @"cornerCurve"];
+      [_valuesThatWereSet addObject: @"contentsFormat"];
     }
   return self;
 }
@@ -431,6 +573,28 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       [self setNeedsDisplayOnBoundsChange: [layer needsDisplayOnBoundsChange]];
       [self setZPosition: [layer zPosition]];
 
+      [self setMask: [layer mask]];
+      [self setFilters: [layer filters]];
+      [self setBackgroundFilters: [layer backgroundFilters]];
+      [self setCompositingFilter: [layer compositingFilter]];
+      [self setContentsCenter: [layer contentsCenter]];
+      [self setEdgeAntialiasingMask: [layer edgeAntialiasingMask]];
+      [self setMinificationFilterBias: [layer minificationFilterBias]];
+      [self setAllowsEdgeAntialiasing: [layer allowsEdgeAntialiasing]];
+      [self setAllowsGroupOpacity: [layer allowsGroupOpacity]];
+      [self setDrawsAsynchronously: [layer drawsAsynchronously]];
+      [self setAutoresizingMask: [layer autoresizingMask]];
+      [self setMaskedCorners: [layer maskedCorners]];
+      [self setCornerCurve: [layer cornerCurve]];
+      [self setContentsFormat: [layer contentsFormat]];
+      [self setPreferredDynamicRange: [layer preferredDynamicRange]];
+      [self setToneMapMode: [layer toneMapMode]];
+      [self setContentsHeadroom: [layer contentsHeadroom]];
+      [self setWantsExtendedDynamicRangeContent:
+              [layer wantsExtendedDynamicRangeContent]];
+      [self setWantsDynamicContentScaling:
+              [layer wantsDynamicContentScaling]];
+
       [self setShadowColor: [layer shadowColor]];
       [self setShadowOffset: [layer shadowOffset]];
       [self setShadowOpacity: [layer shadowOpacity]];
@@ -455,6 +619,12 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       /* private or publicly read-only properties */
       [self setAnimations: [layer animations]];
       [self setAnimationKeys: [layer animationKeys]];
+
+      /* A shadow copy archives what the layer it shadows archives, not
+         everything the copying above has just gone through. */
+      [_valuesThatWereSet release];
+      _valuesThatWereSet
+        = [[NSMutableSet alloc] initWithSet: [layer valuesThatWereSet]];
     }
   return self;
 }
@@ -466,9 +636,16 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       [self removeObserver: [CAImplicitAnimationObserver sharedObserver]
                 forKeyPath: keyPath];
     }
+  for(NSString *keyPath in _archivingKeyPaths)
+    {
+      [self removeObserver: [CAArchivingObserver sharedObserver]
+                forKeyPath: keyPath];
+    }
   CGColorRelease(_shadowColor);
   CGPathRelease(_shadowPath);
   [_observedKeyPaths release];
+  [_archivingKeyPaths release];
+  [_valuesThatWereSet release];
   [_layoutManager release];
   [_contents release];
   [_sublayers release];
@@ -476,6 +653,15 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   CGColorRelease(_borderColor);
   [_contentsGravity release];
   [_fillMode release];
+  [_mask setSuperlayer: nil];
+  [_mask release];
+  [_filters release];
+  [_backgroundFilters release];
+  [_compositingFilter release];
+  [_cornerCurve release];
+  [_contentsFormat release];
+  [_preferredDynamicRange release];
+  [_toneMapMode release];
 
   [_backingStore release];
   [_animations release];
@@ -515,6 +701,8 @@ GSCA_OBSERVABLE_SETTER(setAnchorPoint, CGPoint, anchorPoint, CGPointEqualToPoint
 GSCA_OBSERVABLE_SETTER(setTransform, CATransform3D, transform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setSublayerTransform, CATransform3D, sublayerTransform, CATransform3DEqualToTransform)
 GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
+GSCA_OBSERVABLE_SETTER(setContentsRect, CGRect, contentsRect, CGRectEqualToRect)
+GSCA_OBSERVABLE_SETTER(setContentsCenter, CGRect, contentsCenter, CGRectEqualToRect)
 
 #else
 
@@ -572,10 +760,14 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (void) setBounds: (CGRect)bounds
 {
+  CGSize oldSize;
+
   bounds = CGRectStandardize(bounds);
 
   if (CGRectEqualToRect(bounds, _bounds))
     return;
+
+  oldSize = _bounds.size;
 
 #if !GNUSTEP
   _bounds = bounds;
@@ -585,6 +777,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   _bounds = bounds;
   [self didChangeValueForKey: @"bounds"];
 #endif
+
+  if (!CGSizeEqualToSize(oldSize, bounds.size))
+    {
+      [self resizeSublayersWithOldSize: oldSize];
+    }
 
   if ([self needsDisplayOnBoundsChange])
     {
@@ -650,6 +847,399 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   // NOTE: -takeNoteThatNextFrameTime is called due to the application not redrawing when
   // implicit animations are not created.
   [self takeNoteThatNextFrameTimeChanged];
+}
+
+- (CALayer *) mask
+{
+  return _mask;
+}
+
+/* A mask is not a sublayer, but it does have this layer as its superlayer,
+   so that a mask written in a coordinate system relative to this one can be
+   converted.  A layer that was somewhere else in the tree leaves it. */
+- (void) setMask: (CALayer *)mask
+{
+  if (mask == _mask)
+    return;
+
+  [self willChangeValueForKey: @"mask"];
+  [mask retain];
+  [mask removeFromSuperlayer];
+  [_mask setSuperlayer: nil];
+  [_mask release];
+  _mask = mask;
+  [_mask setSuperlayer: self];
+  [self didChangeValueForKey: @"mask"];
+}
+
+/* ************************************* */
+/* MARK: - Corners, format, dynamic range */
+
+/* A layer keeps one of the names it knows and falls back to the first of
+   them, which is also the default, for anything else.  The names are all
+   constants, so the copy a `copy` property calls for costs nothing. */
+static void
+CALayerKeepOneOf(NSString ** slot, NSString * given, NSArray * choices)
+{
+  NSString * chosen = [choices containsObject: given]
+                        ? given : [choices objectAtIndex: 0];
+
+  if (chosen == *slot)
+    return;
+
+  chosen = [chosen copy];
+  [*slot release];
+  *slot = chosen;
+}
+
++ (CGFloat) cornerCurveExpansionFactor: (NSString *)curve
+{
+  if ([curve isEqualToString: kCACornerCurveContinuous])
+    return 1.528665;
+  return 1.0;
+}
+
+- (CACornerMask) maskedCorners
+{
+  return _maskedCorners;
+}
+
+/* The bits that are not one of the four corners are dropped. */
+- (void) setMaskedCorners: (CACornerMask)corners
+{
+  [self willChangeValueForKey: @"maskedCorners"];
+  _maskedCorners = corners & (kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner
+                              | kCALayerMinXMaxYCorner
+                              | kCALayerMaxXMaxYCorner);
+  [self didChangeValueForKey: @"maskedCorners"];
+}
+
+- (NSString *) cornerCurve
+{
+  return _cornerCurve;
+}
+
+- (void) setCornerCurve: (NSString *)curve
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: kCACornerCurveCircular,
+                                                  kCACornerCurveContinuous,
+                                                  nil];
+    }
+  [self willChangeValueForKey: @"cornerCurve"];
+  CALayerKeepOneOf(&_cornerCurve, curve, choices);
+  [self didChangeValueForKey: @"cornerCurve"];
+}
+
+- (NSString *) contentsFormat
+{
+  return _contentsFormat;
+}
+
+- (void) setContentsFormat: (NSString *)format
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: kCAContentsFormatRGBA8Uint,
+                                                  kCAContentsFormatAutomatic,
+                                                  kCAContentsFormatRGBA16Float,
+                                                  kCAContentsFormatGray8Uint,
+                                                  nil];
+    }
+  [self willChangeValueForKey: @"contentsFormat"];
+  CALayerKeepOneOf(&_contentsFormat, format, choices);
+  [self didChangeValueForKey: @"contentsFormat"];
+}
+
+- (NSString *) preferredDynamicRange
+{
+  return _preferredDynamicRange;
+}
+
+- (void) setPreferredDynamicRange: (NSString *)range
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: CADynamicRangeStandard,
+                                                  CADynamicRangeConstrainedHigh,
+                                                  CADynamicRangeHigh, nil];
+    }
+  [self willChangeValueForKey: @"preferredDynamicRange"];
+  CALayerKeepOneOf(&_preferredDynamicRange, range, choices);
+  [self didChangeValueForKey: @"preferredDynamicRange"];
+}
+
+- (NSString *) toneMapMode
+{
+  return _toneMapMode;
+}
+
+- (void) setToneMapMode: (NSString *)mode
+{
+  static NSArray * choices = nil;
+
+  if (choices == nil)
+    {
+      choices = [[NSArray alloc] initWithObjects: CAToneMapModeAutomatic,
+                                                  CAToneMapModeNever,
+                                                  CAToneMapModeIfSupported,
+                                                  nil];
+    }
+  [self willChangeValueForKey: @"toneMapMode"];
+  CALayerKeepOneOf(&_toneMapMode, mode, choices);
+  [self didChangeValueForKey: @"toneMapMode"];
+}
+
+/* *************************** */
+/* MARK: - Drawing into a context */
+
+/* Move the coordinate system to where a sublayer stands in its superlayer:
+   to the sublayer's position, turned by its transform about its anchor
+   point, back by the anchor point, and back again by the origin of the
+   sublayer's own bounds, so that afterwards the sublayer's bounds
+   coordinates are the coordinates of the context. */
+static void
+CALayerPlaceInContext(CALayer * layer, CGContextRef context)
+{
+  CGRect bounds = [layer bounds];
+  CGPoint anchor = [layer anchorPoint];
+  CGPoint position = [layer position];
+
+  CGContextTranslateCTM(context, position.x, position.y);
+  CGContextConcatCTM(context, CALayerAffineOf([layer transform]));
+  CGContextTranslateCTM(context, -anchor.x * bounds.size.width,
+                        -anchor.y * bounds.size.height);
+  CGContextTranslateCTM(context, -bounds.origin.x, -bounds.origin.y);
+}
+
+/* Turn the coordinate system by the layer's sublayerTransform, about the
+   layer's anchor point, before its sublayers are drawn. */
+static void
+CALayerApplySublayerTransform(CALayer * layer, CGContextRef context)
+{
+  CGRect bounds = [layer bounds];
+  CGPoint anchor = [layer anchorPoint];
+  CGFloat pivotX = bounds.origin.x + anchor.x * bounds.size.width;
+  CGFloat pivotY = bounds.origin.y + anchor.y * bounds.size.height;
+
+  CGContextTranslateCTM(context, pivotX, pivotY);
+  CGContextConcatCTM(context, CALayerAffineOf([layer sublayerTransform]));
+  CGContextTranslateCTM(context, -pivotX, -pivotY);
+}
+
+/* The layer is drawn in the coordinates of the context as they stand, so
+   where the layer itself is positioned in its own superlayer, and any
+   transform on it, do not come into it.  Its sublayers are placed around it
+   as usual, which is what moves the coordinate system for the calls further
+   down. */
+- (void) renderInContext: (CGContextRef)context
+{
+  CGRect area = [self bounds];
+  id layerContents = [self contents];
+  CALayer * sublayer;
+
+  if (context == NULL || [self isHidden] || [self opacity] <= 0.0)
+    return;
+
+  CGContextSaveGState(context);
+  CGContextSetAlpha(context, [self opacity]);
+
+  if ([self masksToBounds])
+    {
+      CGContextClipToRect(context, area);
+    }
+
+  if ([self backgroundColor])
+    {
+      CGContextSetFillColorWithColor(context, [self backgroundColor]);
+      CGContextFillRect(context, area);
+    }
+
+  /* The contents are whatever -display left there, which is a backing store
+     of this framework's own or an image the caller set.  Nothing is drawn
+     for a layer that was never displayed, and -drawInContext: is not called
+     from here. */
+#if GNUSTEP
+  if ([layerContents isKindOfClass: NSClassFromString(@"CGImage")])
+#else
+  if ([layerContents isKindOfClass: NSClassFromString(@"__NSCFType")]
+      && CFGetTypeID(layerContents) == CGImageGetTypeID())
+#endif
+    {
+      CGContextDrawImage(context, area, (CGImageRef)layerContents);
+    }
+  else if ([layerContents isKindOfClass: [CABackingStore class]])
+    {
+      CGImageRef image;
+
+      image = CGBitmapContextCreateImage([(CABackingStore *)layerContents
+                                           context]);
+      if (image)
+        {
+          CGContextDrawImage(context, area, image);
+          CGImageRelease(image);
+        }
+    }
+
+  CALayerApplySublayerTransform(self, context);
+  for (sublayer in [self sublayers])
+    {
+      CGContextSaveGState(context);
+      CALayerPlaceInContext(sublayer, context);
+      [sublayer renderInContext: context];
+      CGContextRestoreGState(context);
+    }
+
+  CGContextRestoreGState(context);
+}
+
+/* ******************** */
+/* MARK: - Autoresizing */
+
+/* One axis of the layer, described as the margin before it, its own extent,
+   and the margin after it. */
+struct CALayerAxis
+{
+  CGFloat before;
+  CGFloat extent;
+  CGFloat after;
+};
+
+/* Share `delta` out among whichever of the three parts give way.
+
+   Each part is worth a third of the change.  A part that does not give way
+   hands its third to the margins that do, or, where neither margin does, to
+   the extent.  So a layer whose leading margin and extent both give way sees
+   two thirds of the change in the margin and one third in the extent, while
+   one whose margins both give way and whose extent does not sees half in
+   each margin. */
+static struct CALayerAxis
+CALayerResizeAxis(struct CALayerAxis axis, CGFloat delta,
+                  BOOL beforeGivesWay, BOOL extentGivesWay,
+                  BOOL afterGivesWay)
+{
+  int margins = (beforeGivesWay ? 1 : 0) + (afterGivesWay ? 1 : 0);
+  CGFloat extentShare;
+  CGFloat marginShare;
+
+  if (!beforeGivesWay && !extentGivesWay && !afterGivesWay)
+    return axis;
+
+  if (extentGivesWay)
+    extentShare = margins ? delta / 3.0 : delta;
+  else
+    extentShare = 0.0;
+
+  marginShare = margins ? (delta - extentShare) / margins : 0.0;
+
+  if (beforeGivesWay)
+    axis.before += marginShare;
+  if (extentGivesWay)
+    axis.extent += extentShare;
+  if (afterGivesWay)
+    axis.after += marginShare;
+
+  return axis;
+}
+
+- (void) resizeWithOldSuperlayerSize: (CGSize)size
+{
+  CGSize now = [[self superlayer] bounds].size;
+  CGRect frame = [self frame];
+  struct CALayerAxis x, y;
+  BOOL resizesX, resizesY;
+
+  resizesX = (_autoresizingMask & (kCALayerMinXMargin | kCALayerWidthSizable
+                                   | kCALayerMaxXMargin)) != 0;
+  resizesY = (_autoresizingMask & (kCALayerMinYMargin | kCALayerHeightSizable
+                                   | kCALayerMaxYMargin)) != 0;
+  if (!resizesX && !resizesY)
+    return;
+
+  x.before = frame.origin.x;
+  x.extent = frame.size.width;
+  x.after = size.width - x.before - x.extent;
+  y.before = frame.origin.y;
+  y.extent = frame.size.height;
+  y.after = size.height - y.before - y.extent;
+
+  x = CALayerResizeAxis(x, now.width - size.width,
+                        (_autoresizingMask & kCALayerMinXMargin) != 0,
+                        (_autoresizingMask & kCALayerWidthSizable) != 0,
+                        (_autoresizingMask & kCALayerMaxXMargin) != 0);
+  y = CALayerResizeAxis(y, now.height - size.height,
+                        (_autoresizingMask & kCALayerMinYMargin) != 0,
+                        (_autoresizingMask & kCALayerHeightSizable) != 0,
+                        (_autoresizingMask & kCALayerMaxYMargin) != 0);
+
+  /* Apple lands the layer on whole points: the leading margin goes down to
+     the point below and the extent takes up the slack. */
+  if (resizesX)
+    {
+      frame.origin.x = floor(x.before);
+      frame.size.width = ceil(now.width - frame.origin.x - x.after);
+    }
+  if (resizesY)
+    {
+      frame.origin.y = floor(y.before);
+      frame.size.height = ceil(now.height - frame.origin.y - y.after);
+    }
+  [self setFrame: frame];
+}
+
+- (void) resizeSublayersWithOldSize: (CGSize)size
+{
+  for (CALayer * sublayer in [NSArray arrayWithArray: _sublayers])
+    {
+      [sublayer resizeWithOldSuperlayerSize: size];
+    }
+}
+
+/* ******************************* */
+/* MARK: - Flipping and archiving  */
+
+/* Each layer between this one and the root turns the contents over, so an
+   even number of them leaves the contents the way up they started. */
+- (BOOL) contentsAreFlipped
+{
+  BOOL flipped = NO;
+  CALayer * layer = self;
+
+  while (layer)
+    {
+      if ([layer isGeometryFlipped])
+        flipped = !flipped;
+      layer = [layer superlayer];
+    }
+  return flipped;
+}
+
+- (NSSet *) valuesThatWereSet
+{
+  return _valuesThatWereSet;
+}
+
+- (void) noteValueWasSetForKey: (NSString *)key
+{
+  [_valuesThatWereSet addObject: key];
+}
+
+/* A layer archives a property once that property has been given a value.
+   One that still holds what the class handed it is not worth writing out,
+   and neither is one derived from properties that are. */
+- (BOOL) shouldArchiveValueForKey: (NSString *)key
+{
+  if (key == nil)
+    return NO;
+
+  return [_valuesThatWereSet containsObject: key];
 }
 
 /* ***************** */
@@ -938,6 +1528,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [layer removeFromSuperlayer];
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
+  [self noteValueWasSetForKey: @"sublayers"];
 }
 
 - (void)removeFromSuperlayer
