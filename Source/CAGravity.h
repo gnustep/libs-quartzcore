@@ -1,8 +1,6 @@
-/* CATiledLayer.h
+/* CAGravity.h
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
-
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Copyright (C) 2026 Free Software Foundation, Inc.
 
    This file is part of QuartzCore.
 
@@ -23,21 +21,13 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <QuartzCore/CABase.h>
-#import <QuartzCore/CALayer.h>
+#import <Foundation/Foundation.h>
+#if GNUSTEP
+#import <CoreGraphics/CoreGraphics.h>
+#endif
 
-@interface CATiledLayer : CALayer
-{
-  size_t _levelsOfDetail;
-  size_t _levelsOfDetailBias;
-  CGSize _tileSize;
-}
-
-@property (assign) size_t levelsOfDetail;
-@property (assign) size_t levelsOfDetailBias;
-@property (assign) CGSize tileSize;
-
-/* How long a tile takes to fade in once it has been drawn. */
-+ (CFTimeInterval) fadeDuration;
-
-@end
+/* The rectangle, in a layer's bounds coordinates, that contents of the given
+   size occupy under the given gravity.  Both renderers ask this so that they
+   place the contents the same way. */
+CGRect CAGravityDestinationRect(NSString *gravity, CGRect bounds,
+                                CGSize contentsSize);

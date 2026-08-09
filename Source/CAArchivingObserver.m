@@ -1,8 +1,6 @@
-/* CATiledLayer.h
+/* CAArchivingObserver.m
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
-
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Copyright (C) 2026 Free Software Foundation, Inc.
 
    This file is part of QuartzCore.
 
@@ -23,21 +21,32 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <QuartzCore/CABase.h>
-#import <QuartzCore/CALayer.h>
+#import <Foundation/Foundation.h>
+#import "CAArchivingObserver.h"
+#import "CALayer+FrameworkPrivate.h"
+#import "QuartzCore/CALayer.h"
 
-@interface CATiledLayer : CALayer
+static CAArchivingObserver * sharedObserver;
+
+@implementation CAArchivingObserver
++ (CAArchivingObserver *)sharedObserver
 {
-  size_t _levelsOfDetail;
-  size_t _levelsOfDetailBias;
-  CGSize _tileSize;
+  if (!sharedObserver)
+    {
+      sharedObserver = [CAArchivingObserver new];
+    }
+
+  return sharedObserver;
 }
 
-@property (assign) size_t levelsOfDetail;
-@property (assign) size_t levelsOfDetailBias;
-@property (assign) CGSize tileSize;
-
-/* How long a tile takes to fade in once it has been drawn. */
-+ (CFTimeInterval) fadeDuration;
+- (void) observeValueForKeyPath: (NSString *)keyPath
+                       ofObject: (id)object
+                         change: (NSDictionary *)change
+                        context: (void *)context
+{
+  [(CALayer *)object noteValueWasSetForKey: keyPath];
+}
 
 @end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
