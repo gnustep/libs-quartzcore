@@ -134,6 +134,17 @@ extern NSString *const kCAAnimationCubicPaced;
 
 /* *********************************** */
 
+@interface CAAnimationGroup : CAAnimation
+{
+  /* property-backing ivars */
+  NSArray * _animations;
+}
+@property(copy) NSArray* animations;
+
+@end
+
+/* *********************************** */
+
 @interface CATransition : CAAnimation
 {
   NSString * _type;
