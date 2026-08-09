@@ -616,6 +616,66 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
     return qr;
 
 }
+/* VALUE plus BYVALUE, or minus it where SIGN is -1.  Answers nil for a pair
+   of values a by value cannot be added to, which leaves the animation to
+   settle its ends some other way. */
+static id addValues(id value, id byValue, CGFloat sign)
+{
+  const char *type;
+
+  if ([value isKindOfClass: [NSNumber class]]
+      && [byValue isKindOfClass: [NSNumber class]])
+    {
+      return [NSNumber numberWithFloat:
+        [value floatValue] + sign * [byValue floatValue]];
+    }
+
+  if (![value isKindOfClass: [NSValue class]]
+      || ![byValue isKindOfClass: [NSValue class]])
+    {
+      return nil;
+    }
+
+  type = [value objCType];
+  if (strcmp(type, [byValue objCType]))
+    {
+      return nil;
+    }
+
+  if (!strcmp(type, @encode(CGPoint)))
+    {
+      CGPoint a = { 0 }; [value getValue: &a];
+      CGPoint b = { 0 }; [byValue getValue: &b];
+      CGPoint r = CGPointMake(a.x + sign * b.x, a.y + sign * b.y);
+
+      return [NSValue valueWithBytes: &r objCType: @encode(CGPoint)];
+    }
+
+  if (!strcmp(type, @encode(CGSize)))
+    {
+      CGSize a = { 0 }; [value getValue: &a];
+      CGSize b = { 0 }; [byValue getValue: &b];
+      CGSize r = CGSizeMake(a.width + sign * b.width,
+                            a.height + sign * b.height);
+
+      return [NSValue valueWithBytes: &r objCType: @encode(CGSize)];
+    }
+
+  if (!strcmp(type, @encode(CGRect)))
+    {
+      CGRect a = { { 0 } }; [value getValue: &a];
+      CGRect b = { { 0 } }; [byValue getValue: &b];
+      CGRect r = CGRectMake(a.origin.x + sign * b.origin.x,
+                            a.origin.y + sign * b.origin.y,
+                            a.size.width + sign * b.size.width,
+                            a.size.height + sign * b.size.height);
+
+      return [NSValue valueWithBytes: &r objCType: @encode(CGRect)];
+    }
+
+  return nil;
+}
+
 /** End helper math functions **/
 /*******************************/
 
@@ -638,22 +698,13 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
                               onLayer: (CALayer *)layer
 {
   /*
-    Currently supporting scenarios with:
-     - fromValue != nil
-     - toValue != nil
-     - byValue == nil
-    and
-     - fromValue != nil
-     - toValue == nil
-     - byValue == nil
-    and
-     - fromValue == nil
-     - toValue == nil
-     - byValue == nil
-    and
-     - fromValue == nil
-     - toValue != nil
-     - byValue == nil
+    A from value and a to value are interpolated between.  A by value
+    stands in for whichever end was not given: with a from value the
+    animation runs to that value plus the by value, with a to value it
+    starts at that value minus the by value, and on its own it works from
+    the value the layer already has.  A by value has no effect on a type it
+    cannot be added to, which is every type but a number, a point, a size
+    and a rectangle.
 
     All supplied values need to be of same data type.
    */
@@ -669,6 +720,23 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
   /* Calculate what will our actual from and to values be */
   id fromValue = _fromValue;
   id toValue = _toValue;
+
+  if (_byValue)
+    {
+      if (fromValue && !toValue)
+        {
+          toValue = addValues(fromValue, _byValue, 1.0);
+        }
+      else if (!fromValue && toValue)
+        {
+          fromValue = addValues(toValue, _byValue, -1.0);
+        }
+      else if (!fromValue && !toValue && _keyPath)
+        {
+          fromValue = [[layer modelLayer] valueForKeyPath: _keyPath];
+          toValue = addValues(fromValue, _byValue, 1.0);
+        }
+    }
 
   if (!toValue)
     toValue = [[layer modelLayer] valueForKeyPath: _keyPath];
@@ -1016,9 +1084,165 @@ static GSQuartzCoreQuaternion linearInterpolationQuaternion(GSQuartzCoreQuaterni
 
 @end
 
+/* Which of the SEGMENTS the fraction falls in, and how far along that one it
+   is.  KEYTIMES says where each segment ends; without it they are evenly
+   spaced. */
+static NSUInteger segmentForFraction(NSArray *keyTimes, NSUInteger segments,
+                                     float fraction, float *within)
+{
+  NSUInteger index;
+
+  *within = 0.0;
+  if (segments == 0)
+    {
+      return 0;
+    }
+
+  if ([keyTimes count] >= 2)
+    {
+      NSUInteger last = [keyTimes count] - 1;
+
+      for (index = 0; index < last; index++)
+        {
+          float start = [[keyTimes objectAtIndex: index] floatValue];
+          float end = [[keyTimes objectAtIndex: index + 1] floatValue];
+
+          if (fraction <= end || index + 1 == last)
+            {
+              if (end > start)
+                {
+                  *within = (fraction - start) / (end - start);
+                  if (*within < 0.0)
+                    *within = 0.0;
+                  if (*within > 1.0)
+                    *within = 1.0;
+                }
+              return index < segments ? index : segments - 1;
+            }
+        }
+    }
+
+  {
+    float scaled = fraction * segments;
+
+    index = (NSUInteger)scaled;
+    if (index >= segments)
+      {
+        index = segments - 1;
+        *within = 1.0;
+      }
+    else
+      {
+        *within = scaled - index;
+      }
+  }
+
+  return index;
+}
+
 @implementation CAKeyframeAnimation
 @synthesize calculationMode=_calculationMode;
 @synthesize values=_values;
+@synthesize keyTimes=_keyTimes;
+@synthesize timingFunctions=_timingFunctions;
+
++ (id) defaultValueForKey: (NSString *)key
+{
+  if ([key isEqualToString: @"calculationMode"])
+    {
+      return kCAAnimationLinear;
+    }
+
+  return [super defaultValueForKey: key];
+}
+
+- (id) init
+{
+  return [self initWithKeyPath: nil];
+}
+
+- (id) initWithKeyPath: (NSString *)keyPath
+{
+  self = [super initWithKeyPath: keyPath];
+  if (!self)
+    return nil;
+
+  _calculationMode = [kCAAnimationLinear copy];
+
+  return self;
+}
+
+- (void) dealloc
+{
+  [_calculationMode release];
+  [_values release];
+  [_keyTimes release];
+  [_timingFunctions release];
+
+  [super dealloc];
+}
+
+- (id) calculatedAnimationValueAtTime: (CFTimeInterval)theTime
+                              onLayer: (CALayer *)layer
+{
+  /*
+    The values are run through in order.  keyTimes says where each of them
+    falls between 0 and 1, and without it they are evenly spaced.  A discrete
+    animation steps from one value to the next without interpolating; every
+    other mode interpolates between the two values the time falls between,
+    which is what a basic animation does with a from value and a to value.
+
+    Only the linear and discrete modes are calculated.  The paced modes are
+    taken as linear, and an animation along a path is not supported.
+   */
+
+  NSUInteger count = [_values count];
+  NSUInteger index;
+  float fraction;
+  float within = 0.0;
+  CABasicAnimation *segment;
+
+  if (count == 0)
+    {
+      return nil;
+    }
+  if (count == 1)
+    {
+      return [_values objectAtIndex: 0];
+    }
+
+  fraction = theTime / _duration;
+  if ([self timingFunction])
+    {
+      fraction = [[self timingFunction] evaluateYAtX: fraction];
+    }
+
+  /* Asking outside the duration would run off the end of the values. */
+  if (fraction < 0.0)
+    fraction = 0.0;
+  if (fraction > 1.0)
+    fraction = 1.0;
+
+  if ([_calculationMode isEqualToString: kCAAnimationDiscrete])
+    {
+      index = segmentForFraction(_keyTimes, count, fraction, &within);
+
+      return [_values objectAtIndex: index];
+    }
+
+  index = segmentForFraction(_keyTimes, count - 1, fraction, &within);
+
+  segment = [CABasicAnimation animationWithKeyPath: [self keyPath]];
+  [segment setDuration: 1.0];
+  [segment setFromValue: [_values objectAtIndex: index]];
+  [segment setToValue: [_values objectAtIndex: index + 1]];
+  if ([_timingFunctions count] > index)
+    {
+      [segment setTimingFunction: [_timingFunctions objectAtIndex: index]];
+    }
+
+  return [segment calculatedAnimationValueAtTime: within onLayer: layer];
+}
 
 @end
 
