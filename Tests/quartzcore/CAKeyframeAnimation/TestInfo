@@ -1,0 +1,3 @@
+# -calculatedAnimationValueAtTime:onLayer: is GNUstep API with no counterpart
+# in Apple QuartzCore, so only the properties can be checked against it.
+APPLE_SKIP_TESTS="keyframes.m path.m"
