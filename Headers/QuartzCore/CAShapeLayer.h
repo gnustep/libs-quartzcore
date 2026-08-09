@@ -41,10 +41,10 @@
   NSArray *_lineDashPattern;
 }
 
-@property CGPathRef path;
-@property CGColorRef fillColor;
+@property (nonatomic, assign) CGPathRef path; /* retained by CG */
+@property (nonatomic, assign) CGColorRef fillColor; /* retained by CG */
 @property(copy) NSString *fillRule;
-@property CGColorRef strokeColor;
+@property (nonatomic, assign) CGColorRef strokeColor; /* retained by CG */
 @property CGFloat strokeStart;
 @property CGFloat strokeEnd;
 @property CGFloat lineWidth;

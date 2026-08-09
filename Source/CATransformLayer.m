@@ -23,5 +23,7 @@
    Boston, MA 02110-1301, USA.
 */
 
+#import "QuartzCore/CATransformLayer.h"
+
 @implementation CATransformLayer
 @end
