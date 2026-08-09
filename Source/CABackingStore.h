@@ -55,6 +55,7 @@
   CGContextRef _context;
   CAGLTexture * _contentsTexture;
   CAGLTexture * _offscreenRenderTexture;
+  NSUInteger _contentsVersion;
 }
 
 + (CABackingStore *) backingStoreWithWidth: (CGFloat) width
@@ -69,6 +70,11 @@
 @property (retain) CAGLTexture * offscreenRenderTexture;
 @property (readonly) CGFloat width;
 @property (readonly) CGFloat height;
+
+/* Incremented by -refresh.  Redrawing into the context leaves nothing else
+   visible from outside, so this is the only way to detect that the contents
+   changed. */
+@property (readonly) NSUInteger contentsVersion;
 
 @end
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
