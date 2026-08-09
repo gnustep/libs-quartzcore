@@ -47,6 +47,30 @@
 - (CFTimeInterval) activeTime;
 - (CFTimeInterval) localTime;
 
+- (void) noteValueWasSetForKey: (NSString *)key;
+
+/* What a layer draws for itself, as opposed to what its delegate draws.
+   CALayer draws nothing; a subclass whose content is its own, such as
+   CAShapeLayer, overrides this.  It is called both when the layer displays
+   into its backing store and when it is rendered into a context. */
+- (void) drawContentInContext: (CGContextRef)context;
+
+/* What a layer draws under its contents, as opposed to over them.  CALayer
+   draws nothing; CAGradientLayer overrides this, where CAShapeLayer
+   overrides -drawContentInContext:, because Apple draws a gradient under a
+   layer's contents and a shape over them. */
+- (void) drawBackgroundInContext: (CGContextRef)context;
+
+/* One transform per copy of the sublayers, as an NSValue holding a
+   CATransform3D.  CALayer draws its sublayers once and answers a single
+   identity transform; CAReplicatorLayer answers one per instance.  Both
+   renderers walk this list, so neither tests the class. */
+- (NSArray *) instanceTransformsForSublayers;
+
 @property (retain) CABackingStore * backingStore;
 @property (assign) CARenderer * renderer;
 @end
+
+/* Add the layer's rounded rectangle to the context's path.  A radius of 0
+   gives the plain rectangle. */
+void CALayerAddRoundedRect(CGContextRef context, CGRect rect, CGFloat radius);
