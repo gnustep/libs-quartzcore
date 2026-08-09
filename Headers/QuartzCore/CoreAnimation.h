@@ -30,6 +30,8 @@
 
 #import "QuartzCore/CABase.h"
 #import "QuartzCore/CAAction.h"
+#import "QuartzCore/CAEmitterCell.h"
+#import "QuartzCore/CAEmitterLayer.h"
 #import "QuartzCore/CAFilter.h"
 #import "QuartzCore/CALayer.h"
 #import "QuartzCore/CAAnimation.h"
