@@ -65,6 +65,7 @@ extern NSString *const kCATransition;
 
 @class CABackingStore;
 @class CAGLSimpleFramebuffer;
+@class CAConstraint;
 
 @interface CALayer : NSObject<CAMediaTiming>
 {
@@ -117,6 +118,8 @@ extern NSString *const kCATransition;
   float _speed;
 
   /* i-vars */
+  NSString * _name;
+  NSArray * _constraints;
   BOOL _needsDisplay;
   BOOL _needsLayout;
   NSMutableDictionary *_animations;
@@ -139,6 +142,8 @@ extern NSString *const kCATransition;
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
 @property (retain)                   id layoutManager;
+@property (copy)                     NSString *name;
+@property (copy)                     NSArray *constraints;
 @property (nonatomic,readonly)       CALayer *superlayer;
 @property (nonatomic,copy)           NSArray *sublayers;
 @property (assign)                   CGRect frame;
@@ -206,6 +211,9 @@ extern NSString *const kCATransition;
 - (BOOL) needsLayout;
 - (void) setNeedsLayout;
 - (void) layoutIfNeeded;
+- (void) layoutSublayers;
+- (CGSize) preferredFrameSize;
+- (void) addConstraint: (CAConstraint *)constraint;
 
 - (id) presentationLayer;
 - (id) modelLayer;
@@ -219,6 +227,7 @@ extern NSString *const kCATransition;
 @end
 
 @interface NSObject (CALayerActions)
+- (void) layerWillDraw: (CALayer*)layer;
 - (void) displayLayer: (CALayer*)layer;
 - (void) drawLayer: (CALayer*)layer inContext: (CGContextRef)context;
 - (id<CAAction>) actionForLayer: (CALayer*)layer forKey: (NSString*)eventKey;
@@ -226,6 +235,8 @@ extern NSString *const kCATransition;
 
 @interface NSObject (CALayerLayoutManager)
 - (void) layoutSublayersOfLayer: (CALayer*)layer;
+- (void) invalidateLayoutOfLayer: (CALayer*)layer;
+- (CGSize) preferredSizeOfLayer: (CALayer*)layer;
 @end
 
 /* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
