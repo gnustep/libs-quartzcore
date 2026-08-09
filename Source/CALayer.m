@@ -98,6 +98,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize delegate=_delegate;
 @synthesize contents=_contents;
 @synthesize layoutManager=_layoutManager;
+@synthesize name=_name;
 @synthesize renderer=_renderer;
 @synthesize superlayer=_superlayer;
 @synthesize sublayers=_sublayers;
@@ -409,6 +410,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 
       [self setDelegate: [layer delegate]];
       [self setLayoutManager: [layer layoutManager]];
+      [self setName: [layer name]];
+      [self setConstraints: [layer constraints]];
       [self setSuperlayer: [layer superlayer]]; /* if copied for use in presentation layer, then ignored */
       [self setSublayers: [layer sublayers]]; /* if copied for use in presentation layer, then ignored */
       /* frame not copied: dynamically generated */
@@ -470,6 +473,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   CGPathRelease(_shadowPath);
   [_observedKeyPaths release];
   [_layoutManager release];
+  [_name release];
+  [_constraints release];
   [_contents release];
   [_sublayers release];
   CGColorRelease(_backgroundColor);
@@ -725,15 +730,66 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 /* MARK: - Layout methods */
 - (void) layoutIfNeeded
 {
+  NSEnumerator * enumerator;
+  CALayer * sublayer;
+
+  if (_needsLayout)
+    {
+      _needsLayout = NO;
+      [self layoutSublayers];
+    }
+
+  enumerator = [[self sublayers] objectEnumerator];
+  while ((sublayer = [enumerator nextObject]) != nil)
+    {
+      [sublayer layoutIfNeeded];
+    }
 }
 
 - (void) layoutSublayers
 {
+  if ([_delegate respondsToSelector: @selector(layoutSublayersOfLayer:)])
+    {
+      [_delegate layoutSublayersOfLayer: self];
+      return;
+    }
+
+  [_layoutManager layoutSublayersOfLayer: self];
+}
+
+- (BOOL) needsLayout
+{
+  return _needsLayout;
 }
 
 - (void) setNeedsLayout
 {
   _needsLayout = YES;
+}
+
+- (void) addConstraint: (CAConstraint *)constraint
+{
+  if (_constraints)
+    [self setConstraints: [_constraints arrayByAddingObject: constraint]];
+  else
+    [self setConstraints: [NSArray arrayWithObject: constraint]];
+}
+
+- (NSArray *) constraints
+{
+  return _constraints;
+}
+
+- (void) setConstraints: (NSArray *)constraints
+{
+  if (_constraints != constraints)
+    {
+      [_constraints release];
+      _constraints = [constraints copy];
+    }
+
+  /* The superlayer is the one that lays its sublayers out. */
+  [[self superlayer] setNeedsLayout];
 }
 
 /* ************************************* */
