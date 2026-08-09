@@ -49,4 +49,31 @@ NSString *const kCALineCapSquare = @"square";
 @synthesize lineJoin = _lineJoin;
 @synthesize lineDashPhase = _lineDashPhase;
 @synthesize lineDashPattern = _lineDashPattern;
+
+/* The shadow copy a presentation layer is made from carries what the shape
+   draws, or the layer standing in for this one draws nothing. */
+- (id) initWithLayer: (CALayer *)layer
+{
+  if ((self = [super initWithLayer: layer]) != nil)
+    {
+      if ([layer isKindOfClass: [CAShapeLayer class]])
+        {
+          CAShapeLayer *shape = (CAShapeLayer *)layer;
+
+          [self setPath: [shape path]];
+          [self setFillColor: [shape fillColor]];
+          [self setFillRule: [shape fillRule]];
+          [self setStrokeColor: [shape strokeColor]];
+          [self setStrokeStart: [shape strokeStart]];
+          [self setStrokeEnd: [shape strokeEnd]];
+          [self setLineWidth: [shape lineWidth]];
+          [self setMiterLimit: [shape miterLimit]];
+          [self setLineCap: [shape lineCap]];
+          [self setLineJoin: [shape lineJoin]];
+          [self setLineDashPhase: [shape lineDashPhase]];
+          [self setLineDashPattern: [shape lineDashPattern]];
+        }
+    }
+  return self;
+}
 @end
