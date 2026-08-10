@@ -197,6 +197,9 @@ extern NSString *const kCATransition;
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime fromLayer: (CALayer *)layer;
 - (CFTimeInterval) convertTime: (CFTimeInterval)theTime toLayer: (CALayer *)layer;
 
+- (BOOL) containsPoint: (CGPoint)p;
+- (CALayer *) hitTest: (CGPoint)p;
+
 - (void) display;
 - (void) displayIfNeeded;
 - (BOOL) needsDisplay;
