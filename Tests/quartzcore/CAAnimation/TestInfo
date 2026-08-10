@@ -1,0 +1,3 @@
+# -calculatedAnimationValueAtTime:onLayer: and -applyToLayer: are GNUstep API
+# with no counterpart in Apple QuartzCore.
+APPLE_SKIP_TESTS="interpolation.m"
