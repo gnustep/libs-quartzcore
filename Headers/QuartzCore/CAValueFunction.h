@@ -25,7 +25,16 @@
 */
 
 #import <Foundation/Foundation.h>
-@interface CAValueFunction : NSObject
+@interface CAValueFunction : NSObject <NSCoding>
+{
+  NSString *_name;
+}
+
+/* Answers the function of that name, or nil when there is no function of
+   that name.  The same name always answers the same object. */
++ (id) functionWithName: (NSString *)name;
+
+- (NSString *) name;
 
 @end
 
