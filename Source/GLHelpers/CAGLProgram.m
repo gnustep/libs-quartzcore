@@ -208,6 +208,14 @@
     glUniform4fv(location, 1, array);
 }
 
+- (void) bindUniformAtLocation: (GLint)location
+                       toFloat: (GLfloat)value
+{
+  [self use];
+  if (location != -1)
+    glUniform1f(location, value);
+}
+
 
 /* ********************** *
  * MARK: Activate program *
