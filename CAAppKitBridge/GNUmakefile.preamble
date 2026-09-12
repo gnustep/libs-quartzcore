@@ -1,1 +1,7 @@
 VERSION = 0.1
+
+# clang 19 and later make -Wincompatible-pointer-types an error by
+# default.  The CoreFoundation and Foundation types here are toll-free
+# bridged, so the static types differ where the objects do not.
+ADDITIONAL_OBJCFLAGS += -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
+ADDITIONAL_CFLAGS += -Wno-error=incompatible-pointer-types -Wno-error=int-conversion

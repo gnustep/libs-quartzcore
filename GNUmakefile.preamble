@@ -1,1 +1,21 @@
 VERSION = 0.1
+
+# clang 19 and later make -Wincompatible-pointer-types an error by
+# default.  The CoreFoundation and Foundation types here are toll-free
+# bridged, so the static types differ where the objects do not.
+ADDITIONAL_OBJCFLAGS += -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
+ADDITIONAL_CFLAGS += -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
+
+# QuartzCore draws through opal.  A PE DLL must resolve every symbol at link
+# time, unlike an ELF shared library.  NB this belongs in the TOP LEVEL
+# preamble: Source/GNUmakefile.preamble is never parsed.
+ADDITIONAL_OBJC_LIBS += -lopal
+
+# CARenderer draws with OpenGL.  The Unix names -lGL and -lGLU do not exist
+# on Windows; the system libraries are opengl32 and glu32.
+ADDITIONAL_OBJC_LIBS += -lopengl32 -lglu32
+
+# opengl32.dll exports only OpenGL 1.1; everything from GL 2.0 on has to come
+# from wglGetProcAddress or a loader.  libepoxy exports the real gl* names and
+# dispatches at runtime, so the shader calls resolve.
+ADDITIONAL_OBJC_LIBS += -lepoxy
