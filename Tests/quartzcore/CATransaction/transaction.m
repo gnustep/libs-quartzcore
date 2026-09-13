@@ -185,6 +185,53 @@ int main(void)
 
   END_SET("the class methods that take no transaction")
 
+  START_SET("flushing")
+
+  [CATransaction setAnimationDuration: 5.0];
+  PASS([CATransaction animationDuration] == 5.0,
+       "the implicit transaction takes a duration like any other");
+
+  [CATransaction flush];
+  PASS([CATransaction animationDuration] == 0.25,
+       "flushing takes the implicit transaction away");
+
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 7.0];
+  [CATransaction flush];
+  PASS([CATransaction animationDuration] == 7.0,
+       "a flush leaves an explicit transaction where it is");
+  [CATransaction commit];
+
+  PASS([CATransaction animationDuration] == 0.25,
+       "and once that is committed there is nothing left of it");
+
+  PASS_RUNS([CATransaction flush]; [CATransaction flush],
+            "flushing when there is nothing to flush does nothing");
+
+  END_SET("flushing")
+
+  START_SET("the lock")
+
+  PASS_RUNS([CATransaction lock]; [CATransaction unlock],
+            "a lock can be taken and given back");
+
+  PASS_RUNS([CATransaction lock]; [CATransaction lock];
+            [CATransaction unlock]; [CATransaction unlock],
+            "and taken twice over by the one thread");
+
+  [CATransaction lock];
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 9.0];
+  PASS([CATransaction animationDuration] == 9.0,
+       "a transaction still works while the lock is held");
+  [CATransaction commit];
+  [CATransaction unlock];
+
+  PASS_RUNS([CATransaction unlock],
+            "giving back a lock that was never taken does nothing");
+
+  END_SET("the lock")
+
   [pool release];
   return 0;
 }
