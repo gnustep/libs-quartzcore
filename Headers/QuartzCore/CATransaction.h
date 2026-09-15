@@ -31,12 +31,9 @@
 
 @interface CATransaction : NSObject
 {
-  CFTimeInterval _animationDuration;
-  CAMediaTimingFunction *_animationTimingFunction;
-  BOOL _disableActions;
-
   NSMutableArray *_actions;
   BOOL _implicit;
+  NSMutableDictionary *_values;
 }
 
 + (void) begin;
