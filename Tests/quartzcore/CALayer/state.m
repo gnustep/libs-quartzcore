@@ -34,15 +34,49 @@ int main(void)
   PASS([l contents] == nil, "a layer starts with no contents");
   PASS([l backgroundColor] == NULL, "a layer starts with no background");
 
+  PASS([l sublayers] == nil, "a layer starts with no sublayers at all");
+
   testHopeful = YES;
   PASS([l modelLayer] == l, "a layer is its own model layer");
-  PASS([l sublayers] == nil, "a layer starts with no sublayers at all");
   PASS([[l contentsGravity] isEqualToString: kCAGravityResize],
        "a layer's contents gravity is resize");
   PASS([l borderColor] != NULL, "a layer starts with a border colour");
   testHopeful = NO;
 
   END_SET("the values a layer starts with")
+
+  START_SET("a layer that has lost its sublayers")
+
+  CALayer *l = [CALayer layer];
+  CALayer *a = [CALayer layer];
+  CALayer *b = [CALayer layer];
+
+  [l addSublayer: a];
+  PASS([l sublayers] != nil, "having one, it answers an array");
+
+  [a removeFromSuperlayer];
+  PASS([l sublayers] == nil, "having lost the only one, it answers nothing");
+
+  [l addSublayer: a];
+  [l addSublayer: b];
+  [a removeFromSuperlayer];
+  PASS([[l sublayers] count] == 1, "losing one of two leaves the other");
+  [b removeFromSuperlayer];
+  PASS([l sublayers] == nil, "and losing that one leaves nothing again");
+
+  [l setSublayers: [NSArray arrayWithObject: a]];
+  [l setSublayers: [NSArray array]];
+  PASS([l sublayers] == nil, "being given an empty array is the same thing");
+
+  [l setSublayers: [NSArray arrayWithObject: a]];
+  [l setSublayers: nil];
+  PASS([l sublayers] == nil, "and so is being given nothing");
+
+  /* Being given nothing must not stop it taking sublayers later. */
+  [l addSublayer: a];
+  PASS([[l sublayers] count] == 1, "a layer given nothing can still be given one");
+
+  END_SET("a layer that has lost its sublayers")
 
   START_SET("the sublayer tree")
 
