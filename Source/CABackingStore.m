@@ -154,10 +154,17 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   return CGBitmapContextGetHeight(_context);
 }
 
+- (NSUInteger) contentsVersion
+{
+  return _contentsVersion;
+}
+
 - (void) refresh
 {
   if (!_context)
     return;
+
+  _contentsVersion++;
 
 #if __APPLE__
   /* Since we retain contents in the CGContext, we can use the
