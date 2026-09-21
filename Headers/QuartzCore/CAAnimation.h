@@ -138,9 +138,15 @@ extern NSString *const kCAAnimationCubicPaced;
 {
   NSString * _type;
   NSString * _subtype;
+  float _startProgress;
+  float _endProgress;
+  id _filter;
 }
 @property(copy) NSString* type;
 @property(copy) NSString* subtype;
+@property float startProgress;
+@property float endProgress;
+@property(retain) id filter;
 
 @end
 
