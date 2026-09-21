@@ -1,8 +1,6 @@
-/* CATransformLayer.m
+/* CAArchivingObserver.m
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
-
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Copyright (C) 2026 Free Software Foundation, Inc.
 
    This file is part of QuartzCore.
 
@@ -23,7 +21,32 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import "QuartzCore/CATransformLayer.h"
+#import <Foundation/Foundation.h>
+#import "CAArchivingObserver.h"
+#import "CALayer+FrameworkPrivate.h"
+#import "QuartzCore/CALayer.h"
 
-@implementation CATransformLayer
+static CAArchivingObserver * sharedObserver;
+
+@implementation CAArchivingObserver
++ (CAArchivingObserver *)sharedObserver
+{
+  if (!sharedObserver)
+    {
+      sharedObserver = [CAArchivingObserver new];
+    }
+
+  return sharedObserver;
+}
+
+- (void) observeValueForKeyPath: (NSString *)keyPath
+                       ofObject: (id)object
+                         change: (NSDictionary *)change
+                        context: (void *)context
+{
+  [(CALayer *)object noteValueWasSetForKey: keyPath];
+}
+
 @end
+
+/* vim: set cindent cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 expandtabs shiftwidth=2 tabstop=8: */
