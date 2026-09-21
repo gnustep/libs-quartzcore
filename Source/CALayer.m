@@ -98,6 +98,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize delegate=_delegate;
 @synthesize contents=_contents;
 @synthesize layoutManager=_layoutManager;
+@synthesize name=_name;
 @synthesize renderer=_renderer;
 @synthesize superlayer=_superlayer;
 @synthesize sublayers=_sublayers;
@@ -274,6 +275,15 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
          just like Opal's Objective-C class instances */
       return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
     }
+  if ([key isEqualToString: @"borderColor"])
+    {
+      /* opaque black, as for the shadow colour above */
+      return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
+    }
+  if ([key isEqualToString: @"contentsGravity"])
+    {
+      return kCAGravityResize;
+    }
   if ([key isEqualToString: @"shadowOffset"])
     {
       CGSize offset = CGSizeMake(0.0, -3.0);
@@ -330,6 +340,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
         @"backgroundColor", @"borderColor", @"contentsScale",
+        @"contentsGravity",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount", @"fillMode",
@@ -414,6 +425,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 
       [self setDelegate: [layer delegate]];
       [self setLayoutManager: [layer layoutManager]];
+      [self setName: [layer name]];
+      [self setConstraints: [layer constraints]];
       [self setSuperlayer: [layer superlayer]]; /* if copied for use in presentation layer, then ignored */
       [self setSublayers: [layer sublayers]]; /* if copied for use in presentation layer, then ignored */
       /* frame not copied: dynamically generated */
@@ -475,6 +488,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   CGPathRelease(_shadowPath);
   [_observedKeyPaths release];
   [_layoutManager release];
+  [_name release];
+  [_constraints release];
   [_contents release];
   [_sublayers release];
   CGColorRelease(_backgroundColor);
@@ -595,6 +610,10 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
     {
       [self setNeedsDisplay];
     }
+
+  /* The sublayers are placed within these bounds, so they want placing
+     again. */
+  [self setNeedsLayout];
 }
 
 - (void)setBackgroundColor: (CGColorRef)backgroundColor
@@ -672,6 +691,11 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
       CGRect bounds = [self bounds];
 
+      if ([_delegate respondsToSelector: @selector(layerWillDraw:)])
+        {
+          [_delegate layerWillDraw: self];
+        }
+
       if (!_backingStore ||
           [_backingStore width] != bounds.size.width ||
           [_backingStore height] != bounds.size.height)
@@ -730,15 +754,85 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 /* MARK: - Layout methods */
 - (void) layoutIfNeeded
 {
+  NSEnumerator * enumerator;
+  CALayer * sublayer;
+
+  if (_needsLayout)
+    {
+      _needsLayout = NO;
+      [self layoutSublayers];
+    }
+
+  enumerator = [[self sublayers] objectEnumerator];
+  while ((sublayer = [enumerator nextObject]) != nil)
+    {
+      [sublayer layoutIfNeeded];
+    }
 }
 
 - (void) layoutSublayers
 {
+  if ([_delegate respondsToSelector: @selector(layoutSublayersOfLayer:)])
+    {
+      [_delegate layoutSublayersOfLayer: self];
+      return;
+    }
+
+  [_layoutManager layoutSublayersOfLayer: self];
+}
+
+- (BOOL) needsLayout
+{
+  return _needsLayout;
 }
 
 - (void) setNeedsLayout
 {
+  /* The layout manager is told the moment a layout that was good becomes one
+     that is not.  A layer already wanting laying out says nothing more,
+     however often it is asked again. */
+  if (!_needsLayout
+      && [_layoutManager respondsToSelector: @selector(invalidateLayoutOfLayer:)])
+    {
+      [_layoutManager invalidateLayoutOfLayer: self];
+    }
+
   _needsLayout = YES;
+}
+
+- (CGSize) preferredFrameSize
+{
+  if ([_layoutManager respondsToSelector: @selector(preferredSizeOfLayer:)])
+    {
+      return [_layoutManager preferredSizeOfLayer: self];
+    }
+
+  return [self bounds].size;
+}
+
+- (void) addConstraint: (CAConstraint *)constraint
+{
+  if (_constraints)
+    [self setConstraints: [_constraints arrayByAddingObject: constraint]];
+  else
+    [self setConstraints: [NSArray arrayWithObject: constraint]];
+}
+
+- (NSArray *) constraints
+{
+  return _constraints;
+}
+
+- (void) setConstraints: (NSArray *)constraints
+{
+  if (_constraints != constraints)
+    {
+      [_constraints release];
+      _constraints = [constraints copy];
+    }
+
+  /* The superlayer is the one that lays its sublayers out. */
+  [[self superlayer] setNeedsLayout];
 }
 
 /* ************************************* */
@@ -765,7 +859,9 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (id) modelLayer
 {
-  return _modelLayer;
+  /* A layer that is not standing in for another one is its own model.
+     -isPresentationLayer reads the ivar directly, so it is unaffected. */
+  return _modelLayer ? _modelLayer : self;
 }
 
 - (void) setModelLayer: (id)modelLayer
@@ -948,6 +1044,35 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [layer removeFromSuperlayer];
   [mutableSublayers addObject: layer];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
+}
+
+- (void) setSublayers: (NSArray *)sublayers
+{
+  NSArray *oldSublayers = _sublayers;
+  CALayer *layer;
+
+  if (sublayers == _sublayers)
+    return;
+
+  /* The layers on their way out lose their superlayer, and the ones coming
+     in take this layer as theirs.  The array is kept mutable, since the
+     other methods here add to it in place. */
+  for (layer in oldSublayers)
+    {
+      if (![sublayers containsObject: layer])
+        [layer setSuperlayer: nil];
+    }
+
+  _sublayers = [sublayers mutableCopy];
+  [oldSublayers release];
+
+  for (layer in _sublayers)
+    {
+      [layer setSuperlayer: self];
+    }
+
+  [self setNeedsLayout];
 }
 
 - (void)removeFromSuperlayer
@@ -955,6 +1080,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   NSMutableArray * mutableSublayersOfSuperlayer = (NSMutableArray*)[[self superlayer] sublayers];
 
   [mutableSublayersOfSuperlayer removeObject: self];
+  [[self superlayer] setNeedsLayout];
   [self setSuperlayer: nil];
 }
 
@@ -965,6 +1091,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   [layer removeFromSuperlayer];
   [mutableSublayers insertObject: layer atIndex: index];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
 }
 
 - (void) insertSublayer: (CALayer *)layer below: (CALayer *)sibling;
@@ -976,6 +1103,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
 }
 
 - (void) insertSublayer: (CALayer *)layer above: (CALayer *)sibling;
@@ -987,6 +1115,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
+  [self setNeedsLayout];
 }
 
 - (CALayer *) rootLayer
