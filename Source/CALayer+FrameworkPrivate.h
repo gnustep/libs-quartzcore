@@ -47,6 +47,14 @@
 - (CFTimeInterval) activeTime;
 - (CFTimeInterval) localTime;
 
+- (void) noteValueWasSetForKey: (NSString *)key;
+
+/* What a layer draws for itself, as opposed to what its delegate draws.
+   CALayer draws nothing; a subclass whose content is its own, such as
+   CAShapeLayer, overrides this.  It is called both when the layer displays
+   into its backing store and when it is rendered into a context. */
+- (void) drawContentInContext: (CGContextRef)context;
+
 @property (retain) CABackingStore * backingStore;
 @property (assign) CARenderer * renderer;
 @end
