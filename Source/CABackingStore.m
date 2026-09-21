@@ -89,6 +89,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 @implementation CABackingStore
 @synthesize contentsTexture=_contentsTexture;
 @synthesize offscreenRenderTexture=_offscreenRenderTexture;
+@synthesize shadowTexture=_shadowTexture;
 
 + (CABackingStore *) backingStoreWithWidth: (CGFloat)width
                                     height: (CGFloat)height
@@ -115,6 +116,7 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
 - (void) dealloc
 {
   [_offscreenRenderTexture release];
+  [_shadowTexture release];
   [_contentsTexture release];
   CGContextRelease (_context);
 
@@ -154,10 +156,17 @@ static CGContextRef createCGBitmapContext (int pixelsWide,
   return CGBitmapContextGetHeight(_context);
 }
 
+- (NSUInteger) contentsVersion
+{
+  return _contentsVersion;
+}
+
 - (void) refresh
 {
   if (!_context)
     return;
+
+  _contentsVersion++;
 
 #if __APPLE__
   /* Since we retain contents in the CGContext, we can use the
