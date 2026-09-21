@@ -6,6 +6,80 @@
 #import <QuartzCore/CATransaction.h>
 #import <QuartzCore/CAMediaTimingFunction.h>
 
+/* What another thread makes of a transaction this one holds open.  The
+   answer does not depend on how the two are scheduled, so nothing here is
+   timing dependent; the condition only waits for the other thread to finish,
+   and it has a deadline so a mistake cannot hang the run. */
+static NSCondition *gate = nil;
+static BOOL         otherFinished = NO;
+static double       otherDuration = -1.0;
+static BOOL         otherDisableActions = YES;
+
+@interface QCOtherThread : NSObject
++ (void) look: (id)ignored;
++ (void) runItsOwn: (id)ignored;
+@end
+
+@implementation QCOtherThread
+
++ (void) look: (id)ignored
+{
+  NSAutoreleasePool *pool = [NSAutoreleasePool new];
+
+  otherDuration = (double)[CATransaction animationDuration];
+  otherDisableActions = [CATransaction disableActions];
+  [pool release];
+
+  [gate lock];
+  otherFinished = YES;
+  [gate signal];
+  [gate unlock];
+}
+
++ (void) runItsOwn: (id)ignored
+{
+  NSAutoreleasePool *pool = [NSAutoreleasePool new];
+
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 11.0];
+  otherDuration = (double)[CATransaction animationDuration];
+  [CATransaction commit];
+  [pool release];
+
+  [gate lock];
+  otherFinished = YES;
+  [gate signal];
+  [gate unlock];
+}
+
+@end
+
+static BOOL runOnAnotherThread(SEL what)
+{
+  NSDate *deadline = [NSDate dateWithTimeIntervalSinceNow: 10.0];
+  BOOL ok = YES;
+
+  otherFinished = NO;
+  otherDuration = -1.0;
+  otherDisableActions = YES;
+  [NSThread detachNewThreadSelector: what
+                           toTarget: [QCOtherThread class]
+                         withObject: nil];
+
+  [gate lock];
+  while (!otherFinished)
+    {
+      if (![gate waitUntilDate: deadline])
+        {
+          ok = NO;
+          break;
+        }
+    }
+  [gate unlock];
+
+  return ok;
+}
+
 int main(void)
 {
   NSAutoreleasePool *pool = [NSAutoreleasePool new];
@@ -184,6 +258,89 @@ int main(void)
             "lock and unlock do not raise");
 
   END_SET("the class methods that take no transaction")
+
+  START_SET("flushing")
+
+  [CATransaction setAnimationDuration: 5.0];
+  PASS([CATransaction animationDuration] == 5.0,
+       "the implicit transaction takes a duration like any other");
+
+  [CATransaction flush];
+  PASS([CATransaction animationDuration] == 0.25,
+       "flushing takes the implicit transaction away");
+
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 7.0];
+  [CATransaction flush];
+  PASS([CATransaction animationDuration] == 7.0,
+       "a flush leaves an explicit transaction where it is");
+  [CATransaction commit];
+
+  PASS([CATransaction animationDuration] == 0.25,
+       "and once that is committed there is nothing left of it");
+
+  PASS_RUNS([CATransaction flush]; [CATransaction flush],
+            "flushing when there is nothing to flush does nothing");
+
+  END_SET("flushing")
+
+  START_SET("the lock")
+
+  PASS_RUNS([CATransaction lock]; [CATransaction unlock],
+            "a lock can be taken and given back");
+
+  PASS_RUNS([CATransaction lock]; [CATransaction lock];
+            [CATransaction unlock]; [CATransaction unlock],
+            "and taken twice over by the one thread");
+
+  [CATransaction lock];
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 9.0];
+  PASS([CATransaction animationDuration] == 9.0,
+       "a transaction still works while the lock is held");
+  [CATransaction commit];
+  [CATransaction unlock];
+
+  PASS_RUNS([CATransaction unlock],
+            "giving back a lock that was never taken does nothing");
+
+  END_SET("the lock")
+
+  START_SET("a transaction belongs to the thread that began it")
+
+  gate = [NSCondition new];
+
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 5.0];
+  [CATransaction setDisableActions: YES];
+
+  PASS(runOnAnotherThread(@selector(look:)),
+       "another thread can read a transaction value at all");
+  PASS(otherDuration == 0.25,
+       "and reads its own duration rather than this thread's");
+  PASS(otherDisableActions == NO,
+       "and its own actions setting rather than this thread's");
+  PASS([CATransaction animationDuration] == 5.0,
+       "while this thread still reads what it set");
+
+  [CATransaction commit];
+  PASS([CATransaction animationDuration] == 0.25,
+       "and commits its own transaction away");
+
+  [CATransaction begin];
+  [CATransaction setAnimationDuration: 3.0];
+
+  PASS(runOnAnotherThread(@selector(runItsOwn:)),
+       "another thread can run a transaction of its own");
+  PASS(otherDuration == 11.0, "and sees the value it set in it");
+  PASS([CATransaction animationDuration] == 3.0,
+       "without disturbing the one open on this thread");
+
+  [CATransaction commit];
+  PASS([CATransaction animationDuration] == 0.25,
+       "which still commits cleanly afterwards");
+
+  END_SET("a transaction belongs to the thread that began it")
 
   [pool release];
   return 0;
