@@ -69,6 +69,10 @@ typedef struct _CVTimeStamp
 
   NSMutableArray * _rasterizationSchedule;
 
+  /* Keyed by model layer: the CABackingStore each was rasterised into, and
+     the subtree digest it was rasterised from. */
+  NSMutableDictionary * _rasterizationCache;
+
   /* a temporary optimization hack */
   BOOL _previousFrameWasANoop;
 

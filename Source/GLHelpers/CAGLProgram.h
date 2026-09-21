@@ -62,6 +62,8 @@
                  toUnsignedInt: (GLuint)value;
 - (void) bindUniformAtLocation: (GLint)location
                      toFloat4v: (GLfloat *)array;
+- (void) bindUniformAtLocation: (GLint)location
+                       toFloat: (GLfloat)value;
 
 - (GLint) locationForUniform: (NSString *)uniform;
 - (void) use;
