@@ -1,8 +1,6 @@
-/* CAGradientLayer.h
+/* CAGravity.h
 
-   Copyright (C) 2012 Free Software Foundation, Inc.
-
-   Author: Amr Aboelela <amraboelela@gmail.com>
+   Copyright (C) 2026 Free Software Foundation, Inc.
 
    This file is part of QuartzCore.
 
@@ -23,30 +21,13 @@
    Boston, MA 02110-1301, USA.
 */
 
-#import <QuartzCore/CALayer.h>
+#import <Foundation/Foundation.h>
+#if GNUSTEP
+#import <CoreGraphics/CoreGraphics.h>
+#endif
 
-@interface CAGradientLayer : CALayer
-{
-  NSArray *_colors;
-  NSArray *_locations;
-  CGPoint _startPoint;
-  CGPoint _endPoint;
-  NSString *_type;
-}
-
-/* An array of CGColorRef, drawn in order along the gradient. */
-@property (copy)   NSArray *colors;
-
-/* Where each colour sits along the gradient, as numbers between 0 and 1.
-   Nil spreads the colours evenly. */
-@property (copy)   NSArray *locations;
-
-@property (assign) CGPoint startPoint;
-@property (assign) CGPoint endPoint;
-@property (copy)   NSString *type;
-
-@end
-
-extern NSString *const kCAGradientLayerAxial;
-extern NSString *const kCAGradientLayerRadial;
-extern NSString *const kCAGradientLayerConic;
+/* The rectangle, in a layer's bounds coordinates, that contents of the given
+   size occupy under the given gravity.  Both renderers ask this so that they
+   place the contents the same way. */
+CGRect CAGravityDestinationRect(NSString *gravity, CGRect bounds,
+                                CGSize contentsSize);
