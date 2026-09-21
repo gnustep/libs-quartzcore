@@ -71,6 +71,7 @@ def compile_test(src, binary, output, sdk):
         "-Wno-deprecated-declarations",
         "-framework", "QuartzCore",
         "-framework", "CoreGraphics",
+        "-framework", "CoreText",
         "-framework", "Foundation",
         "-fno-objc-arc",
         "-o", str(binary),
