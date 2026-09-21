@@ -65,6 +65,7 @@ extern NSString *const kCATransition;
 
 @class CABackingStore;
 @class CAGLSimpleFramebuffer;
+@class CAConstraint;
 
 @interface CALayer : NSObject<CAMediaTiming>
 {
@@ -117,6 +118,8 @@ extern NSString *const kCATransition;
   float _speed;
 
   /* i-vars */
+  NSString * _name;
+  NSArray * _constraints;
   BOOL _needsDisplay;
   BOOL _needsLayout;
   NSMutableDictionary *_animations;
@@ -139,6 +142,8 @@ extern NSString *const kCATransition;
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
 @property (retain)                   id layoutManager;
+@property (copy)                     NSString *name;
+@property (copy)                     NSArray *constraints;
 @property (nonatomic,readonly)       CALayer *superlayer;
 @property (nonatomic,copy)           NSArray *sublayers;
 @property (assign)                   CGRect frame;
@@ -206,6 +211,8 @@ extern NSString *const kCATransition;
 - (BOOL) needsLayout;
 - (void) setNeedsLayout;
 - (void) layoutIfNeeded;
+- (void) layoutSublayers;
+- (void) addConstraint: (CAConstraint *)constraint;
 
 - (id) presentationLayer;
 - (id) modelLayer;
