@@ -22,3 +22,34 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/Foundation.h>
+#import "QuartzCore/CATiledLayer.h"
+
+@implementation CATiledLayer
+
+@synthesize levelsOfDetail = _levelsOfDetail;
+@synthesize levelsOfDetailBias = _levelsOfDetailBias;
+@synthesize tileSize = _tileSize;
+
++ (CFTimeInterval) fadeDuration
+{
+  return 0.25;
+}
+
+- (id) init
+{
+  self = [super init];
+  if (self == nil)
+    {
+      return nil;
+    }
+
+  _levelsOfDetail = 1;
+  _levelsOfDetailBias = 0;
+  _tileSize = CGSizeMake(256, 256);
+
+  return self;
+}
+
+@end
