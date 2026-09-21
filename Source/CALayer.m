@@ -905,21 +905,19 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       if (nextFrameTime > CACurrentMediaTime())
         {
           /* TODO: update for correctness once we support fillMode */
-          /* TODO: take into account animation groups once we support them */
 
           continue;
         }
 
-      if ([animation isKindOfClass: [CAPropertyAnimation class]])
+      if ([animation isKindOfClass: [CAPropertyAnimation class]] ||
+          [animation isKindOfClass: [CAAnimationGroup class]])
         {
-          CAPropertyAnimation * propertyAnimation = ((CAPropertyAnimation *)animation);
-
           /* A repeat count of zero asks for no repetition, so the animation
              still runs through once. */
-          float repetitions = [propertyAnimation repeatCount] > 0
-            ? [propertyAnimation repeatCount] : 1;
+          float repetitions = [animation repeatCount] > 0
+            ? [animation repeatCount] : 1;
 
-          if ([propertyAnimation removedOnCompletion] && [propertyAnimation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [propertyAnimation duration] * repetitions * ([propertyAnimation autoreverses] ? 2 : 1))
+          if ([animation removedOnCompletion] && [animation activeTimeWithTimeAuthorityLocalTime: [self localTime]] > [animation duration] * repetitions * ([animation autoreverses] ? 2 : 1))
             {
               /* FIXME: doesn't take into account speed */
 
@@ -927,7 +925,7 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
               continue; /* Prevents animation from applying for one frame longer than its duration */
             }
 
-          [propertyAnimation applyToLayer: self];
+          [animation applyToLayer: self];
 
         }
     }

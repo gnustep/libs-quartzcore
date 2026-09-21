@@ -1,0 +1,3 @@
+# -applyToLayer: and the time authority an animation is evaluated in are
+# GNUstep API with no counterpart in Apple QuartzCore.
+APPLE_SKIP_TESTS="apply.m"
