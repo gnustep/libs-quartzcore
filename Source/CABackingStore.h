@@ -44,7 +44,14 @@
 #import <OpenGL/gl.h>
 #import <OpenGL/glu.h>
 #else
+#if defined(_WIN32)
+/* opengl32 exports only OpenGL 1.1, so the GL 2.0 entry points cannot be
+ * linked directly.  epoxy declares them and dispatches at runtime.
+ */
+#import <epoxy/gl.h>
+#else
 #import <GL/gl.h>
+#endif
 #import <GL/glu.h>
 #endif
 
