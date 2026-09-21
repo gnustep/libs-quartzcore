@@ -22,3 +22,58 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <Foundation/Foundation.h>
+#import "QuartzCore/CAReplicatorLayer.h"
+
+@implementation CAReplicatorLayer
+
+@synthesize instanceCount = _instanceCount;
+@synthesize instanceDelay = _instanceDelay;
+@synthesize instanceTransform = _instanceTransform;
+@synthesize preservesDepth = _preservesDepth;
+@synthesize instanceRedOffset = _instanceRedOffset;
+@synthesize instanceGreenOffset = _instanceGreenOffset;
+@synthesize instanceBlueOffset = _instanceBlueOffset;
+@synthesize instanceAlphaOffset = _instanceAlphaOffset;
+
+- (id) init
+{
+  self = [super init];
+  if (self == nil)
+    {
+      return nil;
+    }
+
+  _instanceCount = 1;
+  _instanceTransform = CATransform3DIdentity;
+  _instanceColor = CGColorCreateGenericRGB(1.0, 1.0, 1.0, 1.0);
+
+  return self;
+}
+
+- (void) dealloc
+{
+  CGColorRelease(_instanceColor);
+
+  [super dealloc];
+}
+
+- (CGColorRef) instanceColor
+{
+  return _instanceColor;
+}
+
+- (void) setInstanceColor: (CGColorRef)instanceColor
+{
+  if (instanceColor == _instanceColor)
+    {
+      return;
+    }
+
+  CGColorRetain(instanceColor);
+  CGColorRelease(_instanceColor);
+  _instanceColor = instanceColor;
+}
+
+@end
