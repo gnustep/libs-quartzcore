@@ -1,3 +1,5 @@
-# The layer bookkeeping this checks is internal to this implementation,
+# The layer bookkeeping copyinit.m checks is internal to this implementation,
 # and Apple does not raise where it does.
-APPLE_SKIP_TESTS="copyinit.m"
+# -calculatedAnimationValueAtTime:onLayer: and -applyToLayer: are GNUstep API
+# with no counterpart in Apple QuartzCore.
+APPLE_SKIP_TESTS="copyinit.m interpolation.m"
