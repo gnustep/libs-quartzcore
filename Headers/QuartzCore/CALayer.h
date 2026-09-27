@@ -135,6 +135,7 @@ extern NSString *const kCATransition;
 + (id) layer;
 + (id) defaultValueForKey: (NSString *)key;
 + (id<CAAction>) defaultActionForKey: (NSString *)key;
++ (BOOL) needsDisplayForKey: (NSString *)key;
 
 @property (assign)                   id delegate;
 @property (retain)                   id contents;
@@ -182,6 +183,7 @@ extern NSString *const kCATransition;
 
 - (void) addAnimation: (CAAnimation *)anim forKey: (NSString *)key;
 - (void) removeAnimationForKey: (NSString *)key;
+- (void) removeAllAnimations;
 - (CAAnimation *) animationForKey:( NSString *)key;
 
 - (void) addSublayer: (CALayer *)layer;

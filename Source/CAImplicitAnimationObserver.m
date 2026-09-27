@@ -34,6 +34,18 @@
 
 static CAImplicitAnimationObserver * sharedObserver;
 
+/* A layer whose class asks to be redisplayed for a property is marked when
+   that property changes, animated or not.  It is marked after the animation
+   has been prepared rather than before, since preparing one asks for the
+   presentation layer, and building that displays the layer. */
+static void markIfRedisplaying(id object, NSString *keyPath)
+{
+  if ([[object class] needsDisplayForKey: keyPath])
+    {
+      [object setNeedsDisplay];
+    }
+}
+
 @implementation CAImplicitAnimationObserver
 + (CAImplicitAnimationObserver *)sharedObserver
 {
@@ -66,13 +78,6 @@ static CAImplicitAnimationObserver * sharedObserver;
       return;
     }
 
-  /* The property still takes its new value; only the animation that would
-     have carried it there is dropped. */
-  if ([CATransaction disableActions])
-    {
-      return;
-    }
-
   id from = [change valueForKey: NSKeyValueChangeOldKey];
   id to = [change valueForKey: NSKeyValueChangeNewKey];
 
@@ -87,9 +92,20 @@ static CAImplicitAnimationObserver * sharedObserver;
   if ([to isEqual: from])
     return;
 
+  /* The property still takes its new value; only the animation that would
+     have carried it there is dropped. */
+  if ([CATransaction disableActions])
+    {
+      markIfRedisplaying(object, keyPath);
+      return;
+    }
+
   NSObject<CAAction>* action = (id)[object actionForKey: keyPath];
   if ([action isKindOfClass: [NSNull class]])
-    return;
+    {
+      markIfRedisplaying(object, keyPath);
+      return;
+    }
 
   if (!action)
     {
@@ -110,6 +126,8 @@ static CAImplicitAnimationObserver * sharedObserver;
   [[CATransaction topTransaction] registerAction: action
                                         onObject: object
                                          keyPath: keyPath];
+
+  markIfRedisplaying(object, keyPath);
 
   // TODO: Remove once implicit animations are properly integrated into NSRunLoop.
   if ([object isKindOfClass: [CALayer class]])
