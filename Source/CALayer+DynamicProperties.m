@@ -145,11 +145,29 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
       return method_getImplementation(method);
     }
 
-  if ([type hasPrefix: @"c"] || [type hasPrefix: @"C"])
+  if ([type hasPrefix: @"B"])
     {
-      /* BOOL */
+      /* _Bool, which is BOOL on some runtimes */
       Method method = class_getInstanceMethod([self class],
                                               @selector(_dynamicPropertyGetterForBooleans));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"c"])
+    {
+      /* signed characters */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForChars));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"C"])
+    {
+      /* unsigned characters, which is BOOL on other runtimes.  The
+         value is kept as given, so a BOOL reads back as 0 or 1 and a
+         character keeps its value */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForUnsignedChars));
       return method_getImplementation(method);
     }
 
@@ -201,6 +219,38 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
       return method_getImplementation(method);
     }
 
+  if ([type hasPrefix: @"S"])
+    {
+      /* unsigned short integers */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForUnsignedShortIntegers));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"L"])
+    {
+      /* unsigned long integers */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForUnsignedLongIntegers));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"q"])
+    {
+      /* long long integers, which is what a 64 bit long encodes as */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForLongLongIntegers));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"Q"])
+    {
+      /* unsigned long long integers */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertyGetterForUnsignedLongLongIntegers));
+      return method_getImplementation(method);
+    }
+
   [NSException raise: NSGenericException
               format: @"%@ is not a supported data type for dynamic synthesis", type];
 
@@ -217,11 +267,29 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
       return method_getImplementation(method);
     }
 
-  if ([type hasPrefix: @"c"] || [type hasPrefix: @"C"])
+  if ([type hasPrefix: @"B"])
     {
-      /* BOOL */
+      /* _Bool, which is BOOL on some runtimes */
       Method method = class_getInstanceMethod([self class],
                                               @selector(_dynamicPropertySetterForBooleans:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"c"])
+    {
+      /* signed characters */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForChars:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"C"])
+    {
+      /* unsigned characters, which is BOOL on other runtimes.  The
+         value is kept as given, so a BOOL reads back as 0 or 1 and a
+         character keeps its value */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForUnsignedChars:));
       return method_getImplementation(method);
     }
 
@@ -270,6 +338,38 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
       /* long integers */
       Method method = class_getInstanceMethod([self class],
                                               @selector(_dynamicPropertySetterForLongIntegers:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"S"])
+    {
+      /* unsigned short integers */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForUnsignedShortIntegers:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"L"])
+    {
+      /* unsigned long integers */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForUnsignedLongIntegers:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"q"])
+    {
+      /* long long integers, which is what a 64 bit long encodes as */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForLongLongIntegers:));
+      return method_getImplementation(method);
+    }
+
+  if ([type hasPrefix: @"Q"])
+    {
+      /* unsigned long long integers */
+      Method method = class_getInstanceMethod([self class],
+                                              @selector(_dynamicPropertySetterForUnsignedLongLongIntegers:));
       return method_getImplementation(method);
     }
 
@@ -357,5 +457,64 @@ static NSMutableDictionary *accessorNameToPropertyNameDict;
 - (void) _dynamicPropertySetterForLongIntegers: (long int)number
 {
   [_dynamicPropertyValueDict setValue: [NSNumber numberWithLong: number] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+- (char) _dynamicPropertyGetterForChars
+{
+  return [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] charValue];
+}
+
+- (void) _dynamicPropertySetterForChars: (char)number
+{
+  [_dynamicPropertyValueDict setValue: [NSNumber numberWithChar: number] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (unsigned char) _dynamicPropertyGetterForUnsignedChars
+{
+  return [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] unsignedCharValue];
+}
+
+- (void) _dynamicPropertySetterForUnsignedChars: (unsigned char)number
+{
+  [_dynamicPropertyValueDict setValue: [NSNumber numberWithUnsignedChar: number] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (unsigned short int) _dynamicPropertyGetterForUnsignedShortIntegers
+{
+  return [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] unsignedShortValue];
+}
+
+- (void) _dynamicPropertySetterForUnsignedShortIntegers: (unsigned short int)number
+{
+  [_dynamicPropertyValueDict setValue: [NSNumber numberWithUnsignedShort: number] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (unsigned long int) _dynamicPropertyGetterForUnsignedLongIntegers
+{
+  return [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] unsignedLongValue];
+}
+
+- (void) _dynamicPropertySetterForUnsignedLongIntegers: (unsigned long int)number
+{
+  [_dynamicPropertyValueDict setValue: [NSNumber numberWithUnsignedLong: number] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (long long int) _dynamicPropertyGetterForLongLongIntegers
+{
+  return [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] longLongValue];
+}
+
+- (void) _dynamicPropertySetterForLongLongIntegers: (long long int)number
+{
+  [_dynamicPropertyValueDict setValue: [NSNumber numberWithLongLong: number] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
+}
+
+- (unsigned long long int) _dynamicPropertyGetterForUnsignedLongLongIntegers
+{
+  return [[_dynamicPropertyValueDict valueForKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]] unsignedLongLongValue];
+}
+
+- (void) _dynamicPropertySetterForUnsignedLongLongIntegers: (unsigned long long int)number
+{
+  [_dynamicPropertyValueDict setValue: [NSNumber numberWithUnsignedLongLong: number] forKey: [accessorNameToPropertyNameDict valueForKey: NSStringFromSelector(_cmd)]];
 }
 @end
