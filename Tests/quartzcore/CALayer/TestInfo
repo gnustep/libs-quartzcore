@@ -1,3 +1,6 @@
 # A standalone layer answers nil from -animationKeys throughout on Apple, so
-# the implicit animation this file checks cannot be observed there.
-APPLE_SKIP_TESTS="implicit.m"
+# the implicit animation this file checks cannot be observed there.  Apple
+# answers nil from -presentationLayer as well, before and after -display and
+# while an animation is running, so a presentation layer cannot be looked at
+# there either.
+APPLE_SKIP_TESTS="implicit.m presentation.m"
