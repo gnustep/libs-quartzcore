@@ -26,7 +26,83 @@
 
 #import "QuartzCore/CAValueFunction.h"
 
+/* The functions, built once and keyed by name.  Building all of them up
+   front leaves the table read-only afterwards, so a lookup needs no lock. */
+static NSDictionary *functionsByName = nil;
+
 @implementation CAValueFunction
+
++ (void) initialize
+{
+  if (self != [CAValueFunction class] || functionsByName != nil)
+    {
+      return;
+    }
+
+  NSArray *names = [NSArray arrayWithObjects:
+    kCAValueFunctionRotateX, kCAValueFunctionRotateY,
+    kCAValueFunctionRotateZ, kCAValueFunctionScale,
+    kCAValueFunctionScaleX, kCAValueFunctionScaleY,
+    kCAValueFunctionScaleZ, kCAValueFunctionTranslate,
+    kCAValueFunctionTranslateX, kCAValueFunctionTranslateY,
+    kCAValueFunctionTranslateZ, nil];
+  NSMutableDictionary *table;
+  NSEnumerator *e;
+  NSString *name;
+
+  table = [[NSMutableDictionary alloc] initWithCapacity: [names count]];
+  e = [names objectEnumerator];
+  while ((name = [e nextObject]) != nil)
+    {
+      CAValueFunction *function = [[CAValueFunction alloc] init];
+
+      function->_name = [name copy];
+      [table setObject: function forKey: name];
+      [function release];
+    }
+
+  functionsByName = [table copy];
+  [table release];
+}
+
++ (id) functionWithName: (NSString *)name
+{
+  if (name == nil)
+    {
+      return nil;
+    }
+
+  return [functionsByName objectForKey: name];
+}
+
+- (void) dealloc
+{
+  [_name release];
+  [super dealloc];
+}
+
+- (NSString *) name
+{
+  return _name;
+}
+
+- (id) initWithCoder: (NSCoder *)aDecoder
+{
+  self = [super init];
+  if (self == nil)
+    {
+      return nil;
+    }
+
+  _name = [[aDecoder decodeObjectForKey: @"name"] copy];
+
+  return self;
+}
+
+- (void) encodeWithCoder: (NSCoder *)aCoder
+{
+  [aCoder encodeObject: _name forKey: @"name"];
+}
 
 @end
 
