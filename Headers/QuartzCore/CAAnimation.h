@@ -104,9 +104,13 @@
   /* property-backing ivars */
   NSString * _calculationMode;
   NSArray * _values;
+  NSArray * _keyTimes;
+  NSArray * _timingFunctions;
 }
 @property(copy) NSString* calculationMode;
 @property(copy) NSArray* values;
+@property(copy) NSArray* keyTimes;
+@property(copy) NSArray* timingFunctions;
 
 @end
 
