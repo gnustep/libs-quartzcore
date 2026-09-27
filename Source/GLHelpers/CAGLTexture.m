@@ -83,6 +83,10 @@
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
 #endif
 
+  /* Without this the image is made in whatever texture is bound, and this
+     one keeps a size it does not hold. */
+  glBindTexture(TEXTURE_TARGET, _textureID);
+
   /* Used for, for example, renderbuffer's target */
 #if !(USE_BUILDMIPMAPS)
   qcLoadTexImage(GL_RGBA,
@@ -221,7 +225,7 @@
   GLuint internalFormat = GL_RGBA; /* does not depend on hasAlpha, we always paint a RGBA image into CGContext (sadly) */
   #endif
 
-  #if !USE_RECT
+  #if __APPLE__ && !USE_RECT
   /* Since we release the context, we also release its pixels.
      We cannot use client storage extension. */
   glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_FALSE);
