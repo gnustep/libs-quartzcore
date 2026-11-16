@@ -73,6 +73,7 @@ NSString *const kCATransition = @"transition";
 @property (nonatomic, retain) NSMutableDictionary *dynamicPropertyValueDict;
 
 - (void)setModelLayer: (id)modelLayer;
+- (void)layoutTreeIfNeeded;
 @end
 
 
@@ -293,6 +294,14 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       || [key isEqualToString: @"magnificationFilter"])
     {
       return kCAFilterLinear;
+  if ([key isEqualToString: @"borderColor"])
+    {
+      /* opaque black, as for the shadow colour above */
+      return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
+    }
+  if ([key isEqualToString: @"contentsGravity"])
+    {
+      return kCAGravityResize;
     }
   if ([key isEqualToString: @"shadowOffset"])
     {
@@ -305,20 +314,20 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
     }
 
   /* CAMediaTiming */
-  if ([key isEqualToString:@"duration"])
+  if ([key isEqualToString: @"duration"])
     {
       return [NSNumber numberWithFloat: __builtin_inf()];
       /* FIXME: is there a cleaner way to get inf apart from "1./0"? */
     }
-  if ([key isEqualToString:@"speed"])
+  if ([key isEqualToString: @"speed"])
     {
       return [NSNumber numberWithFloat: 1.0];
     }
-  if ([key isEqualToString:@"autoreverses"])
+  if ([key isEqualToString: @"autoreverses"])
     {
       return [NSNumber numberWithBool: NO];
     }
-  if ([key isEqualToString:@"repeatCount"])
+  if ([key isEqualToString: @"repeatCount"])
     {
       /* Zero means no repetition was asked for, not none at all. */
       return [NSNumber numberWithFloat: 0.0];
@@ -352,6 +361,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"backgroundColor", @"borderColor", @"contentsScale",
         @"doubleSided", @"rasterizationScale",
         @"minificationFilter", @"magnificationFilter",
+        @"contentsGravity",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
         @"repeatCount", @"fillMode",
@@ -437,7 +447,10 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
       [self setDelegate: [layer delegate]];
       [self setLayoutManager: [layer layoutManager]];
       [self setSuperlayer: [layer superlayer]]; /* if copied for use in presentation layer, then ignored */
-      [self setSublayers: [layer sublayers]]; /* if copied for use in presentation layer, then ignored */
+      /* The sublayers are not copied: a presentation layer answers the
+         presentation layers of the model's sublayers, so it has no use
+         for a copy, and -setSublayers: would re-parent the model's own
+         sublayers onto it. */
       /* frame not copied: dynamically generated */
       [self setBounds: [layer bounds]];
       [self setAnchorPoint: [layer anchorPoint]];
@@ -715,6 +728,9 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
       [self.backingStore refresh];
     }
+
+  /* Having drawn, the layer no longer wants drawing. */
+  _needsDisplay = NO;
 }
 
 - (void) displayIfNeeded
@@ -755,10 +771,52 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 /* MARK: - Layout methods */
 - (void) layoutIfNeeded
 {
+  CALayer * top = self;
+
+  /* Up through the superlayers for as long as they want laying out too, so
+     that the whole tree below the highest one is laid out at once. */
+  while ([top superlayer] && [[top superlayer] needsLayout])
+    {
+      top = [top superlayer];
+    }
+
+  [top layoutTreeIfNeeded];
+}
+
+- (void) layoutTreeIfNeeded
+{
+  CALayer * sublayer;
+
+  if (_needsLayout)
+    {
+      [self layoutSublayers];
+      _needsLayout = NO;
+    }
+
+  for (sublayer in _sublayers)
+    {
+      [sublayer layoutTreeIfNeeded];
+    }
 }
 
 - (void) layoutSublayers
 {
+  /* The delegate is asked first, and the layout manager only if the delegate
+     has nothing to say. */
+  if ([_delegate respondsToSelector: @selector(layoutSublayersOfLayer:)])
+    {
+      [_delegate layoutSublayersOfLayer: self];
+    }
+  else if ([_layoutManager respondsToSelector:
+             @selector(layoutSublayersOfLayer:)])
+    {
+      [_layoutManager layoutSublayersOfLayer: self];
+    }
+}
+
+- (BOOL) needsLayout
+{
+  return _needsLayout;
 }
 
 - (void) setNeedsLayout
@@ -790,7 +848,34 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
 
 - (id) modelLayer
 {
-  return _modelLayer;
+  /* A layer that is not standing in for another one is its own model.
+     -isPresentationLayer reads the ivar directly, so it is unaffected. */
+  return _modelLayer ? _modelLayer : self;
+}
+
+- (void) setSublayers: (NSArray *)sublayers
+{
+  NSArray *oldSublayers = _sublayers;
+  CALayer *layer;
+
+  if (sublayers == _sublayers)
+    return;
+
+  /* The layers on their way out lose their superlayer, and the ones coming
+     in take this layer as theirs. */
+  for (layer in oldSublayers)
+    {
+      if (![sublayers containsObject: layer])
+        [layer setSuperlayer: nil];
+    }
+
+  _sublayers = [sublayers mutableCopy];
+  [oldSublayers release];
+
+  for (layer in _sublayers)
+    {
+      [layer setSuperlayer: self];
+    }
 }
 
 - (void) setModelLayer: (id)modelLayer
@@ -1495,6 +1580,62 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
       return q;
     }
   return [layer _pointFromRoot: q];
+}
+
+- (BOOL) containsPoint: (CGPoint)p
+{
+  /* The point is in this layer's own coordinate system, so the bounds are
+     what it is measured against, origin and all. */
+  return CGRectContainsPoint([self bounds], p);
+}
+
+- (CALayer *) hitTest: (CGPoint)p
+{
+  CGPoint  local = [self _pointFromSuperlayer: p];
+  CALayer *found = nil;
+  CGFloat  foundZ = 0.0;
+  NSInteger i;
+
+  /* A layer that masks its contents hides whatever falls outside it, so
+     nothing there can be hit, sublayers included. */
+  if ([self masksToBounds] && ![self containsPoint: local])
+    {
+      return nil;
+    }
+
+  /* Sublayers are tried from the top down: the last one added lies over the
+     others, and a higher zPosition lifts one above them all.  Walking the
+     array backwards means the later of two equals is met first, so a plain
+     greater-than keeps it. */
+  for (i = (NSInteger)[_sublayers count] - 1; i >= 0; i--)
+    {
+      CALayer *sublayer = [_sublayers objectAtIndex: i];
+      CALayer *hit;
+
+      if ([sublayer isHidden])
+        {
+          continue;
+        }
+
+      hit = [sublayer hitTest: local];
+      if (hit == nil)
+        {
+          continue;
+        }
+
+      if (found == nil || [sublayer zPosition] > foundZ)
+        {
+          found = hit;
+          foundZ = [sublayer zPosition];
+        }
+    }
+
+  if (found != nil)
+    {
+      return found;
+    }
+
+  return [self containsPoint: local] ? self : nil;
 }
 
 /* A rectangle converts as the bounding box of the four converted corners,
