@@ -122,6 +122,13 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
 @synthesize style=_style;
 @synthesize borderColor=_borderColor;
 @synthesize contentsScale=_contentsScale;
+@synthesize name=_name;
+@synthesize borderWidth=_borderWidth;
+@synthesize cornerRadius=_cornerRadius;
+@synthesize rasterizationScale=_rasterizationScale;
+@synthesize doubleSided=_doubleSided;
+@synthesize minificationFilter=_minificationFilter;
+@synthesize magnificationFilter=_magnificationFilter;
 
 @synthesize shadowColor=_shadowColor;
 @synthesize shadowOffset=_shadowOffset;
@@ -275,6 +282,18 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
          just like Opal's Objective-C class instances */
       return [(id)CGColorCreateGenericRGB(0.0, 0.0, 0.0, 1.0) autorelease];
     }
+  if ([key isEqualToString: @"doubleSided"])
+    {
+      return [NSNumber numberWithBool: YES];
+    }
+  if ([key isEqualToString: @"rasterizationScale"])
+    {
+      return [NSNumber numberWithFloat: 1.0];
+    }
+  if ([key isEqualToString: @"minificationFilter"]
+      || [key isEqualToString: @"magnificationFilter"])
+    {
+      return kCAFilterLinear;
   if ([key isEqualToString: @"borderColor"])
     {
       /* opaque black, as for the shadow colour above */
@@ -295,20 +314,20 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
     }
 
   /* CAMediaTiming */
-  if ([key isEqualToString:@"duration"])
+  if ([key isEqualToString: @"duration"])
     {
       return [NSNumber numberWithFloat: __builtin_inf()];
       /* FIXME: is there a cleaner way to get inf apart from "1./0"? */
     }
-  if ([key isEqualToString:@"speed"])
+  if ([key isEqualToString: @"speed"])
     {
       return [NSNumber numberWithFloat: 1.0];
     }
-  if ([key isEqualToString:@"autoreverses"])
+  if ([key isEqualToString: @"autoreverses"])
     {
       return [NSNumber numberWithBool: NO];
     }
-  if ([key isEqualToString:@"repeatCount"])
+  if ([key isEqualToString: @"repeatCount"])
     {
       /* Zero means no repetition was asked for, not none at all. */
       return [NSNumber numberWithFloat: 0.0];
@@ -340,6 +359,8 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
         @"anchorPoint", @"transform", @"sublayerTransform",
         @"opacity", @"delegate", @"contentsRect", @"shouldRasterize",
         @"backgroundColor", @"borderColor", @"contentsScale",
+        @"doubleSided", @"rasterizationScale",
+        @"minificationFilter", @"magnificationFilter",
         @"contentsGravity",
 
         @"beginTime", @"duration", @"speed", @"autoreverses",
@@ -494,6 +515,9 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   CGColorRelease(_backgroundColor);
   CGColorRelease(_borderColor);
   [_contentsGravity release];
+  [_name release];
+  [_minificationFilter release];
+  [_magnificationFilter release];
   [_fillMode release];
 
   [_backingStore release];
@@ -1073,6 +1097,24 @@ GSCA_OBSERVABLE_SETTER(setShadowOffset, CGSize, shadowOffset, CGSizeEqualToSize)
   siblingIndex = [mutableSublayers indexOfObject: sibling];
   [mutableSublayers insertObject: layer atIndex:siblingIndex+1];
   [layer setSuperlayer: self];
+}
+
+- (void) replaceSublayer: (CALayer *)layer with: (CALayer *)layer2
+{
+  NSMutableArray * mutableSublayers = (NSMutableArray*)_sublayers;
+  NSUInteger index = [mutableSublayers indexOfObject: layer];
+
+  if (index == NSNotFound)
+    {
+      return;
+    }
+
+  [layer2 retain];
+  [layer2 removeFromSuperlayer];
+  [mutableSublayers replaceObjectAtIndex: index withObject: layer2];
+  [layer setSuperlayer: nil];
+  [layer2 setSuperlayer: self];
+  [layer2 release];
 }
 
 - (CALayer *) rootLayer
