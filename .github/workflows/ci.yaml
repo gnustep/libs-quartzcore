@@ -34,7 +34,7 @@ jobs:
   ########### Linux ###########
   linux:
     name: ${{ matrix.name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu:24.04
     # don't run pull requests from local branches twice
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
 
@@ -113,7 +113,7 @@ jobs:
   # graphics backend is opal, to go with the Opal that is already built here.
   linux-headless:
     name: Ubuntu x64 Clang gnustep-2.0 (opal backend, Xvfb)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu:24.04
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
 
     env:
