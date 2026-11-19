@@ -22,3 +22,43 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <QuartzCore/CALayer.h>
+
+@interface CATextLayer : CALayer
+{
+  id _string;
+  CFTypeRef _font;
+  CGFloat _fontSize;
+  CGColorRef _foregroundColor;
+  NSString *_alignmentMode;
+  NSString *_truncationMode;
+  BOOL _wrapped;
+}
+
+/* The text to draw, as an NSString or an NSAttributedString. */
+@property (copy)             id string;
+
+/* The font to draw it in.  A font name is enough. */
+@property (nonatomic,assign) CFTypeRef font;
+
+@property (assign)           CGFloat fontSize;
+@property (nonatomic,assign) CGColorRef foregroundColor;
+@property (copy)             NSString *alignmentMode;
+@property (copy)             NSString *truncationMode;
+
+/* Whether a line too long for the layer is carried on to the next. */
+@property (assign,getter=isWrapped) BOOL wrapped;
+
+@end
+
+extern NSString *const kCAAlignmentNatural;
+extern NSString *const kCAAlignmentLeft;
+extern NSString *const kCAAlignmentRight;
+extern NSString *const kCAAlignmentCenter;
+extern NSString *const kCAAlignmentJustified;
+
+extern NSString *const kCATruncationNone;
+extern NSString *const kCATruncationStart;
+extern NSString *const kCATruncationEnd;
+extern NSString *const kCATruncationMiddle;
