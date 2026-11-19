@@ -135,6 +135,9 @@
 #undef CATransform3DConcat
 #undef CATransform3DInvert
 
+/* CAValueFunction.h */
+#undef CAValueFunction
+
 /* CoreAnimation.h */
 
 /* QuartzCore.h */
