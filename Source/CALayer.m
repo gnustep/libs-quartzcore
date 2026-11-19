@@ -499,6 +499,7 @@ CALayerApplyAbout(CGAffineTransform t, CGPoint p, CGPoint pivot)
   [_backingStore release];
   [_animations release];
   [_animationKeys release];
+  [_dynamicPropertyValueDict release];
 
   [super dealloc];
 }
