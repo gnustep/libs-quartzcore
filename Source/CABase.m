@@ -29,20 +29,51 @@
 
 #if GNUSTEP
 #import <sys/time.h>
+#import <time.h>
 
+/* Media time is the time since the machine started and only moves forward.
+   The wall clock moves when the date is set and when NTP corrects it, and
+   animation begin times are derived from media time. */
 CFTimeInterval CACurrentMediaTime(void)
 {
-  struct timeval systemTime;
+#if defined(CLOCK_MONOTONIC)
+  struct timespec monotonicTime;
 
-  gettimeofday(&systemTime, NULL);
-  return (double)systemTime.tv_sec + ((double)systemTime.tv_usec)/(1000 * 1000.);
+  if (clock_gettime(CLOCK_MONOTONIC, &monotonicTime) == 0)
+    {
+      return (double)monotonicTime.tv_sec
+        + ((double)monotonicTime.tv_nsec)/(1000 * 1000 * 1000.);
+    }
+#endif
+
+  /* Nothing better to read from.  This moves with the wall clock. */
+  {
+    struct timeval systemTime;
+
+    gettimeofday(&systemTime, NULL);
+    return (double)systemTime.tv_sec + ((double)systemTime.tv_usec)/(1000 * 1000.);
+  }
 }
 #else
 #import <mach/mach_time.h>
 
+/* mach_absolute_time() counts in machine-dependent units, not nanoseconds.
+   mach_timebase_info() gives the ratio between the two: 1/1 on Intel and
+   125/3 on Apple silicon, where one tick is 41.67ns. */
 CFTimeInterval CACurrentMediaTime(void)
 {
-  return mach_absolute_time() / (1000 * 1000 * 1000.);
+  static double secondsPerTick = 0.0;
+
+  if (secondsPerTick == 0.0)
+    {
+      mach_timebase_info_data_t timebase;
+
+      mach_timebase_info(&timebase);
+      secondsPerTick = (double)timebase.numer
+        / ((double)timebase.denom * (1000 * 1000 * 1000.));
+    }
+
+  return (double)mach_absolute_time() * secondsPerTick;
 }
 
 #endif
