@@ -34,8 +34,75 @@
 NSString *kCATransactionAnimationDuration = @"animationDuration";
 NSString *kCATransactionAnimationTimingFunction= @"animationTimingFunction";
 NSString *kCATransactionDisableActions = @"disableActions";
+NSString *kCATransactionCompletionBlock = @"completionBlock";
 
-static NSMutableArray *transactionStack = nil;
+#if defined(__BLOCKS__)
+/* Something invocable holding a block, so that everything waiting on a commit
+   can be scheduled the same way whether it came from a block or from a target
+   and a selector. */
+@interface CACompletionBlockHolder : NSObject
+{
+  void (^_block)(void);
+}
+- (id) initWithBlock: (void (^)(void))block;
+- (void) invoke;
+@end
+
+@implementation CACompletionBlockHolder
+
+- (id) initWithBlock: (void (^)(void))block
+{
+  if ((self = [super init]) != nil)
+    {
+      _block = [block copy];
+    }
+  return self;
+}
+
+- (void) invoke
+{
+  if (_block != NULL)
+    {
+      _block();
+    }
+}
+
+- (void) dealloc
+{
+  [_block release];
+  [super dealloc];
+}
+
+@end
+#endif
+
+/* A thread has a transaction stack of its own.  What one thread has begun is
+   nothing to do with another, and neither can commit or disturb what the
+   other holds open, so the stack lives in the thread rather than beside the
+   class.  Being per-thread, it needs no lock of its own. */
+static NSString * const CATransactionStackKey = @"CATransactionStack";
+
+static NSMutableArray *
+CATransactionStack(void)
+{
+  NSMutableDictionary *thread = [[NSThread currentThread] threadDictionary];
+  NSMutableArray *stack = [thread objectForKey: CATransactionStackKey];
+
+  if (stack == nil)
+    {
+      stack = [NSMutableArray array];
+      [thread setObject: stack forKey: CATransactionStackKey];
+    }
+
+  return stack;
+}
+
+/* +lock and +unlock hand out a recursive lock for callers to hold across a
+   read, a change and a write.  How deep the calling thread has gone is kept
+   beside it, so that unlocking more often than locking does nothing rather
+   than unlocking somebody else's hold. */
+static NSRecursiveLock *transactionLock = nil;
+static NSString * const CATransactionLockDepthKey = @"CATransactionLockDepth";
 
 @interface CATransaction ()
 
@@ -49,27 +116,25 @@ static NSMutableArray *transactionStack = nil;
 
 @property (retain) NSMutableDictionary *values;
 @property (retain) NSMutableArray *actions;
+@property (retain) NSMutableArray *completions;
 @property (assign, getter=isImplicit) BOOL implicit;
 @end
 
 @implementation CATransaction
 @synthesize values=_values;
 @synthesize actions=_actions;
+@synthesize completions=_completions;
 @synthesize implicit=_implicit;
 
 + (void) begin
 {
+  NSMutableArray *stack = CATransactionStack();
   CATransaction *enclosingTransaction;
   CATransaction *newTransaction;
 
-  if (!transactionStack)
-    {
-      transactionStack = [NSMutableArray new];
-    }
-
   /* A transaction starts out with the values of the one it is nested in;
      changing them affects only the new transaction. */
-  enclosingTransaction = [transactionStack lastObject];
+  enclosingTransaction = [stack lastObject];
   newTransaction = [CATransaction new];
   if (enclosingTransaction)
     {
@@ -78,34 +143,68 @@ static NSMutableArray *transactionStack = nil;
         [enclosingTransaction values]];
     }
 
-  [transactionStack addObject: newTransaction];
+  [stack addObject: newTransaction];
   [newTransaction release];
 }
 
 + (void) commit
 {
+  NSMutableArray *stack;
   CATransaction *topTransaction = [self topTransaction];
+
   [topTransaction commit];
 
-  [transactionStack removeObjectAtIndex: [transactionStack count]-1];
+  stack = CATransactionStack();
+  [stack removeObjectAtIndex: [stack count]-1];
 }
 
 + (void) flush
 {
-  /* TODO: flushing transaction means committing the implicit
-     animation immediately after all nested explicit transaction
-     are committed.
-     */
+  NSMutableArray *stack = CATransactionStack();
+  CATransaction *top = [stack lastObject];
+
+  /* Only the implicit transaction is flushed, and only once nothing
+     explicit is still open on top of it: an explicit transaction is the
+     caller's to commit, and the flush waits for it. */
+  if (top != nil && [top isImplicit])
+    {
+      [top commit];
+      [stack removeLastObject];
+    }
 }
 
 + (void) lock
 {
-  NSLog(@"+[CATransaction lock] unimplemented");
+  NSNumber *depth;
+
+  if (transactionLock == nil)
+    {
+      transactionLock = [NSRecursiveLock new];
+    }
+
+  [transactionLock lock];
+
+  depth = [[[NSThread currentThread] threadDictionary]
+            objectForKey: CATransactionLockDepthKey];
+  [[[NSThread currentThread] threadDictionary]
+    setObject: [NSNumber numberWithInt: [depth intValue] + 1]
+       forKey: CATransactionLockDepthKey];
 }
 
 + (void) unlock
 {
-  NSLog(@"+[CATransaction unlock] unimplemented");
+  NSMutableDictionary *thread = [[NSThread currentThread] threadDictionary];
+  int depth = [[thread objectForKey: CATransactionLockDepthKey] intValue];
+
+  /* Unlocking what this thread never locked does nothing at all. */
+  if (depth <= 0)
+    {
+      return;
+    }
+
+  [thread setObject: [NSNumber numberWithInt: depth - 1]
+             forKey: CATransactionLockDepthKey];
+  [transactionLock unlock];
 }
 
 + (CFTimeInterval) animationDuration
@@ -170,6 +269,49 @@ static NSMutableArray *transactionStack = nil;
           forKey: kCATransactionDisableActions];
 }
 
++ (void) setCompletionTarget: (id)target selector: (SEL)selector
+{
+  NSInvocation *invocation;
+
+  if (target == nil || selector == NULL)
+    {
+      return;
+    }
+
+  invocation = [NSInvocation invocationWithMethodSignature:
+                 [target methodSignatureForSelector: selector]];
+  [invocation setTarget: target];
+  [invocation setSelector: selector];
+  [invocation retainArguments];
+  [[[self topTransaction] completions] addObject: invocation];
+}
+
+#if defined(__BLOCKS__)
++ (void (^)(void)) completionBlock
+{
+  return [self valueForKey: kCATransactionCompletionBlock];
+}
+
++ (void) setCompletionBlock: (void (^)(void))block
+{
+  CATransaction *transaction = [self topTransaction];
+
+  /* Each block set adds to what will run; the one most recently set is also
+     what the getter answers, and a nil clears that without taking away what
+     was already asked for. */
+  if (block != NULL)
+    {
+      CACompletionBlockHolder *holder =
+        [[CACompletionBlockHolder alloc] initWithBlock: block];
+
+      [[transaction completions] addObject: holder];
+      [holder release];
+    }
+
+  [transaction setValue: block forKey: kCATransactionCompletionBlock];
+}
+#endif
+
 + (id) valueForKey: (NSString *)key
 {
   return [[self topTransaction] valueForKey: key];
@@ -183,13 +325,15 @@ static NSMutableArray *transactionStack = nil;
 /* ***** Private class methods ******* */
 + (CATransaction *) topTransaction
 {
-  if(![transactionStack lastObject])
+  NSMutableArray *stack = CATransactionStack();
+
+  if(![stack lastObject])
     {
       [CATransaction begin];
-      [[transactionStack lastObject] setImplicit: YES];
+      [[stack lastObject] setImplicit: YES];
     }
 
-  return [transactionStack lastObject];
+  return [stack lastObject];
 }
 
 /* ***** Instance methods ****** */
@@ -202,6 +346,7 @@ static NSMutableArray *transactionStack = nil;
     return nil;
 
   _actions = [[NSMutableArray alloc] init];
+  _completions = [[NSMutableArray alloc] init];
 
   /* The values an outermost transaction starts with.  There is no timing
      function until one is set. */
@@ -218,6 +363,7 @@ static NSMutableArray *transactionStack = nil;
 {
   [_values release];
   [_actions release];
+  [_completions release];
 
   [super dealloc];
 }
@@ -275,6 +421,24 @@ static NSMutableArray *transactionStack = nil;
                     arguments: arguments];
     }
   [_actions removeAllObjects];
+
+  /* Whatever was asked to be told about the commit is told on a later turn
+     of this thread's run loop rather than here, so that a caller committing
+     is not made to wait on it. */
+  {
+    NSInvocation *completion;
+
+    for (completion in _completions)
+      {
+        [[NSRunLoop currentRunLoop] performSelector: @selector(invoke)
+                                             target: completion
+                                           argument: nil
+                                              order: 0
+                                              modes: [NSArray arrayWithObject:
+                                                       NSDefaultRunLoopMode]];
+      }
+    [_completions removeAllObjects];
+  }
 }
 
 - (void)registerAction: (NSObject<CAAction> *)action
