@@ -25,6 +25,8 @@ QuartzCore_HEADER_FILES = \
 	CAAnimation.h \
 	CABase.h \
 	CADisplayLink.h \
+	CAEmitterCell.h \
+	CAEmitterLayer.h \
 	CAEAGLLayer.h \
 	CAFilter.h \
 	CAGradientLayer.h \
