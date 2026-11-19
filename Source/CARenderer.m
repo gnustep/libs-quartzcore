@@ -35,9 +35,18 @@
 #import "CARenderer+FrameworkPrivate.h"
 #if !(__APPLE__)
 #define GL_GLEXT_PROTOTYPES 1
+#if defined(_WIN32)
+/* opengl32 exports only OpenGL 1.1, so the GL 2.0 entry points cannot be
+ * linked directly.  epoxy declares them and dispatches at runtime.
+ */
+#import <epoxy/gl.h>
+#else
 #import <GL/gl.h>
+#endif
 #import <GL/glu.h>
+#if !defined(_WIN32)
 #import <GL/glext.h>
+#endif
 #else
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
