@@ -22,3 +22,31 @@
    Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.
 */
+
+#import <QuartzCore/CALayer.h>
+
+@interface CAGradientLayer : CALayer
+{
+  NSArray *_colors;
+  NSArray *_locations;
+  CGPoint _startPoint;
+  CGPoint _endPoint;
+  NSString *_type;
+}
+
+/* An array of CGColorRef, drawn in order along the gradient. */
+@property (copy)   NSArray *colors;
+
+/* Where each colour sits along the gradient, as numbers between 0 and 1.
+   Nil spreads the colours evenly. */
+@property (copy)   NSArray *locations;
+
+@property (assign) CGPoint startPoint;
+@property (assign) CGPoint endPoint;
+@property (copy)   NSString *type;
+
+@end
+
+extern NSString *const kCAGradientLayerAxial;
+extern NSString *const kCAGradientLayerRadial;
+extern NSString *const kCAGradientLayerConic;
