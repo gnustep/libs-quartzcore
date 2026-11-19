@@ -30,6 +30,9 @@
 
 #import "QuartzCore/CAMediaTiming.h"
 #import "QuartzCore/CAAction.h"
+#if GNUSTEP
+#import <CoreGraphics/CoreGraphics.h>
+#endif
 
 @class CAMediaTimingFunction;
 @class CAValueFunction;
@@ -104,9 +107,15 @@
   /* property-backing ivars */
   NSString * _calculationMode;
   NSArray * _values;
+  NSArray * _keyTimes;
+  NSArray * _timingFunctions;
+  CGPathRef _path;
 }
 @property(copy) NSString* calculationMode;
 @property(copy) NSArray* values;
+@property(copy) NSArray* keyTimes;
+@property(copy) NSArray* timingFunctions;
+@property(assign) CGPathRef path; /* retained by CG */
 
 @end
 
