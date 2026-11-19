@@ -96,6 +96,11 @@
   if (_compiled)
     return;
 
+  /* A shader that was not built from a file has nothing to hand GL, and
+     handing it nothing is an error rather than an empty shader. */
+  if (!_source)
+    return;
+
   _compiled = YES;
 
   /* Upload the shader to the GPU */
