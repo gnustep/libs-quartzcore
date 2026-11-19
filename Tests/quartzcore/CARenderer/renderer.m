@@ -17,6 +17,44 @@
 #import <QuartzCore/CARenderer.h>
 #import <QuartzCore/CALayer.h>
 
+/* Counts what it is told, and can be asked to disturb a layer while it is
+   being told, to see whether that comes back round again. */
+@interface QCRendererWatcher : NSObject <GSCARendererDelegate>
+{
+  int _told;
+  CALayer *_disturb;
+}
+- (int) told;
+- (void) disturbThisWhenTold: (CALayer *)layer;
+@end
+
+@implementation QCRendererWatcher
+
+- (int) told
+{
+  return _told;
+}
+
+- (void) disturbThisWhenTold: (CALayer *)layer
+{
+  _disturb = layer;
+}
+
+- (void) nextFrameTimeDidChange
+{
+  _told++;
+  if (_disturb != nil)
+    {
+      CALayer *layer = _disturb;
+
+      /* Once only, or this would be a measure of how deep a stack goes. */
+      _disturb = nil;
+      [layer setBeginTime: [layer beginTime] + 1.0];
+    }
+}
+
+@end
+
 /* Builds a window with a drawable, or answers nil having touched nothing
    that could block.  The reason is written into *why. */
 static NSOpenGLContext *
@@ -211,6 +249,93 @@ int main(void)
             "ending a frame that was never begun does nothing");
 
   END_SET("beginning and ending a frame")
+
+  /* Nothing here is Apple parity: Apple's renderer has no delegate.  It is
+     this implementation's own arrangement for telling whoever is driving
+     that the moment to draw again has moved. */
+  START_SET("telling whoever is driving")
+
+  const char *whyTold = "";
+  NSOpenGLContext *toldContext = usableContext(&whyTold);
+  CARenderer *watched;
+  QCRendererWatcher *watcher;
+  CALayer *watchedLayer;
+
+  if (toldContext == nil)
+    {
+      SKIP("%s", whyTold)
+    }
+
+  watched = [CARenderer rendererWithNSOpenGLContext: toldContext options: nil];
+  if (watched == nil)
+    {
+      SKIP("there is no renderer to ask anything of")
+    }
+
+  watcher = [[[QCRendererWatcher alloc] init] autorelease];
+  watchedLayer = [CALayer layer];
+  [watched setLayer: watchedLayer];
+  [watched setDelegate: watcher];
+  PASS([watched delegate] == watcher, "the delegate reads back as it was set");
+
+  [watchedLayer setBeginTime: 5.0];
+  PASS([watcher told] > 0,
+       "moving when a layer begins tells whoever is driving");
+
+  /* A delegate that disturbs the layer again while it is being told is the
+     case the guard in -takeNoteThatNextFrameTimeChanged exists for.  Getting
+     as far as the assertion is itself the proof: without the guard this
+     would go round until the stack ran out.
+
+     How many tellings arrive is not pinned.  A single change tells twice as
+     things stand, once from the setter and once from the observer that
+     watches for implicit animations, and there is no Apple to say what it
+     ought to be, since a renderer has no delegate there. */
+  {
+    int before = [watcher told];
+
+    [watcher disturbThisWhenTold: watchedLayer];
+    [watchedLayer setBeginTime: 6.0];
+    PASS([watcher told] > before,
+         "and disturbing the layer while being told does not run away");
+  }
+
+  END_SET("telling whoever is driving")
+
+  START_SET("changing which layer is drawn")
+
+  const char *whySwap = "";
+  NSOpenGLContext *swapContext = usableContext(&whySwap);
+  CARenderer *swapper;
+  CALayer *first;
+  CALayer *second;
+
+  if (swapContext == nil)
+    {
+      SKIP("%s", whySwap)
+    }
+
+  swapper = [CARenderer rendererWithNSOpenGLContext: swapContext options: nil];
+  if (swapper == nil)
+    {
+      SKIP("there is no renderer to ask anything of")
+    }
+
+  first = [CALayer layer];
+  second = [CALayer layer];
+
+  [swapper setLayer: first];
+  [swapper setLayer: second];
+  PASS([swapper layer] == second, "the second layer is the one it draws");
+
+  [swapper setLayer: nil];
+  PASS([swapper layer] == nil, "and it can be left with none");
+
+  [swapper setLayer: first];
+  PASS([swapper layer] == first,
+       "and given one again afterwards, the renderer having survived it all");
+
+  END_SET("changing which layer is drawn")
 
   [pool release];
   return 0;
