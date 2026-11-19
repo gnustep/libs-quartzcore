@@ -1,0 +1,3 @@
+# CAGravityDestinationRect is internal to this framework, so there is nothing
+# for it to be compared against on Apple.
+APPLE_SKIP_TESTS="gravity.m"
